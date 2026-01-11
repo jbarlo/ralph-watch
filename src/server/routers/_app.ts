@@ -3,6 +3,7 @@ import { ticketsRouter } from './tickets';
 import { progressRouter } from './progress';
 import { configRouter } from './config';
 import { ralphRouter } from './ralph';
+import { processRouter } from './process';
 
 /**
  * Main app router - combines all sub-routers
@@ -12,6 +13,7 @@ export const appRouter = router({
   progress: progressRouter,
   config: configRouter,
   ralph: ralphRouter,
+  process: processRouter,
 });
 
 /**

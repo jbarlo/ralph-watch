@@ -323,3 +323,18 @@
 - Tests spawn real processes (echo, sleep, exit) and verify output capture, status transitions
 - Files added: src/server/services/process-runner.ts, src/server/services/process-runner.test.ts
 - Verified: `pnpm check` passes (all 104 tests pass)
+
+## Ticket #27: tRPC procedures for ProcessRunner
+- Created src/server/routers/process.ts with tRPC router for process management
+- start(command) - spawns process via runner.start with ctx.ralphDir as cwd, returns handle or throws
+- status(id) - returns ProcessStatus (running/exited/not_found) via runner.getStatus
+- kill(id) - terminates process via runner.kill, returns {success: true} or throws
+- list() - returns all running ProcessHandle[] via runner.listRunning
+- Module-level instance pattern with getRunner()/setRunner() for DI/testing
+- Uses singleton getProcessRunner() from services by default
+- Registered process router in src/server/routers/_app.ts
+- Created src/server/routers/process.test.ts with 16 tests using mock ProcessRunner
+- Tests verify: correct args passed, return values, error handling, input validation
+- Files added: src/server/routers/process.ts, src/server/routers/process.test.ts
+- Files modified: src/server/routers/_app.ts
+- Verified: `pnpm check` passes (all 120 tests pass)

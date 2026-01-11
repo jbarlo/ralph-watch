@@ -186,7 +186,7 @@
       "id": 27,
       "title": "tRPC procedures for ProcessRunner",
       "description": "Create src/server/routers/process.ts. Import ProcessRunner instance. Procedures: start(command: string) - calls runner.start with ctx.ralphDir, returns handle or error; status(id: string) - returns ProcessStatus; kill(id: string) - kills process; list() - returns all running handles. Inject ProcessRunner via module-level instance for now (can refactor to DI later). Write tests with a mock ProcessRunner that returns canned responses. Verify each procedure calls the right runner method with right args.",
-      "status": "pending",
+      "status": "completed",
       "priority": 4
     },
     {
