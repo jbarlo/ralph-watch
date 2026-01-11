@@ -214,7 +214,7 @@
       "id": 31,
       "title": "Update RalphControls to use ProcessRunner",
       "description": "Refactor src/components/RalphControls.tsx. Replace fire-and-forget mutations with new process.start. On click: call start mutation, store returned processId in state. Show 'Running...' with spinner while process active. Poll or subscribe to status. Show ProcessOutputViewer in a collapsible panel or modal. Add 'Stop' button that calls kill. When process exits, show result (success/failure). Clear state to allow running again. Test by mocking tRPC and verifying correct calls and state transitions.",
-      "status": "pending",
+      "status": "completed",
       "priority": 8
     },
     {

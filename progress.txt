@@ -388,3 +388,20 @@
 - Files added: src/components/ProcessOutputViewer.tsx, src/components/ProcessOutputViewer.test.tsx, src/test-setup.ts
 - Files modified: vitest.config.ts, package.json
 - Verified: `pnpm check` passes (all 166 tests pass)
+
+## Ticket #31: Update RalphControls to use ProcessRunner
+- Refactored src/components/RalphControls.tsx to use ProcessRunner for full lifecycle management
+- Replaced fire-and-forget mutations (ralph.runOnce, ralph.runAll) with process.start
+- On click: calls process.start mutation, stores processId in state
+- Added shadcn/ui collapsible component for output panel
+- Shows ProcessOutputViewer in collapsible panel with real-time output streaming
+- Running state: status text with animated pulse, disabled buttons, connection status indicator
+- Stop button: appears during running, calls process.kill mutation
+- Process exit: detects via useProcessOutput hook, shows Completed/Failed status with color coding
+- Clear button: appears after process exits to dismiss output panel
+- Used useEffect with queueMicrotask for ESLint-compliant exit handling
+- Created src/components/RalphControls.test.tsx with 20 tests
+- Tests verify: button rendering, mutation calls, running state, stop functionality, output visibility, process completion, button states, connection status, hook integration
+- Files added: src/components/RalphControls.test.tsx, src/components/ui/collapsible.tsx
+- Files modified: src/components/RalphControls.tsx
+- Verified: `pnpm check` passes (all 186 tests pass)
