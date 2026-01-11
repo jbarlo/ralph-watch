@@ -441,3 +441,7 @@
 - Files added: src/lib/env.ts, src/lib/env.test.ts
 - Files modified: src/server/trpc.ts
 - Verified: `pnpm check` passes (all 203 tests pass)
+
+## Ticket #35: Say hi
+- Hello!
+- No code changes (no-op ticket)
