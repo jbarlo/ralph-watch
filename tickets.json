@@ -172,7 +172,7 @@
       "id": 25,
       "title": "ProcessRunner interface and types",
       "description": "Create src/lib/process-runner.ts with types: ProcessHandle { id: string; pid: number }, ProcessStatus (discriminated union: { state: 'running'; pid: number } | { state: 'exited'; code: number | null } | { state: 'not_found' }), ProcessOutputLine { stream: 'stdout' | 'stderr'; line: string; timestamp: number }. Define ProcessRunner interface: start(opts: { command: string; cwd: string }) => Promise<Result<ProcessHandle, Error>>, getStatus(id: string) => ProcessStatus, kill(id: string) => Promise<Result<void, Error>>, onOutput(id: string, cb: (line: ProcessOutputLine) => void) => () => void, listRunning() => ProcessHandle[]. Write unit tests for type guards (isRunning, isExited, etc).",
-      "status": "pending",
+      "status": "completed",
       "priority": 2
     },
     {

@@ -291,3 +291,17 @@
 - Note: ticket suggested useState + useEffect but that triggered ESLint set-state-in-effect rule
 - Files modified: src/hooks/use-notifications.ts
 - Verified: `pnpm check` passes (all 57 tests pass)
+
+## Ticket #25: ProcessRunner interface and types
+- Created src/lib/process-runner.ts with types for process lifecycle management
+- ProcessHandle: { id: string; pid: number } for identifying spawned processes
+- ProcessStatus: discriminated union with 'running' (pid), 'exited' (code), 'not_found' states
+- ProcessOutputLine: { stream: 'stdout'|'stderr'; line: string; timestamp: number }
+- ProcessStartOptions: { command: string; cwd: string }
+- ProcessRunner interface with start, getStatus, kill, onOutput, listRunning methods
+- Type guards: isRunning(), isExited(), isNotFound() for status discrimination
+- ProcessStatusFactory helper for creating status values
+- Created src/lib/process-runner.test.ts with 26 unit tests
+- Tests cover: type structure, type guards, factory functions, exhaustive switch matching
+- Files added: src/lib/process-runner.ts, src/lib/process-runner.test.ts
+- Verified: `pnpm check` passes (all 83 tests pass)
