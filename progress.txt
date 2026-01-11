@@ -28,3 +28,12 @@
 - Added utilities: unwrapOr(), tryCatch(), tryCatchAsync()
 - Files added: src/lib/result.ts
 - Verified: `pnpm check` passes
+
+## Ticket #22: Test setup with vitest
+- Installed vitest, @testing-library/react, @testing-library/dom, jsdom, @vitejs/plugin-react
+- Created vitest.config.ts with jsdom environment and react plugin
+- Added scripts: `test` (vitest run), `test:watch` (vitest)
+- Updated `check` script to include test: lint + typecheck + test
+- Created src/lib/result.test.ts with 16 integration tests for Result utilities
+- Files added: vitest.config.ts, src/lib/result.test.ts
+- Verified: `pnpm check` passes (all 16 tests pass)
