@@ -10,6 +10,7 @@ import { ProgressViewer } from '@/components/ProgressViewer';
 import { EditTicketForm } from '@/components/EditTicketForm';
 import { DeleteTicketButton } from '@/components/DeleteTicketButton';
 import { ConnectionStatusIndicator } from '@/components/ConnectionStatus';
+import { RalphControls } from '@/components/RalphControls';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -58,6 +59,7 @@ function Header() {
             {isLoading ? '...' : projectPath}
           </code>
         </div>
+        <RalphControls />
         <ConnectionStatusIndicator />
       </div>
     </header>
