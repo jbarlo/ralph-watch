@@ -53,7 +53,7 @@
       "id": 5,
       "title": "Setup tRPC with file system access",
       "description": "Install @trpc/server, @trpc/client, @trpc/react-query, @tanstack/react-query, superjson. Create src/server/trpc.ts router, src/app/api/trpc/[trpc]/route.ts handler. Add tRPC provider to layout. Use RALPH_DIR env var (default cwd) for target directory.",
-      "status": "pending",
+      "status": "completed",
       "priority": 3
     },
     {

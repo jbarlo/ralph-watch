@@ -67,3 +67,15 @@
 - Files added: src/lib/schemas.ts, src/lib/schemas.test.ts
 - Files modified: package.json
 - Verified: `pnpm check` passes (all 33 tests pass)
+
+## Ticket #5: Setup tRPC with file system access
+- Installed @trpc/server, @trpc/client, @trpc/react-query, @tanstack/react-query, superjson
+- Created src/server/trpc.ts with context (ralphDir from RALPH_DIR env var), superjson transformer
+- Created src/server/routers/_app.ts as main router (empty, ready for sub-routers)
+- Created src/app/api/trpc/[trpc]/route.ts as fetch handler for GET/POST
+- Created src/lib/trpc.ts with createTRPCReact hook for client usage
+- Created src/components/providers/TRPCProvider.tsx with React Query + tRPC clients
+- Updated src/app/layout.tsx to wrap app with TRPCProvider
+- Files added: src/server/trpc.ts, src/server/routers/_app.ts, src/app/api/trpc/[trpc]/route.ts, src/lib/trpc.ts, src/components/providers/TRPCProvider.tsx
+- Files modified: src/app/layout.tsx, package.json
+- Verified: `pnpm check` passes (all 33 tests pass)
