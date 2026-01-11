@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { trpc } from '@/lib/trpc';
 import type { Ticket } from '@/lib/schemas';
 import { TicketList } from '@/components/TicketList';
+import { ProgressViewer } from '@/components/ProgressViewer';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -64,8 +65,6 @@ interface DetailPanelProps {
 }
 
 function DetailPanel({ ticket }: DetailPanelProps) {
-  const { data: progressContent } = trpc.progress.read.useQuery();
-
   if (!ticket) {
     return (
       <div className="flex h-full flex-col">
@@ -79,18 +78,9 @@ function DetailPanel({ ticket }: DetailPanelProps) {
             </p>
           </CardContent>
         </Card>
-        <Card className="mt-4 flex-1">
-          <CardHeader>
-            <CardTitle className="text-base">Progress Log</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[300px]">
-              <pre className="whitespace-pre-wrap text-xs font-mono text-muted-foreground">
-                {progressContent || 'No progress logged yet'}
-              </pre>
-            </ScrollArea>
-          </CardContent>
-        </Card>
+        <div className="mt-4">
+          <ProgressViewer height="300px" />
+        </div>
       </div>
     );
   }
@@ -131,18 +121,7 @@ function DetailPanel({ ticket }: DetailPanelProps) {
           )}
         </CardContent>
       </Card>
-      <Card className="flex-1">
-        <CardHeader>
-          <CardTitle className="text-base">Progress Log</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[300px]">
-            <pre className="whitespace-pre-wrap text-xs font-mono text-muted-foreground">
-              {progressContent || 'No progress logged yet'}
-            </pre>
-          </ScrollArea>
-        </CardContent>
-      </Card>
+      <ProgressViewer height="300px" />
     </div>
   );
 }

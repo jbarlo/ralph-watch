@@ -139,3 +139,15 @@
 - Disabled button with loading state during submission
 - Files added: src/components/AddTicketForm.tsx
 - Verified: `pnpm check` passes (all 49 tests pass)
+
+## Ticket #12: Progress.txt viewer component
+- Created src/components/ProgressViewer.tsx with tRPC integration
+- Fetches content via trpc.progress.read.useQuery()
+- Uses ScrollArea with auto-scroll to bottom when content changes
+- Configurable props: autoScroll (default true), height, title, showCard
+- Renders as preformatted monospace text
+- Loading, error, and empty states handled
+- Integrated into main page DetailPanel, replacing inline progress display
+- Files added: src/components/ProgressViewer.tsx
+- Files modified: src/app/page.tsx
+- Verified: `pnpm check` passes (all 49 tests pass)

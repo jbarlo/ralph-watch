@@ -102,7 +102,7 @@
       "id": 12,
       "title": "Progress.txt viewer component",
       "description": "Create src/components/ProgressViewer.tsx. Fetch content via tRPC. Render as markdown or preformatted text. Use scroll-area, auto-scroll to bottom option.",
-      "status": "pending",
+      "status": "completed",
       "priority": 5
     },
     {
