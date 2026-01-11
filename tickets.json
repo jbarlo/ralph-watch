@@ -130,7 +130,7 @@
       "id": 16,
       "title": "Execute ralph commands from UI",
       "description": "Add 'Run Next Ticket' and 'Run All' buttons. tRPC procedure that spawns `ralph-once` or `ralph` in RALPH_DIR. Return immediately (fire-and-forget). File watcher will pick up changes.",
-      "status": "pending",
+      "status": "completed",
       "priority": 9
     },
     {

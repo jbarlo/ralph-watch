@@ -217,3 +217,16 @@
 - Files added: src/components/TicketFilter.tsx, src/hooks/use-ticket-filter.ts
 - Files modified: src/components/TicketList.tsx, src/app/page.tsx
 - Verified: `pnpm check` passes (all 49 tests pass)
+
+## Ticket #16: Execute ralph commands from UI
+- Created src/server/routers/ralph.ts with runOnce and runAll procedures
+- runOnce spawns `ralph-once` (process next ticket) as fire-and-forget
+- runAll spawns `ralph` (loop) as fire-and-forget
+- Uses spawn with detached:true, stdio:'ignore', and unref() for proper background execution
+- Created src/components/RalphControls.tsx with "Run Next Ticket" and "Run All" buttons
+- Buttons show loading state and toast notifications on success/error
+- Registered ralph router in _app.ts
+- Integrated RalphControls into Header next to connection status
+- Files added: src/server/routers/ralph.ts, src/components/RalphControls.tsx
+- Files modified: src/server/routers/_app.ts, src/app/page.tsx
+- Verified: `pnpm check` passes (all 49 tests pass)
