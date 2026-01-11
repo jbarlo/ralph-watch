@@ -81,7 +81,7 @@
       "id": 9,
       "title": "Add ticket form",
       "description": "Create src/components/AddTicketForm.tsx. Fields: title (required), description (textarea), priority (number input, default 1). Submit via tRPC mutation. Clear form on success, show toast.",
-      "status": "pending",
+      "status": "completed",
       "priority": 5
     },
     {

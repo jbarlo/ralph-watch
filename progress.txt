@@ -128,3 +128,14 @@
 - Files added: src/server/routers/config.ts
 - Files modified: src/app/page.tsx, src/server/routers/_app.ts
 - Verified: `pnpm check` passes (all 49 tests pass)
+
+## Ticket #9: Add ticket form
+- Created src/components/AddTicketForm.tsx with tRPC integration
+- Fields: title (required), description (textarea), priority (number, default 1)
+- Submit via trpc.tickets.create.useMutation()
+- Clears form on success, invalidates tickets.list query for automatic refresh
+- Toast notifications for success and error states
+- Client-side validation for required title field
+- Disabled button with loading state during submission
+- Files added: src/components/AddTicketForm.tsx
+- Verified: `pnpm check` passes (all 49 tests pass)
