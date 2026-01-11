@@ -249,7 +249,7 @@
       "id": 36,
       "title": "Fix file watcher query invalidation with IoC",
       "description": "Bug: useFileWatch uses raw queryClient.invalidateQueries() with manually constructed keys like [['progress']] which don't match tRPC's internal key format. Progress updates don't trigger re-fetch. Fix: Invert control - useFileWatch should accept callbacks for invalidation instead of doing it directly. Change interface to accept onTicketsChange and onProgressChange callbacks. The component using the hook (ConnectionStatusIndicator or wherever) passes in functions that call utils.tickets.list.invalidate() and utils.progress.read.invalidate() respectively. Remove queryClient usage from the hook. Test by running ralph and verifying progress.txt updates appear without refresh.",
-      "status": "in_progress",
+      "status": "completed",
       "priority": 1
     },
     {

@@ -445,3 +445,16 @@
 ## Ticket #35: Say hi
 - Hello!
 - No code changes (no-op ticket)
+
+## Ticket #36: Fix file watcher query invalidation with IoC
+- Bug: useFileWatch used queryClient.invalidateQueries() with manually constructed keys
+- Keys like [['progress']] didn't match tRPC's internal key format
+- Progress updates weren't triggering re-fetch
+- Fix: Inverted control - hook now accepts callbacks instead of doing invalidation directly
+- Added onTicketsChange, onProgressChange, getTickets callbacks to UseFileWatchOptions
+- Removed useQueryClient import and queryClient usage from useFileWatch
+- Updated ConnectionStatusIndicator to use trpc.useUtils()
+- Passes utils.tickets.list.invalidate() and utils.progress.read.invalidate() as callbacks
+- getTickets callback uses utils.tickets.list.getData() for status change detection
+- Files modified: src/hooks/use-file-watch.ts, src/components/ConnectionStatus.tsx
+- Verified: `pnpm check` passes (all 203 tests pass)
