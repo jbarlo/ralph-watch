@@ -31,6 +31,7 @@ When done, set status to "completed" (or "failed" if unable to complete).
 ## Progress Log
 
 Append to progress.txt after each ticket:
+
 ```
 ## Ticket #1: Short title
 - What was done
@@ -41,6 +42,7 @@ Append to progress.txt after each ticket:
 ## Project-Specific Notes
 
 **Tech Stack:**
+
 - Next.js 14 (App Router) + TypeScript
 - pnpm package manager
 - Tailwind CSS + shadcn/ui components
@@ -49,11 +51,13 @@ Append to progress.txt after each ticket:
 - chokidar for file watching
 
 **Commands:**
+
 - `pnpm dev` - start dev server
 - `pnpm build` - production build
 - `pnpm lint` - run eslint
 
 **Conventions:**
+
 - Components in src/components/
 - tRPC routers in src/server/routers/
 - Shared types/schemas in src/lib/
@@ -65,6 +69,7 @@ Append to progress.txt after each ticket:
 Run `pnpm check` after completing each ticket. Must pass before marking ticket complete.
 
 **Testing Philosophy:**
+
 - Write integration tests as you go (test real behavior end-to-end)
 - NO mocks - test actual implementations
 - Unit tests only for isolated, complicated logic (pure functions, algorithms)
@@ -73,6 +78,7 @@ Run `pnpm check` after completing each ticket. Must pass before marking ticket c
 ## Commits
 
 Use conventional commits:
+
 - `feat: ...` - new feature
 - `fix: ...` - bug fix
 - `refactor: ...` - code change (no new feature or fix)
