@@ -280,3 +280,14 @@
 - Files modified: src/hooks/use-projects.ts
 - Files added: src/hooks/use-projects.test.ts
 - Verified: `pnpm check` passes (all 57 tests pass)
+
+## Ticket #24: Fix hydration mismatch in useNotifications isSupported
+- Bug: isSupported computed as `typeof window !== 'undefined' && 'Notification' in window`
+- This is false on server but true on client, causing hydration mismatch
+- Fix: Used useSyncExternalStore instead of direct computation
+- Added getIsSupportedSnapshot() for client (returns `'Notification' in window`)
+- Added getIsSupportedServerSnapshot() for server (returns false)
+- This ensures server and initial client render match (both false), then React handles the transition
+- Note: ticket suggested useState + useEffect but that triggered ESLint set-state-in-effect rule
+- Files modified: src/hooks/use-notifications.ts
+- Verified: `pnpm check` passes (all 57 tests pass)

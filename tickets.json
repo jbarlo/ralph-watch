@@ -160,6 +160,69 @@
       "description": "Bug: getProjectsSnapshot() calls getProjects() which returns a new array reference each time (from JSON.parse). React sees different reference, re-renders, infinite loop. Fix: cache projects at module level. Add `let projectsCache: Project[] = EMPTY_PROJECTS`. getProjectsSnapshot() returns projectsCache. Create refreshCache() that calls `projectsCache = getProjects()` then notifySubscribers(). All mutation functions (addProject, removeProject, setActiveProject) call refreshCache() instead of notifySubscribers(). Initialize cache on first client-side read. Write a test in src/hooks/use-projects.test.ts that renders the useProjects hook using @testing-library/react renderHook(). The test should verify no errors are thrown and that calling the hook multiple times returns stable references. Run `pnpm test` to verify the fix.",
       "status": "completed",
       "priority": 1
+    },
+    {
+      "id": 24,
+      "title": "Fix hydration mismatch in useNotifications isSupported",
+      "description": "Bug: In src/hooks/use-notifications.ts line 133, `isSupported` is computed as `typeof window !== 'undefined' && 'Notification' in window`. This is false on server, true on client, causing hydration mismatch in ConnectionStatusIndicator when notificationIndicator span renders on client but not server. Fix: Change isSupported to use useState + useEffect pattern. Initialize as `const [isSupported, setIsSupported] = useState(false)`, then in a useEffect set `setIsSupported('Notification' in window)`. This ensures server and initial client render both have isSupported=false, then client updates after mount. Test by loading the page and verifying no hydration mismatch warning in console.",
+      "status": "completed",
+      "priority": 1
+    },
+    {
+      "id": 25,
+      "title": "ProcessRunner interface and types",
+      "description": "Create src/lib/process-runner.ts with types: ProcessHandle { id: string; pid: number }, ProcessStatus (discriminated union: { state: 'running'; pid: number } | { state: 'exited'; code: number | null } | { state: 'not_found' }), ProcessOutputLine { stream: 'stdout' | 'stderr'; line: string; timestamp: number }. Define ProcessRunner interface: start(opts: { command: string; cwd: string }) => Promise<Result<ProcessHandle, Error>>, getStatus(id: string) => ProcessStatus, kill(id: string) => Promise<Result<void, Error>>, onOutput(id: string, cb: (line: ProcessOutputLine) => void) => () => void, listRunning() => ProcessHandle[]. Write unit tests for type guards (isRunning, isExited, etc).",
+      "status": "pending",
+      "priority": 2
+    },
+    {
+      "id": 26,
+      "title": "ProcessRunner implementation",
+      "description": "Create src/server/services/process-runner.ts implementing ProcessRunner interface. Use child_process.spawn with stdio: 'pipe'. Store running processes in Map<string, { child: ChildProcess; output: ProcessOutputLine[] }>. Generate unique id (nanoid or uuid). On spawn: attach stdout/stderr listeners, push lines to output array, call registered callbacks. On exit: update status, store exit code. Implement getStatus by checking if process exists and child.exitCode. Implement kill with child.kill(). Implement onOutput by storing callbacks in a Set per process. Write integration tests that spawn a real process (like 'echo hello') and verify output is captured and status transitions work.",
+      "status": "pending",
+      "priority": 3
+    },
+    {
+      "id": 27,
+      "title": "tRPC procedures for ProcessRunner",
+      "description": "Create src/server/routers/process.ts. Import ProcessRunner instance. Procedures: start(command: string) - calls runner.start with ctx.ralphDir, returns handle or error; status(id: string) - returns ProcessStatus; kill(id: string) - kills process; list() - returns all running handles. Inject ProcessRunner via module-level instance for now (can refactor to DI later). Write tests with a mock ProcessRunner that returns canned responses. Verify each procedure calls the right runner method with right args.",
+      "status": "pending",
+      "priority": 4
+    },
+    {
+      "id": 28,
+      "title": "SSE endpoint for process output streaming",
+      "description": "Create src/app/api/process/[id]/stream/route.ts SSE endpoint. Takes process id from params. Calls runner.onOutput(id, ...) to subscribe. Streams ProcessOutputLine as SSE events (event: 'output', data: JSON). On process exit, send event: 'exit' with code, then close stream. Handle client disconnect by unsubscribing. Write test that starts a process, connects to SSE, verifies output events arrive.",
+      "status": "pending",
+      "priority": 5
+    },
+    {
+      "id": 29,
+      "title": "useProcessOutput hook",
+      "description": "Create src/hooks/use-process-output.ts. Hook takes processId. Connects to SSE endpoint /api/process/[id]/stream. Accumulates output lines in state. Returns { lines: ProcessOutputLine[], isConnected: boolean, exitCode: number | null }. Cleans up SSE connection on unmount or id change. Write test with mock SSE (or integration test with real endpoint).",
+      "status": "pending",
+      "priority": 6
+    },
+    {
+      "id": 30,
+      "title": "ProcessOutputViewer component",
+      "description": "Create src/components/ProcessOutputViewer.tsx. Takes processId prop. Uses useProcessOutput hook. Renders output lines in scroll-area with monospace font. stdout in default color, stderr in red. Auto-scroll to bottom (with toggle). Shows 'Process exited with code X' when done. Shows connecting/disconnected state. Write component test that mocks the hook and verifies rendering.",
+      "status": "pending",
+      "priority": 7
+    },
+    {
+      "id": 31,
+      "title": "Update RalphControls to use ProcessRunner",
+      "description": "Refactor src/components/RalphControls.tsx. Replace fire-and-forget mutations with new process.start. On click: call start mutation, store returned processId in state. Show 'Running...' with spinner while process active. Poll or subscribe to status. Show ProcessOutputViewer in a collapsible panel or modal. Add 'Stop' button that calls kill. When process exits, show result (success/failure). Clear state to allow running again. Test by mocking tRPC and verifying correct calls and state transitions.",
+      "status": "pending",
+      "priority": 8
+    },
+    {
+      "id": 32,
+      "title": "Remove old fire-and-forget ralph router",
+      "description": "Delete or replace src/server/routers/ralph.ts now that ProcessRunner handles execution. Update router index to use new process router. Verify RalphControls works end-to-end. Clean up any unused imports.",
+      "status": "pending",
+      "priority": 9
     }
   ]
 }

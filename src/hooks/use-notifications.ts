@@ -37,6 +37,27 @@ function subscribeToPermission(): () => void {
 }
 
 /**
+ * Get notification support status (client-side only)
+ */
+function getIsSupportedSnapshot(): boolean {
+  return 'Notification' in window;
+}
+
+/**
+ * Server-side snapshot for isSupported (always false for hydration match)
+ */
+function getIsSupportedServerSnapshot(): boolean {
+  return false;
+}
+
+/**
+ * Subscribe to support changes (no-op, support status is static)
+ */
+function subscribeToSupport(): () => void {
+  return () => {};
+}
+
+/**
  * Hook for managing browser notifications
  *
  * - Requests permission on mount
@@ -57,10 +78,17 @@ export function useNotifications() {
     useState<NotificationPermission>(currentPermission);
   const [isTabFocused, setIsTabFocused] = useState(true);
 
+  // Use useSyncExternalStore for SSR-safe isSupported access
+  const isSupported = useSyncExternalStore(
+    subscribeToSupport,
+    getIsSupportedSnapshot,
+    getIsSupportedServerSnapshot,
+  );
+
   // Request notification permission on mount
   useEffect(() => {
     // Check if notifications are supported
-    if (typeof window === 'undefined' || !('Notification' in window)) {
+    if (!('Notification' in window)) {
       return;
     }
 
@@ -129,8 +157,6 @@ export function useNotifications() {
     },
     [permission, isTabFocused],
   );
-
-  const isSupported = typeof window !== 'undefined' && 'Notification' in window;
 
   return {
     permission,
