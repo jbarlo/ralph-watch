@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import type { Ticket } from '@/lib/schemas';
 
 /**
@@ -32,9 +31,21 @@ export interface TicketStatusChange {
  */
 export interface UseFileWatchOptions {
   /**
+   * Callback when tickets.json changes - use to invalidate tickets queries
+   */
+  onTicketsChange?: () => void;
+  /**
+   * Callback when progress.txt changes - use to invalidate progress queries
+   */
+  onProgressChange?: () => void;
+  /**
    * Callback when a ticket's status changes to 'completed' or 'failed'
    */
   onTicketStatusChange?: (change: TicketStatusChange) => void;
+  /**
+   * Callback to get fresh ticket data for status change detection
+   */
+  getTickets?: () => Ticket[] | undefined;
   /**
    * Project directory to watch (passed as query param to SSE endpoint)
    */
@@ -42,21 +53,20 @@ export interface UseFileWatchOptions {
 }
 
 /**
- * Hook for watching file changes via SSE and invalidating tRPC queries
+ * Hook for watching file changes via SSE and triggering callbacks
  *
  * Connects to /api/watch SSE endpoint.
- * On 'tickets' event, invalidates tickets query.
- * On 'progress' event, invalidates progress query.
+ * On 'tickets' event, calls onTicketsChange callback.
+ * On 'progress' event, calls onProgressChange callback.
  * Automatically reconnects on disconnect and when ralphDir changes.
  *
- * @param options - Optional callbacks for status changes
+ * @param options - Callbacks for file changes and status changes
  * @returns Connection status
  */
 export function useFileWatch(options?: UseFileWatchOptions): ConnectionStatus {
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
   const eventSourceRef = useRef<EventSource | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const queryClient = useQueryClient();
 
   // Track previous ticket states to detect status changes
   const previousTicketsRef = useRef<Map<number, string>>(new Map());
@@ -74,11 +84,8 @@ export function useFileWatch(options?: UseFileWatchOptions): ConnectionStatus {
     // Wait a bit for the query to refetch
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    // Get fresh ticket data from cache
-    const ticketsData = queryClient.getQueryData<Ticket[]>([
-      ['tickets'],
-      'list',
-    ]);
+    // Get fresh ticket data via callback
+    const ticketsData = optionsRef.current?.getTickets?.();
 
     if (!ticketsData) {
       return;
@@ -107,7 +114,7 @@ export function useFileWatch(options?: UseFileWatchOptions): ConnectionStatus {
       // Update tracked state
       previousTicketsRef.current.set(ticket.id, ticket.status);
     }
-  }, [queryClient]);
+  }, []);
 
   // Main connection effect - re-runs when ralphDir changes
   useEffect(() => {
@@ -144,11 +151,8 @@ export function useFileWatch(options?: UseFileWatchOptions): ConnectionStatus {
         console.log('[useFileWatch] Connected to', data.ralphDir);
         setStatus('connected');
 
-        // Initialize previous tickets from cache
-        const initialTickets = queryClient.getQueryData<Ticket[]>([
-          ['tickets'],
-          'list',
-        ]);
+        // Initialize previous tickets from callback
+        const initialTickets = optionsRef.current?.getTickets?.();
         if (initialTickets) {
           for (const ticket of initialTickets) {
             previousTicketsRef.current.set(ticket.id, ticket.status);
@@ -164,10 +168,8 @@ export function useFileWatch(options?: UseFileWatchOptions): ConnectionStatus {
       try {
         const data: WatchEvent = JSON.parse(event.data);
         console.log('[useFileWatch] Tickets changed at', data.timestamp);
-        // Invalidate all tickets queries
-        void queryClient.invalidateQueries({
-          queryKey: [['tickets']],
-        });
+        // Call callback to invalidate tickets queries
+        optionsRef.current?.onTicketsChange?.();
         // Check for status changes after queries refetch
         void checkTicketStatusChanges();
       } catch {
@@ -180,10 +182,8 @@ export function useFileWatch(options?: UseFileWatchOptions): ConnectionStatus {
       try {
         const data: WatchEvent = JSON.parse(event.data);
         console.log('[useFileWatch] Progress changed at', data.timestamp);
-        // Invalidate all progress queries
-        void queryClient.invalidateQueries({
-          queryKey: [['progress']],
-        });
+        // Call callback to invalidate progress queries
+        optionsRef.current?.onProgressChange?.();
       } catch {
         console.error('[useFileWatch] Failed to parse progress event');
       }
@@ -226,7 +226,7 @@ export function useFileWatch(options?: UseFileWatchOptions): ConnectionStatus {
       }
     };
     // Re-run when ralphDir changes to establish new connection
-  }, [options?.ralphDir, queryClient, checkTicketStatusChanges]);
+  }, [options?.ralphDir, checkTicketStatusChanges]);
 
   return status;
 }
