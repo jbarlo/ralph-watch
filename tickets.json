@@ -144,7 +144,7 @@
       "id": 18,
       "title": "Main page layout",
       "description": "Design src/app/page.tsx layout. Split view: ticket list on left, detail/progress on right. Or tabs. Header with project path display. Responsive for smaller screens.",
-      "status": "pending",
+      "status": "completed",
       "priority": 4
     },
     {

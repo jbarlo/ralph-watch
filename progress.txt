@@ -115,3 +115,16 @@
 - Loading and error states handled
 - Files added: src/components/TicketList.tsx
 - Verified: `pnpm check` passes (all 49 tests pass)
+
+## Ticket #18: Main page layout
+- Redesigned src/app/page.tsx with split view layout
+- Desktop: ticket list on left (400px), detail panel on right
+- Mobile: tab-based navigation (Tickets/Details tabs)
+- Header shows "Ralph Watch" title and project path from RALPH_DIR
+- Created config router (src/server/routers/config.ts) with getProjectPath procedure
+- Detail panel shows selected ticket info and progress log
+- Progress log fetched via tRPC progress.read()
+- Responsive design using lg: breakpoint for desktop view
+- Files added: src/server/routers/config.ts
+- Files modified: src/app/page.tsx, src/server/routers/_app.ts
+- Verified: `pnpm check` passes (all 49 tests pass)
