@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { trpc } from '@/lib/trpc';
 import type { Ticket } from '@/lib/schemas';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import type { TicketStatus } from '@/components/TicketFilter';
 
 /**
  * Get badge styling based on ticket status
@@ -85,11 +86,13 @@ function TicketCard({ ticket, isSelected, onSelect }: TicketCardProps) {
 export interface TicketListProps {
   onTicketSelect?: (ticket: Ticket | null) => void;
   selectedTicketId?: number | null;
+  statusFilter?: TicketStatus;
 }
 
 export function TicketList({
   onTicketSelect,
   selectedTicketId,
+  statusFilter = 'all',
 }: TicketListProps) {
   const [internalSelectedId, setInternalSelectedId] = useState<number | null>(
     null,
@@ -100,6 +103,13 @@ export function TicketList({
     selectedTicketId !== undefined ? selectedTicketId : internalSelectedId;
 
   const { data: tickets, isLoading, error } = trpc.tickets.list.useQuery();
+
+  // Filter tickets by status
+  const filteredTickets = useMemo(() => {
+    if (!tickets) return [];
+    if (statusFilter === 'all') return tickets;
+    return tickets.filter((t) => t.status === statusFilter);
+  }, [tickets, statusFilter]);
 
   const handleSelect = (ticket: Ticket) => {
     const newSelectedId = effectiveSelectedId === ticket.id ? null : ticket.id;
@@ -138,9 +148,20 @@ export function TicketList({
     );
   }
 
+  if (filteredTickets.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-muted-foreground">
+        <p className="text-lg font-medium">No matching tickets</p>
+        <p className="text-sm">
+          No tickets with status &quot;{statusFilter.replace(/_/g, ' ')}&quot;
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-2">
-      {tickets.map((ticket) => (
+      {filteredTickets.map((ticket) => (
         <TicketCard
           key={ticket.id}
           ticket={ticket}

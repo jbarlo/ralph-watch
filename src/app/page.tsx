@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { trpc } from '@/lib/trpc';
 import type { Ticket } from '@/lib/schemas';
 import { TicketList } from '@/components/TicketList';
+import { TicketFilter } from '@/components/TicketFilter';
+import { useTicketFilter } from '@/hooks/use-ticket-filter';
 import { ProgressViewer } from '@/components/ProgressViewer';
 import { EditTicketForm } from '@/components/EditTicketForm';
 import { DeleteTicketButton } from '@/components/DeleteTicketButton';
@@ -217,9 +219,10 @@ function MobileTabs({ activeTab, onTabChange }: MobileTabsProps) {
   );
 }
 
-export default function Home() {
+function HomeContent() {
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
   const [mobileTab, setMobileTab] = useState<'tickets' | 'details'>('tickets');
+  const { status, setStatus } = useTicketFilter();
 
   // Fetch tickets to get the selected ticket data
   const { data: tickets } = trpc.tickets.list.useQuery();
@@ -253,10 +256,14 @@ export default function Home() {
             mobileTab === 'tickets' ? 'block' : 'hidden',
           )}
         >
-          <ScrollArea className="h-[calc(100vh-7rem)] lg:h-[calc(100vh-4.5rem)]">
+          <div className="mb-4">
+            <TicketFilter value={status} onChange={setStatus} />
+          </div>
+          <ScrollArea className="h-[calc(100vh-10rem)] lg:h-[calc(100vh-7.5rem)]">
             <TicketList
               onTicketSelect={handleTicketSelect}
               selectedTicketId={selectedTicketId}
+              statusFilter={status}
             />
           </ScrollArea>
         </div>
@@ -275,5 +282,19 @@ export default function Home() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
+      <HomeContent />
+    </Suspense>
   );
 }

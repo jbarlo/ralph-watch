@@ -123,7 +123,7 @@
       "id": 15,
       "title": "Status filtering",
       "description": "Add filter controls to ticket list. Filter by status (all, pending, in_progress, completed, failed). Could be tabs or dropdown. Persist filter in URL params.",
-      "status": "pending",
+      "status": "completed",
       "priority": 9
     },
     {

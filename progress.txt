@@ -204,3 +204,16 @@
 - Files added: src/hooks/use-file-watch.ts, src/components/ConnectionStatus.tsx
 - Files modified: src/app/page.tsx
 - Verified: `pnpm check` passes (all 49 tests pass)
+
+## Ticket #15: Status filtering
+- Created src/components/TicketFilter.tsx with tab-style filter buttons
+- Filter options: all, pending, in_progress, completed, failed
+- Created src/hooks/use-ticket-filter.ts for URL params persistence
+- Uses Next.js useSearchParams/useRouter to sync filter state with URL (?status=pending etc)
+- Updated TicketList to accept statusFilter prop and filter tickets client-side
+- Added empty state for when no tickets match the current filter
+- Wrapped Home in Suspense boundary (required for useSearchParams)
+- Adjusted scroll area height to accommodate filter controls
+- Files added: src/components/TicketFilter.tsx, src/hooks/use-ticket-filter.ts
+- Files modified: src/components/TicketList.tsx, src/app/page.tsx
+- Verified: `pnpm check` passes (all 49 tests pass)
