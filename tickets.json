@@ -137,7 +137,7 @@
       "id": 17,
       "title": "Desktop notifications",
       "description": "Request notification permission on load. When SSE detects ticket status change to 'completed' or 'failed', show desktop notification with ticket title. Only if tab not focused.",
-      "status": "pending",
+      "status": "completed",
       "priority": 10
     },
     {

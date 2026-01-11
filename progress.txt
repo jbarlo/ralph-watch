@@ -230,3 +230,18 @@
 - Files added: src/server/routers/ralph.ts, src/components/RalphControls.tsx
 - Files modified: src/server/routers/_app.ts, src/app/page.tsx
 - Verified: `pnpm check` passes (all 49 tests pass)
+
+## Ticket #17: Desktop notifications
+- Created src/hooks/use-notifications.ts with useNotifications hook
+- Requests browser notification permission on page load
+- Uses useSyncExternalStore for SSR-safe permission state
+- Tracks tab focus state via visibilitychange and focus/blur events
+- showNotification() only fires when tab is not focused
+- Updated src/hooks/use-file-watch.ts to detect ticket status changes
+- Added previousTicketsRef to track ticket states across SSE events
+- onTicketStatusChange callback triggers when status changes to 'completed' or 'failed'
+- Updated ConnectionStatusIndicator to integrate notifications
+- Shows notification permission indicator (pending/blocked) in status bar
+- Files added: src/hooks/use-notifications.ts
+- Files modified: src/hooks/use-file-watch.ts, src/components/ConnectionStatus.tsx
+- Verified: `pnpm check` passes (all 49 tests pass)
