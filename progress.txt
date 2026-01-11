@@ -338,3 +338,18 @@
 - Files added: src/server/routers/process.ts, src/server/routers/process.test.ts
 - Files modified: src/server/routers/_app.ts
 - Verified: `pnpm check` passes (all 120 tests pass)
+
+## Ticket #28: SSE endpoint for process output streaming
+- Created src/app/api/process/[id]/stream/route.ts SSE endpoint
+- GET /api/process/[id]/stream - subscribes to process output via runner.onOutput()
+- Sends 'connected' event on initial connection with process id
+- Streams 'output' events with ProcessOutputLine JSON (stream, line, timestamp)
+- Polls for exit status and sends 'exit' event with code when process completes
+- Returns 404 if process not found
+- Handles already-exited processes by sending exit event immediately
+- Proper cleanup on client disconnect (unsubscribe + clear interval)
+- Added setRunner/getRunner for dependency injection in tests
+- Created src/app/api/process/[id]/stream/route.test.ts with 6 integration tests
+- Tests verify: 404 for unknown, connected event, output streaming, exit events, stderr capture
+- Files added: src/app/api/process/[id]/stream/route.ts, src/app/api/process/[id]/stream/route.test.ts
+- Verified: `pnpm check` passes (all 126 tests pass)

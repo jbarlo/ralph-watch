@@ -193,7 +193,7 @@
       "id": 28,
       "title": "SSE endpoint for process output streaming",
       "description": "Create src/app/api/process/[id]/stream/route.ts SSE endpoint. Takes process id from params. Calls runner.onOutput(id, ...) to subscribe. Streams ProcessOutputLine as SSE events (event: 'output', data: JSON). On process exit, send event: 'exit' with code, then close stream. Handle client disconnect by unsubscribing. Write test that starts a process, connects to SSE, verifies output events arrive.",
-      "status": "pending",
+      "status": "completed",
       "priority": 5
     },
     {
