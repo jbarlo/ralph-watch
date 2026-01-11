@@ -179,7 +179,7 @@
       "id": 26,
       "title": "ProcessRunner implementation",
       "description": "Create src/server/services/process-runner.ts implementing ProcessRunner interface. Use child_process.spawn with stdio: 'pipe'. Store running processes in Map<string, { child: ChildProcess; output: ProcessOutputLine[] }>. Generate unique id (nanoid or uuid). On spawn: attach stdout/stderr listeners, push lines to output array, call registered callbacks. On exit: update status, store exit code. Implement getStatus by checking if process exists and child.exitCode. Implement kill with child.kill(). Implement onOutput by storing callbacks in a Set per process. Write integration tests that spawn a real process (like 'echo hello') and verify output is captured and status transitions work.",
-      "status": "pending",
+      "status": "completed",
       "priority": 3
     },
     {

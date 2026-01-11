@@ -305,3 +305,21 @@
 - Tests cover: type structure, type guards, factory functions, exhaustive switch matching
 - Files added: src/lib/process-runner.ts, src/lib/process-runner.test.ts
 - Verified: `pnpm check` passes (all 83 tests pass)
+
+## Ticket #26: ProcessRunner implementation
+- Created src/server/services/process-runner.ts implementing ProcessRunner interface
+- Uses child_process.spawn with shell: true, stdio: ['ignore', 'pipe', 'pipe']
+- Stores processes in Map<string, ProcessRecord> with child, handle, output, callbacks
+- ID generation using timestamp + random string (no external deps)
+- stdout/stderr capture via readline.createInterface for line-by-line output
+- Each output line includes stream type, content, and timestamp
+- Exit handling updates exited flag and stores exit code
+- onOutput replays existing output to new subscribers, supports unsubscribe
+- kill uses SIGTERM with SIGKILL fallback
+- listRunning filters for non-exited processes
+- Factory function createProcessRunner() for fresh instances
+- Singleton getProcessRunner() for server-side use
+- Created src/server/services/process-runner.test.ts with 21 integration tests
+- Tests spawn real processes (echo, sleep, exit) and verify output capture, status transitions
+- Files added: src/server/services/process-runner.ts, src/server/services/process-runner.test.ts
+- Verified: `pnpm check` passes (all 104 tests pass)
