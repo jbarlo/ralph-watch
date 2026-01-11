@@ -1,16 +1,19 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { trpc } from '@/lib/trpc';
 import type { Ticket } from '@/lib/schemas';
 import { TicketList } from '@/components/TicketList';
-import { TicketFilter } from '@/components/TicketFilter';
-import { useTicketFilter } from '@/hooks/use-ticket-filter';
+import { TicketFilter, type TicketStatus } from '@/components/TicketFilter';
 import { ProgressViewer } from '@/components/ProgressViewer';
 import { EditTicketForm } from '@/components/EditTicketForm';
 import { DeleteTicketButton } from '@/components/DeleteTicketButton';
 import { ConnectionStatusIndicator } from '@/components/ConnectionStatus';
 import { RalphControls } from '@/components/RalphControls';
+import { ProjectSwitcher } from '@/components/ProjectSwitcher';
+import { useProjectContext } from '@/components/providers/ProjectProvider';
+import { getProjectFilter, setProjectFilter } from '@/lib/projects';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,21 +46,44 @@ function formatStatus(status: string): string {
 }
 
 /**
- * Header component showing project path
+ * Validate ticket status string
+ */
+function isValidTicketStatus(
+  status: string | undefined,
+): status is TicketStatus {
+  return (
+    status === 'all' ||
+    status === 'pending' ||
+    status === 'in_progress' ||
+    status === 'completed' ||
+    status === 'failed'
+  );
+}
+
+/**
+ * Header component showing project switcher and controls
  */
 function Header() {
-  const { data: projectPath, isLoading } =
-    trpc.config.getProjectPath.useQuery();
+  const { defaultProjectPath, setActiveProject } = useProjectContext();
+  const queryClient = useQueryClient();
+
+  const handleProjectChange = () => {
+    // Invalidate all queries when project changes to refetch data
+    void queryClient.invalidateQueries();
+  };
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-14 items-center gap-4 px-4 lg:px-6">
-        <h1 className="text-lg font-semibold">Ralph Watch</h1>
-        <div className="flex flex-1 items-center gap-2 text-sm text-muted-foreground">
-          <span className="hidden sm:inline">Project:</span>
-          <code className="rounded bg-muted px-2 py-0.5 font-mono text-xs">
-            {isLoading ? '...' : projectPath}
-          </code>
+        <h1 className="shrink-0 text-lg font-semibold">Ralph Watch</h1>
+        <div className="flex flex-1 items-center gap-2">
+          <ProjectSwitcher
+            defaultProjectPath={defaultProjectPath ?? undefined}
+            onProjectChange={(path) => {
+              setActiveProject(path);
+              handleProjectChange();
+            }}
+          />
         </div>
         <RalphControls />
         <ConnectionStatusIndicator />
@@ -221,10 +247,39 @@ function MobileTabs({ activeTab, onTabChange }: MobileTabsProps) {
   );
 }
 
-function HomeContent() {
+/**
+ * Get initial filter status for a project from localStorage
+ */
+function getInitialFilterStatus(projectPath: string | null): TicketStatus {
+  if (!projectPath || typeof window === 'undefined') return 'all';
+  const savedFilter = getProjectFilter(projectPath);
+  const status = savedFilter.status;
+  return isValidTicketStatus(status) ? status : 'all';
+}
+
+/**
+ * Main content component - remounts when project changes via key
+ */
+interface ProjectContentProps {
+  projectPath: string | null;
+}
+
+function ProjectContent({ projectPath }: ProjectContentProps) {
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
   const [mobileTab, setMobileTab] = useState<'tickets' | 'details'>('tickets');
-  const { status, setStatus } = useTicketFilter();
+
+  // Initialize filter from localStorage during first render
+  const [statusFilter, setStatusFilter] = useState<TicketStatus>(() =>
+    getInitialFilterStatus(projectPath),
+  );
+
+  // Save filter when it changes
+  const handleFilterChange = (newStatus: TicketStatus) => {
+    setStatusFilter(newStatus);
+    if (projectPath) {
+      setProjectFilter(projectPath, { status: newStatus });
+    }
+  };
 
   // Fetch tickets to get the selected ticket data
   const { data: tickets } = trpc.tickets.list.useQuery();
@@ -246,8 +301,7 @@ function HomeContent() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <Header />
+    <>
       <MobileTabs activeTab={mobileTab} onTabChange={setMobileTab} />
       <main className="flex flex-1 overflow-hidden">
         {/* Desktop: Split view */}
@@ -259,13 +313,13 @@ function HomeContent() {
           )}
         >
           <div className="mb-4">
-            <TicketFilter value={status} onChange={setStatus} />
+            <TicketFilter value={statusFilter} onChange={handleFilterChange} />
           </div>
           <ScrollArea className="h-[calc(100vh-10rem)] lg:h-[calc(100vh-7.5rem)]">
             <TicketList
               onTicketSelect={handleTicketSelect}
               selectedTicketId={selectedTicketId}
-              statusFilter={status}
+              statusFilter={statusFilter}
             />
           </ScrollArea>
         </div>
@@ -283,6 +337,27 @@ function HomeContent() {
           </ScrollArea>
         </div>
       </main>
+    </>
+  );
+}
+
+/**
+ * Home content wrapper that handles project context and remounting
+ */
+function HomeContent() {
+  const { activeProjectPath } = useProjectContext();
+
+  // Use project path as key to force remount when project changes
+  // This ensures filter state is re-initialized from localStorage
+  const projectKey = useMemo(
+    () => activeProjectPath ?? 'default',
+    [activeProjectPath],
+  );
+
+  return (
+    <div className="flex min-h-screen flex-col bg-background">
+      <Header />
+      <ProjectContent key={projectKey} projectPath={activeProjectPath} />
     </div>
   );
 }

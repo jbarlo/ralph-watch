@@ -7,6 +7,7 @@ import {
   type TicketStatusChange,
 } from '@/hooks/use-file-watch';
 import { useNotifications } from '@/hooks/use-notifications';
+import { useProjectContext } from '@/components/providers/ProjectProvider';
 import { cn } from '@/lib/utils';
 
 /**
@@ -70,6 +71,10 @@ export function ConnectionStatusIndicator({
   className,
 }: ConnectionStatusProps) {
   const { showNotification, permission, isSupported } = useNotifications();
+  const { activeProjectPath, defaultProjectPath } = useProjectContext();
+
+  // Use active project or fall back to default
+  const ralphDir = activeProjectPath ?? defaultProjectPath ?? undefined;
 
   // Handle ticket status changes with desktop notifications
   const handleTicketStatusChange = useCallback(
@@ -89,6 +94,7 @@ export function ConnectionStatusIndicator({
 
   const status = useFileWatch({
     onTicketStatusChange: handleTicketStatusChange,
+    ralphDir,
   });
 
   const notificationIndicator = getNotificationIndicator(

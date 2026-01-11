@@ -245,3 +245,25 @@
 - Files added: src/hooks/use-notifications.ts
 - Files modified: src/hooks/use-file-watch.ts, src/components/ConnectionStatus.tsx
 - Verified: `pnpm check` passes (all 49 tests pass)
+## Ticket #19: Multi-project support
+- Created src/lib/projects.ts with localStorage utilities for project persistence
+- Functions: getProjects, saveProjects, addProject, removeProject, get/setActiveProject
+- Per-project filter state persistence: getProjectFilter, setProjectFilter
+- Created src/hooks/use-projects.ts with useSyncExternalStore for reactive project list
+- Created src/components/ProjectSwitcher.tsx dropdown component
+- Uses shadcn Command/Popover components for searchable project selection
+- Shows project name and path, add new projects, remove projects
+- Added x-ralph-dir header support to tRPC for dynamic project selection
+- Updated src/server/trpc.ts createContext to read header and override RALPH_DIR
+- Updated tickets, progress, and ralph routers to use ctx.ralphDir
+- Updated src/app/api/watch/route.ts to accept dir query parameter
+- Per-directory watcher management with cleanup when clients disconnect
+- Created src/components/providers/ProjectProvider.tsx for project context
+- Created src/components/providers/AppProviders.tsx to combine providers
+- Updated src/hooks/use-file-watch.ts to accept ralphDir and reconnect on change
+- Updated page.tsx with ProjectSwitcher in header and key-based remounting
+- Per-project filter state restored when switching projects
+- Fixed test files to use Context type directly instead of createContext()
+- Files added: src/lib/projects.ts, src/hooks/use-projects.ts, src/components/ProjectSwitcher.tsx, src/components/providers/ProjectProvider.tsx, src/components/providers/AppProviders.tsx, src/components/ui/command.tsx, src/components/ui/popover.tsx, src/components/ui/select.tsx
+- Files modified: src/server/trpc.ts, src/server/routers/tickets.ts, src/server/routers/progress.ts, src/server/routers/ralph.ts, src/app/api/watch/route.ts, src/hooks/use-file-watch.ts, src/components/ConnectionStatus.tsx, src/components/providers/TRPCProvider.tsx, src/app/layout.tsx, src/app/page.tsx, src/server/routers/tickets.test.ts, src/server/routers/progress.test.ts
+- Verified: `pnpm check` passes (all 49 tests pass)

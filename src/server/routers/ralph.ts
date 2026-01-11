@@ -1,13 +1,11 @@
 import { spawn } from 'child_process';
-import { router, publicProcedure, getRalphDir } from '../trpc';
+import { router, publicProcedure } from '../trpc';
 import { ok, err, isErr, type Result } from '@/lib/result';
 
 /**
  * Spawn a command in the Ralph directory (fire-and-forget)
  */
-function spawnCommand(command: string): Result<void, string> {
-  const ralphDir = getRalphDir();
-
+function spawnCommand(command: string, ralphDir: string): Result<void, string> {
   try {
     const child = spawn(command, [], {
       cwd: ralphDir,
@@ -33,8 +31,8 @@ export const ralphRouter = router({
    * Run next ticket (ralph-once)
    * Spawns ralph-once and returns immediately
    */
-  runOnce: publicProcedure.mutation(() => {
-    const result = spawnCommand('ralph-once');
+  runOnce: publicProcedure.mutation(({ ctx }) => {
+    const result = spawnCommand('ralph-once', ctx.ralphDir);
     if (isErr(result)) {
       throw new Error(result.error);
     }
@@ -45,8 +43,8 @@ export const ralphRouter = router({
    * Run all pending tickets (ralph)
    * Spawns ralph loop and returns immediately
    */
-  runAll: publicProcedure.mutation(() => {
-    const result = spawnCommand('ralph');
+  runAll: publicProcedure.mutation(({ ctx }) => {
+    const result = spawnCommand('ralph', ctx.ralphDir);
     if (isErr(result)) {
       throw new Error(result.error);
     }

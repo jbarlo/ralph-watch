@@ -1,4 +1,5 @@
 import { initTRPC } from '@trpc/server';
+import type { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
 import superjson from 'superjson';
 import { resolve } from 'path';
 
@@ -10,10 +11,10 @@ export function getRalphDir(): string {
 }
 
 /**
- * Get the absolute path to a file in the Ralph directory
+ * Get the absolute path to a file in a Ralph directory
  */
-export function getRalphFilePath(filename: string): string {
-  return resolve(getRalphDir(), filename);
+export function getRalphFilePath(filename: string, ralphDir?: string): string {
+  return resolve(ralphDir ?? getRalphDir(), filename);
 }
 
 /**
@@ -25,10 +26,14 @@ export interface Context {
 
 /**
  * Create context for each tRPC request
+ * Reads x-ralph-dir header if present, otherwise uses env var
  */
-export function createContext(): Context {
+export function createContext(opts: FetchCreateContextFnOptions): Context {
+  const headerDir = opts.req.headers.get('x-ralph-dir');
+  const ralphDir = headerDir ?? getRalphDir();
+
   return {
-    ralphDir: getRalphDir(),
+    ralphDir,
   };
 }
 

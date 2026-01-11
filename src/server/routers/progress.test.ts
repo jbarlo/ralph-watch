@@ -2,17 +2,18 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, rm, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { progressRouter } from './progress';
-import { createContext } from '../trpc';
+import type { Context } from '../trpc';
 
 const TEST_DIR = join(process.cwd(), '.test-progress');
 const PROGRESS_FILE = join(TEST_DIR, 'progress.txt');
 
 /**
- * Create a test caller with RALPH_DIR set to test directory
+ * Create a test caller with context pointing to test directory
  */
 function createTestCaller() {
-  process.env.RALPH_DIR = TEST_DIR;
-  const ctx = createContext();
+  const ctx: Context = {
+    ralphDir: TEST_DIR,
+  };
   return progressRouter.createCaller(ctx);
 }
 
@@ -23,7 +24,6 @@ describe('progress router', () => {
 
   afterEach(async () => {
     await rm(TEST_DIR, { recursive: true, force: true });
-    delete process.env.RALPH_DIR;
   });
 
   describe('read', () => {

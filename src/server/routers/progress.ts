@@ -10,8 +10,8 @@ export const progressRouter = router({
    * Read progress.txt content
    * Returns empty string if file is missing
    */
-  read: publicProcedure.query(async () => {
-    const filePath = getRalphFilePath('progress.txt');
+  read: publicProcedure.query(async ({ ctx }) => {
+    const filePath = getRalphFilePath('progress.txt', ctx.ralphDir);
 
     const result = await tryCatchAsync(async () => {
       const content = await readFile(filePath, 'utf-8');

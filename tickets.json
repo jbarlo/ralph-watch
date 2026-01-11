@@ -151,7 +151,7 @@
       "id": 19,
       "title": "Multi-project support",
       "description": "Add project switcher. Store list of project paths in localStorage. Dropdown to switch RALPH_DIR. Add/remove projects. Each project remembers its own filter state.",
-      "status": "pending",
+      "status": "completed",
       "priority": 99
     }
   ]

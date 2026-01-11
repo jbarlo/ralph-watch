@@ -35,6 +35,10 @@ export interface UseFileWatchOptions {
    * Callback when a ticket's status changes to 'completed' or 'failed'
    */
   onTicketStatusChange?: (change: TicketStatusChange) => void;
+  /**
+   * Project directory to watch (passed as query param to SSE endpoint)
+   */
+  ralphDir?: string;
 }
 
 /**
@@ -43,7 +47,7 @@ export interface UseFileWatchOptions {
  * Connects to /api/watch SSE endpoint.
  * On 'tickets' event, invalidates tickets query.
  * On 'progress' event, invalidates progress query.
- * Automatically reconnects on disconnect.
+ * Automatically reconnects on disconnect and when ralphDir changes.
  *
  * @param options - Optional callbacks for status changes
  * @returns Connection status
@@ -62,13 +66,6 @@ export function useFileWatch(options?: UseFileWatchOptions): ConnectionStatus {
   useEffect(() => {
     optionsRef.current = options;
   });
-
-  // Reconnect function that schedules a new connection
-  const scheduleReconnect = useCallback(() => {
-    reconnectTimeoutRef.current = setTimeout(() => {
-      setStatus('connecting');
-    }, 3000);
-  }, []);
 
   /**
    * Check for ticket status changes and trigger callback if needed
@@ -112,22 +109,32 @@ export function useFileWatch(options?: UseFileWatchOptions): ConnectionStatus {
     }
   }, [queryClient]);
 
+  // Main connection effect - re-runs when ralphDir changes
   useEffect(() => {
-    // Clean up existing connection
+    // Clean up any existing connection
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
+      eventSourceRef.current = null;
     }
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
     }
 
-    // Only connect when status is 'connecting'
-    if (status !== 'connecting') {
-      return;
-    }
+    // Clear previous ticket states when directory changes
+    previousTicketsRef.current.clear();
 
-    const eventSource = new EventSource('/api/watch');
+    // Build URL with optional dir parameter
+    const currentDir = options?.ralphDir;
+    const url = currentDir
+      ? `/api/watch?dir=${encodeURIComponent(currentDir)}`
+      : '/api/watch';
+
+    console.log('[useFileWatch] Connecting to', url);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentionally setting status as part of connection setup
+    setStatus('connecting');
+
+    const eventSource = new EventSource(url);
     eventSourceRef.current = eventSource;
 
     // Handle connection opened
@@ -192,21 +199,34 @@ export function useFileWatch(options?: UseFileWatchOptions): ConnectionStatus {
       }
     });
 
-    // Handle connection errors
+    // Handle connection errors with auto-reconnect
     eventSource.onerror = () => {
       console.log('[useFileWatch] Connection error, will reconnect...');
       setStatus('disconnected');
       eventSource.close();
-      scheduleReconnect();
+
+      // Schedule reconnect after delay
+      reconnectTimeoutRef.current = setTimeout(() => {
+        // Create a new connection by forcing re-render
+        // The cleanup will run and then this effect will run again
+        if (eventSourceRef.current === null) {
+          // Trigger reconnect by updating state
+          setStatus('connecting');
+        }
+      }, 3000);
     };
 
     return () => {
+      console.log('[useFileWatch] Cleaning up connection');
       eventSource.close();
+      eventSourceRef.current = null;
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
       }
     };
-  }, [status, queryClient, scheduleReconnect, checkTicketStatusChanges]);
+    // Re-run when ralphDir changes to establish new connection
+  }, [options?.ralphDir, queryClient, checkTicketStatusChanges]);
 
   return status;
 }

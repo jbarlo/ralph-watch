@@ -14,22 +14,32 @@ function formatSSE(event: WatchEventType, data: string): string {
 }
 
 /**
- * Global file watcher instance (singleton per process)
- * We use a single watcher and broadcast to all connected clients
+ * Per-directory watcher management
+ * Each directory gets its own watcher and client set
  */
-let globalWatcher: FSWatcher | null = null;
-const clients = new Set<ReadableStreamDefaultController<Uint8Array>>();
+interface DirectoryWatcher {
+  watcher: FSWatcher;
+  clients: Set<ReadableStreamDefaultController<Uint8Array>>;
+  ralphDir: string;
+}
+
+const watchers = new Map<string, DirectoryWatcher>();
 
 /**
- * Initialize the global file watcher if not already running
+ * Get or create a watcher for a specific directory
  */
-function initWatcher(): void {
-  if (globalWatcher) return;
+function getOrCreateWatcher(ralphDir: string): DirectoryWatcher {
+  const existing = watchers.get(ralphDir);
+  if (existing) {
+    return existing;
+  }
 
-  const ticketsPath = getRalphFilePath('tickets.json');
-  const progressPath = getRalphFilePath('progress.txt');
+  const ticketsPath = getRalphFilePath('tickets.json', ralphDir);
+  const progressPath = getRalphFilePath('progress.txt', ralphDir);
 
-  globalWatcher = watch([ticketsPath, progressPath], {
+  const clients = new Set<ReadableStreamDefaultController<Uint8Array>>();
+
+  const watcher = watch([ticketsPath, progressPath], {
     persistent: true,
     ignoreInitial: true,
     awaitWriteFinish: {
@@ -38,7 +48,7 @@ function initWatcher(): void {
     },
   });
 
-  globalWatcher.on('change', (path) => {
+  watcher.on('change', (path) => {
     const filename = path.endsWith('tickets.json') ? 'tickets' : 'progress';
     const message = formatSSE(
       filename,
@@ -46,7 +56,7 @@ function initWatcher(): void {
     );
     const encoded = new TextEncoder().encode(message);
 
-    // Broadcast to all connected clients
+    // Broadcast to all connected clients for this directory
     for (const controller of clients) {
       try {
         controller.enqueue(encoded);
@@ -57,8 +67,8 @@ function initWatcher(): void {
     }
   });
 
-  globalWatcher.on('error', (error: unknown) => {
-    console.error('[watch] File watcher error:', error);
+  watcher.on('error', (error: unknown) => {
+    console.error(`[watch] File watcher error for ${ralphDir}:`, error);
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error';
     const message = formatSSE(
@@ -76,40 +86,67 @@ function initWatcher(): void {
     }
   });
 
-  console.log(`[watch] File watcher started for ${getRalphDir()}`);
+  console.log(`[watch] File watcher started for ${ralphDir}`);
+
+  const directoryWatcher: DirectoryWatcher = {
+    watcher,
+    clients,
+    ralphDir,
+  };
+
+  watchers.set(ralphDir, directoryWatcher);
+  return directoryWatcher;
+}
+
+/**
+ * Clean up a watcher if no clients are connected
+ */
+function maybeCleanupWatcher(ralphDir: string): void {
+  const directoryWatcher = watchers.get(ralphDir);
+  if (directoryWatcher && directoryWatcher.clients.size === 0) {
+    console.log(`[watch] Cleaning up watcher for ${ralphDir}`);
+    void directoryWatcher.watcher.close();
+    watchers.delete(ralphDir);
+  }
 }
 
 /**
  * SSE endpoint for file watching
- * GET /api/watch - Connect to receive file change events
+ * GET /api/watch?dir=/path/to/project - Connect to receive file change events
  */
-export async function GET(): Promise<Response> {
-  // Initialize watcher on first connection
-  initWatcher();
+export async function GET(request: Request): Promise<Response> {
+  const url = new URL(request.url);
+  const ralphDir = url.searchParams.get('dir') ?? getRalphDir();
+
+  // Get or create watcher for this directory
+  const directoryWatcher = getOrCreateWatcher(ralphDir);
 
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
       // Register this client
-      clients.add(controller);
+      directoryWatcher.clients.add(controller);
 
       // Send initial connected event
       const connectMessage = formatSSE(
         'connected',
         JSON.stringify({
           timestamp: Date.now(),
-          ralphDir: getRalphDir(),
+          ralphDir,
         }),
       );
       controller.enqueue(encoder.encode(connectMessage));
     },
     cancel(controller) {
       // Clean up when client disconnects
-      clients.delete(controller);
+      directoryWatcher.clients.delete(controller);
       console.log(
-        `[watch] Client disconnected. Active clients: ${clients.size}`,
+        `[watch] Client disconnected from ${ralphDir}. Active clients: ${directoryWatcher.clients.size}`,
       );
+
+      // Clean up watcher if no more clients
+      maybeCleanupWatcher(ralphDir);
     },
   });
 
