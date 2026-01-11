@@ -221,7 +221,7 @@
       "id": 32,
       "title": "Remove old fire-and-forget ralph router",
       "description": "Delete or replace src/server/routers/ralph.ts now that ProcessRunner handles execution. Update router index to use new process router. Verify RalphControls works end-to-end. Clean up any unused imports.",
-      "status": "pending",
+      "status": "completed",
       "priority": 9
     }
   ]

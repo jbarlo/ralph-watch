@@ -405,3 +405,12 @@
 - Files added: src/components/RalphControls.test.tsx, src/components/ui/collapsible.tsx
 - Files modified: src/components/RalphControls.tsx
 - Verified: `pnpm check` passes (all 186 tests pass)
+
+## Ticket #32: Remove old fire-and-forget ralph router
+- Deleted src/server/routers/ralph.ts (old fire-and-forget runOnce/runAll procedures)
+- Removed ralphRouter import and registration from src/server/routers/_app.ts
+- RalphControls already uses process.start/kill from ProcessRunner - no changes needed
+- Verified no remaining references to ralphRouter or trpc.ralph in codebase
+- Files deleted: src/server/routers/ralph.ts
+- Files modified: src/server/routers/_app.ts
+- Verified: `pnpm check` passes (all 186 tests pass)

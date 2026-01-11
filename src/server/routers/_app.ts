@@ -2,7 +2,6 @@ import { router } from '../trpc';
 import { ticketsRouter } from './tickets';
 import { progressRouter } from './progress';
 import { configRouter } from './config';
-import { ralphRouter } from './ralph';
 import { processRouter } from './process';
 
 /**
@@ -12,7 +11,6 @@ export const appRouter = router({
   tickets: ticketsRouter,
   progress: progressRouter,
   config: configRouter,
-  ralph: ralphRouter,
   process: processRouter,
 });
 
