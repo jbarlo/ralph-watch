@@ -2,6 +2,12 @@ import { initTRPC } from '@trpc/server';
 import type { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
 import superjson from 'superjson';
 import { resolve } from 'path';
+import { getEnv } from '@/lib/env';
+
+// Validate environment variables on server startup (skip in test environment)
+if (process.env.NODE_ENV !== 'test') {
+  getEnv();
+}
 
 /**
  * Get the Ralph directory from RALPH_DIR env var or use cwd

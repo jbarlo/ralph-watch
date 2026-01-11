@@ -427,3 +427,17 @@
 - Files added: .env.example
 - Files modified: src/server/services/process-runner.ts, src/server/services/process-runner.test.ts
 - Verified: `pnpm check` passes (all 195 tests pass)
+
+## Ticket #34: Validate required env vars on startup
+- Created src/lib/env.ts with Zod schema for environment validation
+- EnvSchema validates: RALPH_BIN (required), RALPH_DIR (optional), REACT_EDITOR (optional)
+- parseEnv() function parses and validates with custom error messages
+- getEnv() caches parsed env, throws early if missing required vars
+- Error message format: "Missing RALPH_BIN - set path to ralph bin directory"
+- Imported and called getEnv() in src/server/trpc.ts on server startup
+- Skips validation in test environment (NODE_ENV=test) to avoid breaking tests
+- Created src/lib/env.test.ts with 8 tests for validation and caching behavior
+- Tests verify: valid parsing, missing var errors, caching, reset functionality
+- Files added: src/lib/env.ts, src/lib/env.test.ts
+- Files modified: src/server/trpc.ts
+- Verified: `pnpm check` passes (all 203 tests pass)

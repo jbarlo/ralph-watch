@@ -235,7 +235,7 @@
       "id": 34,
       "title": "Validate required env vars on startup",
       "description": "Create src/lib/env.ts that validates important env vars exist on server startup. Check for RALPH_BIN (required). Use Zod to parse process.env with clear error messages. Export typed env object. Import in src/server/trpc.ts or a server-side layout to ensure it runs early. If missing, throw with helpful message like 'Missing RALPH_BIN - set path to ralph bin directory'. Add test that verifies validation works.",
-      "status": "pending",
+      "status": "completed",
       "priority": 2
     }
   ]
