@@ -165,3 +165,16 @@
 - Files added: src/components/EditTicketForm.tsx
 - Files modified: src/app/page.tsx
 - Verified: `pnpm check` passes (all 49 tests pass)
+
+## Ticket #11: Delete ticket functionality
+- Added shadcn AlertDialog component for confirmation dialogs
+- Created src/components/DeleteTicketButton.tsx with tRPC integration
+- Uses AlertDialog for confirmation before deleting
+- Calls trpc.tickets.delete.useMutation() on confirm
+- Toast notifications for success and error states
+- Integrated delete button into DetailPanel next to edit button
+- Added onTicketDeleted callback to clear selection and return to ticket list after delete
+- Ran pnpm format to fix shadcn generated files formatting
+- Files added: src/components/DeleteTicketButton.tsx, src/components/ui/alert-dialog.tsx
+- Files modified: src/app/page.tsx, src/components/ui/button.tsx
+- Verified: `pnpm check` passes (all 49 tests pass)

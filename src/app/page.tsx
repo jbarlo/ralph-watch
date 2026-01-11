@@ -6,6 +6,7 @@ import type { Ticket } from '@/lib/schemas';
 import { TicketList } from '@/components/TicketList';
 import { ProgressViewer } from '@/components/ProgressViewer';
 import { EditTicketForm } from '@/components/EditTicketForm';
+import { DeleteTicketButton } from '@/components/DeleteTicketButton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -65,9 +66,14 @@ function Header() {
 interface DetailPanelProps {
   ticket: Ticket | null;
   onTicketUpdated?: () => void;
+  onTicketDeleted?: () => void;
 }
 
-function DetailPanel({ ticket, onTicketUpdated }: DetailPanelProps) {
+function DetailPanel({
+  ticket,
+  onTicketUpdated,
+  onTicketDeleted,
+}: DetailPanelProps) {
   const [isEditing, setIsEditing] = useState(false);
 
   const handleEditSuccess = () => {
@@ -142,6 +148,11 @@ function DetailPanel({ ticket, onTicketUpdated }: DetailPanelProps) {
               >
                 Edit
               </Button>
+              <DeleteTicketButton
+                ticketId={ticket.id}
+                ticketTitle={ticket.title}
+                onSuccess={onTicketDeleted}
+              />
             </div>
           </div>
         </CardHeader>
@@ -222,6 +233,11 @@ export default function Home() {
     }
   };
 
+  const handleTicketDeleted = () => {
+    setSelectedTicketId(null);
+    setMobileTab('tickets');
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
@@ -249,7 +265,10 @@ export default function Home() {
           )}
         >
           <ScrollArea className="h-[calc(100vh-7rem)] lg:h-[calc(100vh-4.5rem)]">
-            <DetailPanel ticket={selectedTicket} />
+            <DetailPanel
+              ticket={selectedTicket}
+              onTicketDeleted={handleTicketDeleted}
+            />
           </ScrollArea>
         </div>
       </main>

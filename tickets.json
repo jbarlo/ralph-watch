@@ -95,7 +95,7 @@
       "id": 11,
       "title": "Delete ticket functionality",
       "description": "Add delete button to tickets. Confirmation dialog before delete. Call tRPC delete mutation. Show toast on success.",
-      "status": "pending",
+      "status": "completed",
       "priority": 6
     },
     {
