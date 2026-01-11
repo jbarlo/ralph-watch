@@ -1,0 +1,9 @@
+# Ralph Progress Log
+
+## Ticket #1: Init Next.js project with pnpm
+- Created Next.js 16 app with App Router, TypeScript, Tailwind, ESLint, pnpm
+- Moved project contents from ralph-watch-ui/ subdirectory to workspace root
+- Downgraded Tailwind from v4 to v3 due to native binding issues in NixOS environment
+- Added tailwind.config.ts, updated postcss.config.mjs and globals.css for Tailwind v3
+- Files added: package.json, tsconfig.json, next.config.ts, eslint.config.mjs, postcss.config.mjs, tailwind.config.ts, src/, public/
+- Verified: `pnpm build` and `pnpm lint` pass

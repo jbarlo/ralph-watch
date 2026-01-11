@@ -1,0 +1,158 @@
+{
+  "tickets": [
+    {
+      "id": 1,
+      "title": "Init Next.js project with pnpm",
+      "description": "Create Next.js 14 app with App Router, TypeScript, pnpm. Use `pnpm create next-app@latest ralph-watch-ui --typescript --tailwind --eslint --app --src-dir --import-alias '@/*'`. Move contents up if nested.",
+      "status": "completed",
+      "priority": 1
+    },
+    {
+      "id": 20,
+      "title": "ESLint + Prettier + strict TS + quality check",
+      "description": "Install prettier, eslint-config-prettier, eslint-plugin-prettier, lodash, @types/lodash. Create .prettierrc (singleQuote, semi, tabWidth 2). Update .eslintrc to extend prettier. Enable noUncheckedIndexedAccess in tsconfig.json compilerOptions. Add scripts: `format`, `lint`, `typecheck` (tsc --noEmit), `check` (runs all). `pnpm check` must pass after every ticket.",
+      "status": "pending",
+      "priority": 2
+    },
+    {
+      "id": 21,
+      "title": "Result type utilities for railway-oriented flow",
+      "description": "Create src/lib/result.ts with Result<T, E> type (ok/err discriminated union). Helper functions: ok(value), err(error), isOk(), isErr(), map(), flatMap(), mapErr(). Use for fallible operations instead of throwing.",
+      "status": "pending",
+      "priority": 3
+    },
+    {
+      "id": 22,
+      "title": "Test setup with vitest",
+      "description": "Install vitest, @testing-library/react, @testing-library/dom. Configure vitest.config.ts. Add `test` script to package.json. Add `test` to the `check` script. Create example integration test for a tRPC endpoint once available.",
+      "status": "pending",
+      "priority": 3
+    },
+    {
+      "id": 2,
+      "title": "Add shadcn/ui and configure",
+      "description": "Install shadcn/ui with `pnpm dlx shadcn@latest init`. Add components: button, card, input, textarea, badge, scroll-area, toast. Use default theme.",
+      "status": "pending",
+      "priority": 2
+    },
+    {
+      "id": 3,
+      "title": "Clean .gitignore",
+      "description": "Ensure .gitignore covers: node_modules, .next, .env*.local, *.tsbuildinfo, .DS_Store. Keep ralph files (tickets.json, progress.txt, RALPH.md) tracked.",
+      "status": "pending",
+      "priority": 2
+    },
+    {
+      "id": 4,
+      "title": "Zod schemas for ralph files",
+      "description": "Create src/lib/schemas.ts with loose Zod schemas. Ticket: id (number), title (string), description (string optional), status (string, default 'pending'), priority (number optional). Use .passthrough() to allow unknown fields. TicketsFile: tickets array. Export types.",
+      "status": "pending",
+      "priority": 3
+    },
+    {
+      "id": 5,
+      "title": "Setup tRPC with file system access",
+      "description": "Install @trpc/server, @trpc/client, @trpc/react-query, @tanstack/react-query, superjson. Create src/server/trpc.ts router, src/app/api/trpc/[trpc]/route.ts handler. Add tRPC provider to layout. Use RALPH_DIR env var (default cwd) for target directory.",
+      "status": "pending",
+      "priority": 3
+    },
+    {
+      "id": 6,
+      "title": "tRPC procedures for tickets CRUD",
+      "description": "In src/server/routers/tickets.ts: list() - read/parse tickets.json with zod schema; get(id) - single ticket; create(title, description?, priority?) - add ticket with next id; update(id, data) - partial update; delete(id) - remove ticket. All write back to tickets.json.",
+      "status": "pending",
+      "priority": 4
+    },
+    {
+      "id": 7,
+      "title": "tRPC procedure for progress.txt",
+      "description": "In src/server/routers/progress.ts: read() - return progress.txt content as string; Returns empty string if file missing.",
+      "status": "pending",
+      "priority": 4
+    },
+    {
+      "id": 8,
+      "title": "Ticket list view component",
+      "description": "Create src/components/TicketList.tsx. Fetch tickets via tRPC. Show cards with title, status badge (color-coded), priority. Click to expand/select. Show empty state if no tickets.",
+      "status": "pending",
+      "priority": 5
+    },
+    {
+      "id": 9,
+      "title": "Add ticket form",
+      "description": "Create src/components/AddTicketForm.tsx. Fields: title (required), description (textarea), priority (number input, default 1). Submit via tRPC mutation. Clear form on success, show toast.",
+      "status": "pending",
+      "priority": 5
+    },
+    {
+      "id": 10,
+      "title": "Edit ticket functionality",
+      "description": "Add edit mode to ticket detail/card. Inline editing or modal. Can edit title, description, priority, status. Save via tRPC update mutation.",
+      "status": "pending",
+      "priority": 6
+    },
+    {
+      "id": 11,
+      "title": "Delete ticket functionality",
+      "description": "Add delete button to tickets. Confirmation dialog before delete. Call tRPC delete mutation. Show toast on success.",
+      "status": "pending",
+      "priority": 6
+    },
+    {
+      "id": 12,
+      "title": "Progress.txt viewer component",
+      "description": "Create src/components/ProgressViewer.tsx. Fetch content via tRPC. Render as markdown or preformatted text. Use scroll-area, auto-scroll to bottom option.",
+      "status": "pending",
+      "priority": 5
+    },
+    {
+      "id": 13,
+      "title": "SSE endpoint for file watching",
+      "description": "Create src/app/api/watch/route.ts SSE endpoint. Use chokidar to watch tickets.json and progress.txt in RALPH_DIR. Send events on file changes. Client reconnects on disconnect.",
+      "status": "pending",
+      "priority": 7
+    },
+    {
+      "id": 14,
+      "title": "Live updates via SSE",
+      "description": "Create useFileWatch hook that connects to SSE endpoint. On 'tickets' event, invalidate tickets query. On 'progress' event, invalidate progress query. Show connection status indicator.",
+      "status": "pending",
+      "priority": 8
+    },
+    {
+      "id": 15,
+      "title": "Status filtering",
+      "description": "Add filter controls to ticket list. Filter by status (all, pending, in_progress, completed, failed). Could be tabs or dropdown. Persist filter in URL params.",
+      "status": "pending",
+      "priority": 9
+    },
+    {
+      "id": 16,
+      "title": "Execute ralph commands from UI",
+      "description": "Add 'Run Next Ticket' and 'Run All' buttons. tRPC procedure that spawns `ralph-once` or `ralph` in RALPH_DIR. Return immediately (fire-and-forget). File watcher will pick up changes.",
+      "status": "pending",
+      "priority": 9
+    },
+    {
+      "id": 17,
+      "title": "Desktop notifications",
+      "description": "Request notification permission on load. When SSE detects ticket status change to 'completed' or 'failed', show desktop notification with ticket title. Only if tab not focused.",
+      "status": "pending",
+      "priority": 10
+    },
+    {
+      "id": 18,
+      "title": "Main page layout",
+      "description": "Design src/app/page.tsx layout. Split view: ticket list on left, detail/progress on right. Or tabs. Header with project path display. Responsive for smaller screens.",
+      "status": "pending",
+      "priority": 4
+    },
+    {
+      "id": 19,
+      "title": "Multi-project support",
+      "description": "Add project switcher. Store list of project paths in localStorage. Dropdown to switch RALPH_DIR. Add/remove projects. Each project remembers its own filter state.",
+      "status": "pending",
+      "priority": 99
+    }
+  ]
+}
