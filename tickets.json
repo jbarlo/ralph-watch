@@ -200,7 +200,7 @@
       "id": 29,
       "title": "useProcessOutput hook",
       "description": "Create src/hooks/use-process-output.ts. Hook takes processId. Connects to SSE endpoint /api/process/[id]/stream. Accumulates output lines in state. Returns { lines: ProcessOutputLine[], isConnected: boolean, exitCode: number | null }. Cleans up SSE connection on unmount or id change. Write test with mock SSE (or integration test with real endpoint).",
-      "status": "pending",
+      "status": "completed",
       "priority": 6
     },
     {

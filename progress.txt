@@ -353,3 +353,19 @@
 - Tests verify: 404 for unknown, connected event, output streaming, exit events, stderr capture
 - Files added: src/app/api/process/[id]/stream/route.ts, src/app/api/process/[id]/stream/route.test.ts
 - Verified: `pnpm check` passes (all 126 tests pass)
+
+## Ticket #29: useProcessOutput hook
+- Created src/hooks/use-process-output.ts for subscribing to process output via SSE
+- Hook takes processId (string | null | undefined), returns lines, isConnected, exitCode, connectionStatus, clearLines
+- Connects to /api/process/[id]/stream SSE endpoint when processId is truthy
+- Accumulates ProcessOutputLine[] in state from 'output' events
+- Handles 'connected' event to update connection status
+- Handles 'exit' event to store exit code and close connection
+- Handles connection errors by setting status to 'disconnected'
+- Cleans up EventSource on unmount or processId change
+- Resets state (lines, exitCode, connectionStatus) when processId changes
+- Returns stable empty values when processId is null/undefined
+- Created src/hooks/use-process-output.test.ts with 16 tests using mocked EventSource
+- Tests verify: connection behavior, event handling, state management, cleanup
+- Files added: src/hooks/use-process-output.ts, src/hooks/use-process-output.test.ts
+- Verified: `pnpm check` passes (all 142 tests pass)
