@@ -37,3 +37,15 @@
 - Created src/lib/result.test.ts with 16 integration tests for Result utilities
 - Files added: vitest.config.ts, src/lib/result.test.ts
 - Verified: `pnpm check` passes (all 16 tests pass)
+
+## Ticket #2: Add shadcn/ui and configure
+- Initialized shadcn/ui with `pnpm dlx shadcn@latest init` (Neutral color theme)
+- Added components: button, card, input, textarea, badge, scroll-area, toast (+ toaster)
+- Created components.json config and src/lib/utils.ts (cn utility)
+- Created src/hooks/use-toast.ts for toast functionality
+- Fixed tailwind.config.ts to use ESM import for tailwindcss-animate
+- Fixed eslint warning in use-toast.ts
+- Ran pnpm format to fix prettier formatting issues
+- Files added: components.json, src/lib/utils.ts, src/components/ui/*.tsx, src/hooks/use-toast.ts
+- Files modified: tailwind.config.ts, src/app/globals.css, package.json
+- Verified: `pnpm check` passes (lint + typecheck + tests)

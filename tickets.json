@@ -32,7 +32,7 @@
       "id": 2,
       "title": "Add shadcn/ui and configure",
       "description": "Install shadcn/ui with `pnpm dlx shadcn@latest init`. Add components: button, card, input, textarea, badge, scroll-area, toast. Use default theme.",
-      "status": "pending",
+      "status": "completed",
       "priority": 2
     },
     {
