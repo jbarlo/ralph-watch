@@ -1,11 +1,13 @@
 import { router } from '../trpc';
 import { ticketsRouter } from './tickets';
+import { progressRouter } from './progress';
 
 /**
  * Main app router - combines all sub-routers
  */
 export const appRouter = router({
   tickets: ticketsRouter,
+  progress: progressRouter,
 });
 
 /**

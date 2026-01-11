@@ -67,7 +67,7 @@
       "id": 7,
       "title": "tRPC procedure for progress.txt",
       "description": "In src/server/routers/progress.ts: read() - return progress.txt content as string; Returns empty string if file missing.",
-      "status": "pending",
+      "status": "completed",
       "priority": 4
     },
     {

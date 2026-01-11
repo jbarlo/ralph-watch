@@ -93,3 +93,13 @@
 - Files added: src/server/routers/tickets.ts, src/server/routers/tickets.test.ts
 - Files modified: src/server/routers/_app.ts
 - Verified: `pnpm check` passes (all 45 tests pass)
+
+## Ticket #7: tRPC procedure for progress.txt
+- Created src/server/routers/progress.ts with read() procedure
+- read() returns progress.txt content as string, empty string if file missing
+- Uses tryCatchAsync/isErr for railway-oriented error handling
+- Registered progress router in src/server/routers/_app.ts
+- Created src/server/routers/progress.test.ts with 4 integration tests
+- Files added: src/server/routers/progress.ts, src/server/routers/progress.test.ts
+- Files modified: src/server/routers/_app.ts
+- Verified: `pnpm check` passes (all 49 tests pass)
