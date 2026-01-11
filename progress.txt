@@ -79,3 +79,17 @@
 - Files added: src/server/trpc.ts, src/server/routers/_app.ts, src/app/api/trpc/[trpc]/route.ts, src/lib/trpc.ts, src/components/providers/TRPCProvider.tsx
 - Files modified: src/app/layout.tsx, package.json
 - Verified: `pnpm check` passes (all 33 tests pass)
+
+## Ticket #6: tRPC procedures for tickets CRUD
+- Created src/server/routers/tickets.ts with full CRUD operations
+- list() - reads/parses tickets.json with Zod schema validation
+- get(id) - returns single ticket by id, throws if not found
+- create(title, description?, priority?) - adds ticket with auto-incremented id
+- update(id, data) - partial update, preserves unknown fields
+- delete(id) - removes ticket by id
+- All operations use Result type for railway-oriented error handling
+- Registered tickets router in src/server/routers/_app.ts
+- Created src/server/routers/tickets.test.ts with 12 integration tests
+- Files added: src/server/routers/tickets.ts, src/server/routers/tickets.test.ts
+- Files modified: src/server/routers/_app.ts
+- Verified: `pnpm check` passes (all 45 tests pass)
