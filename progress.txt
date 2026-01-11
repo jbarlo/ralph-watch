@@ -369,3 +369,22 @@
 - Tests verify: connection behavior, event handling, state management, cleanup
 - Files added: src/hooks/use-process-output.ts, src/hooks/use-process-output.test.ts
 - Verified: `pnpm check` passes (all 142 tests pass)
+
+## Ticket #30: ProcessOutputViewer component
+- Created src/components/ProcessOutputViewer.tsx for real-time process output display
+- Uses useProcessOutput hook to subscribe to process output via SSE
+- Renders output lines in ScrollArea with monospace font
+- stdout lines in default color, stderr lines in red (text-destructive)
+- Auto-scroll to bottom when new output arrives (with toggle button)
+- Shows "Process exited with code X" with color: green for 0, red for non-zero
+- Connection status badge: Connected/Connecting.../Disconnected
+- Props: processId, height, title, showCard, initialAutoScroll
+- Empty states: "No process selected", "Connecting...", "No output yet"
+- Installed @testing-library/jest-dom for DOM matchers in component tests
+- Created src/test-setup.ts to configure jest-dom with vitest
+- Updated vitest.config.ts to use setupFiles
+- Created src/components/ProcessOutputViewer.test.tsx with 24 tests
+- Tests verify: rendering, output display, stderr styling, exit codes, connection status, auto-scroll toggle
+- Files added: src/components/ProcessOutputViewer.tsx, src/components/ProcessOutputViewer.test.tsx, src/test-setup.ts
+- Files modified: vitest.config.ts, package.json
+- Verified: `pnpm check` passes (all 166 tests pass)

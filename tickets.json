@@ -207,7 +207,7 @@
       "id": 30,
       "title": "ProcessOutputViewer component",
       "description": "Create src/components/ProcessOutputViewer.tsx. Takes processId prop. Uses useProcessOutput hook. Renders output lines in scroll-area with monospace font. stdout in default color, stderr in red. Auto-scroll to bottom (with toggle). Shows 'Process exited with code X' when done. Shows connecting/disconnected state. Write component test that mocks the hook and verifies rendering.",
-      "status": "pending",
+      "status": "completed",
       "priority": 7
     },
     {
