@@ -103,3 +103,15 @@
 - Files added: src/server/routers/progress.ts, src/server/routers/progress.test.ts
 - Files modified: src/server/routers/_app.ts
 - Verified: `pnpm check` passes (all 49 tests pass)
+
+## Ticket #8: Ticket list view component
+- Created src/components/TicketList.tsx with tRPC integration
+- Fetches tickets via trpc.tickets.list.useQuery()
+- Displays cards with title, color-coded status badge, and priority
+- Status colors: pending (yellow), in_progress (blue), completed (green), failed (red)
+- Click to expand/select ticket, shows description when selected
+- Supports controlled and uncontrolled selection modes via props
+- Empty state when no tickets exist
+- Loading and error states handled
+- Files added: src/components/TicketList.tsx
+- Verified: `pnpm check` passes (all 49 tests pass)

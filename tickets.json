@@ -74,7 +74,7 @@
       "id": 8,
       "title": "Ticket list view component",
       "description": "Create src/components/TicketList.tsx. Fetch tickets via tRPC. Show cards with title, status badge (color-coded), priority. Click to expand/select. Show empty state if no tickets.",
-      "status": "pending",
+      "status": "completed",
       "priority": 5
     },
     {
