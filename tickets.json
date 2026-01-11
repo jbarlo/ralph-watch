@@ -153,6 +153,13 @@
       "description": "Add project switcher. Store list of project paths in localStorage. Dropdown to switch RALPH_DIR. Add/remove projects. Each project remembers its own filter state.",
       "status": "completed",
       "priority": 99
+    },
+    {
+      "id": 23,
+      "title": "Fix useSyncExternalStore infinite loop in useProjects",
+      "description": "Bug: getProjectsSnapshot() calls getProjects() which returns a new array reference each time (from JSON.parse). React sees different reference, re-renders, infinite loop. Fix: cache projects at module level. Add `let projectsCache: Project[] = EMPTY_PROJECTS`. getProjectsSnapshot() returns projectsCache. Create refreshCache() that calls `projectsCache = getProjects()` then notifySubscribers(). All mutation functions (addProject, removeProject, setActiveProject) call refreshCache() instead of notifySubscribers(). Initialize cache on first client-side read. Write a test in src/hooks/use-projects.test.ts that renders the useProjects hook using @testing-library/react renderHook(). The test should verify no errors are thrown and that calling the hook multiple times returns stable references. Run `pnpm test` to verify the fix.",
+      "status": "completed",
+      "priority": 1
     }
   ]
 }

@@ -29,16 +29,39 @@ function notifySubscribers(): void {
   }
 }
 
+// Must be a stable reference to avoid infinite re-render loop
+const EMPTY_PROJECTS: Project[] = [];
+
+// Cache for projects to avoid returning new array references on each call
+// This fixes useSyncExternalStore infinite loop caused by JSON.parse creating new arrays
+let projectsCache: Project[] = EMPTY_PROJECTS;
+let projectsCacheInitialized = false;
+
+/**
+ * Refresh the projects cache from localStorage and notify subscribers
+ */
+function refreshCache(): void {
+  projectsCache = getProjects();
+  projectsCacheInitialized = true;
+  notifySubscribers();
+}
+
 /**
  * Get snapshot for SSR-safe localStorage reading
+ * Returns cached value to ensure stable references
  */
 function getProjectsSnapshot(): Project[] {
-  if (typeof window === 'undefined') return [];
-  return getProjects();
+  if (typeof window === 'undefined') return EMPTY_PROJECTS;
+  // Initialize cache on first client-side read
+  if (!projectsCacheInitialized) {
+    projectsCache = getProjects();
+    projectsCacheInitialized = true;
+  }
+  return projectsCache;
 }
 
 function getServerSnapshot(): Project[] {
-  return [];
+  return EMPTY_PROJECTS;
 }
 
 /**
@@ -95,9 +118,9 @@ export function useProjects() {
    */
   const addProject = useCallback((path: string, name?: string): Project => {
     const project = addProjectToStorage(path, name ?? deriveProjectName(path));
-    // Refresh cache and notify
+    // Refresh cache (includes activeProjectCache) and notify
     activeProjectCache = getActiveProject();
-    notifySubscribers();
+    refreshCache();
     return project;
   }, []);
 
@@ -116,7 +139,7 @@ export function useProjects() {
         activeProjectCache = null;
       }
     }
-    notifySubscribers();
+    refreshCache();
   }, []);
 
   /**
@@ -125,7 +148,7 @@ export function useProjects() {
   const setActiveProject = useCallback((path: string): void => {
     setActiveProjectInStorage(path);
     activeProjectCache = path;
-    notifySubscribers();
+    refreshCache();
   }, []);
 
   /**

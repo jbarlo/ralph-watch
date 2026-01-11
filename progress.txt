@@ -267,3 +267,16 @@
 - Files added: src/lib/projects.ts, src/hooks/use-projects.ts, src/components/ProjectSwitcher.tsx, src/components/providers/ProjectProvider.tsx, src/components/providers/AppProviders.tsx, src/components/ui/command.tsx, src/components/ui/popover.tsx, src/components/ui/select.tsx
 - Files modified: src/server/trpc.ts, src/server/routers/tickets.ts, src/server/routers/progress.ts, src/server/routers/ralph.ts, src/app/api/watch/route.ts, src/hooks/use-file-watch.ts, src/components/ConnectionStatus.tsx, src/components/providers/TRPCProvider.tsx, src/app/layout.tsx, src/app/page.tsx, src/server/routers/tickets.test.ts, src/server/routers/progress.test.ts
 - Verified: `pnpm check` passes (all 49 tests pass)
+
+## Ticket #23: Fix useSyncExternalStore infinite loop in useProjects
+- Bug: getProjectsSnapshot() returned getProjects() which creates new array from JSON.parse each call
+- React's useSyncExternalStore saw different reference, triggered re-render, infinite loop
+- Fix: Added module-level projectsCache (initialized to EMPTY_PROJECTS)
+- Created refreshCache() function that updates projectsCache and calls notifySubscribers()
+- getProjectsSnapshot() now returns cached value, initializes cache on first client-side read
+- Updated addProject, removeProject, setActiveProject to call refreshCache() instead of notifySubscribers()
+- Created src/hooks/use-projects.test.ts with 8 integration tests
+- Tests verify: no errors on render, stable references on re-render, add/remove/setActive operations, multiple hook instances
+- Files modified: src/hooks/use-projects.ts
+- Files added: src/hooks/use-projects.test.ts
+- Verified: `pnpm check` passes (all 57 tests pass)
