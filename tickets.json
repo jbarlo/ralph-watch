@@ -223,6 +223,20 @@
       "description": "Delete or replace src/server/routers/ralph.ts now that ProcessRunner handles execution. Update router index to use new process router. Verify RalphControls works end-to-end. Clean up any unused imports.",
       "status": "completed",
       "priority": 9
+    },
+    {
+      "id": 33,
+      "title": "Support RALPH_BIN env var for ralph commands",
+      "description": "The process runner calls `ralph` and `ralph-once` directly, but these may not be in PATH. Fix: Read RALPH_BIN env var (path to ralph bin directory). In process-runner.ts start(), if RALPH_BIN is set and command starts with 'ralph', prepend RALPH_BIN to the command path. E.g., `ralph-once` becomes `${RALPH_BIN}/ralph-once`. Add RALPH_BIN to .env.example with a comment. Test by setting RALPH_BIN and verifying ralph commands run.",
+      "status": "completed",
+      "priority": 1
+    },
+    {
+      "id": 34,
+      "title": "Validate required env vars on startup",
+      "description": "Create src/lib/env.ts that validates important env vars exist on server startup. Check for RALPH_BIN (required). Use Zod to parse process.env with clear error messages. Export typed env object. Import in src/server/trpc.ts or a server-side layout to ensure it runs early. If missing, throw with helpful message like 'Missing RALPH_BIN - set path to ralph bin directory'. Add test that verifies validation works.",
+      "status": "pending",
+      "priority": 2
     }
   ]
 }

@@ -414,3 +414,16 @@
 - Files deleted: src/server/routers/ralph.ts
 - Files modified: src/server/routers/_app.ts
 - Verified: `pnpm check` passes (all 186 tests pass)
+
+## Ticket #33: Support RALPH_BIN env var for ralph commands
+- Added resolveCommand() function to process-runner.ts
+- Checks RALPH_BIN env var and prepends path for commands starting with 'ralph'
+- E.g., 'ralph-once' becomes '/path/to/bin/ralph-once' when RALPH_BIN=/path/to/bin
+- Handles trailing slashes, arguments, whitespace trimming
+- start() now calls resolveCommand() before spawning
+- Created .env.example with RALPH_BIN, RALPH_DIR, and REACT_EDITOR vars
+- Added 9 unit tests for resolveCommand() function
+- Tests verify: no RALPH_BIN, non-ralph commands, ralph/ralph-once, args preservation, trailing slash handling
+- Files added: .env.example
+- Files modified: src/server/services/process-runner.ts, src/server/services/process-runner.test.ts
+- Verified: `pnpm check` passes (all 195 tests pass)

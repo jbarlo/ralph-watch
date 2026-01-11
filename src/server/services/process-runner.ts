@@ -33,6 +33,40 @@ function generateId(): string {
 }
 
 /**
+ * Resolves the command path for ralph commands using RALPH_BIN env var.
+ * If RALPH_BIN is set and command starts with 'ralph', prepends the bin path.
+ * E.g., 'ralph-once' becomes '/path/to/bin/ralph-once'
+ *
+ * Exported for testing.
+ */
+export function resolveCommand(command: string): string {
+  const ralphBin = process.env.RALPH_BIN;
+
+  if (!ralphBin) {
+    return command;
+  }
+
+  // Trim and extract the first word (command name)
+  const trimmedCommand = command.trim();
+  const firstSpaceIndex = trimmedCommand.indexOf(' ');
+  const commandName =
+    firstSpaceIndex === -1
+      ? trimmedCommand
+      : trimmedCommand.substring(0, firstSpaceIndex);
+  const commandArgs =
+    firstSpaceIndex === -1 ? '' : trimmedCommand.substring(firstSpaceIndex);
+
+  // Check if this is a ralph command
+  if (commandName.startsWith('ralph')) {
+    // Ensure RALPH_BIN doesn't have trailing slash
+    const binPath = ralphBin.endsWith('/') ? ralphBin.slice(0, -1) : ralphBin;
+    return `${binPath}/${commandName}${commandArgs}`;
+  }
+
+  return command;
+}
+
+/**
  * Creates a new ProcessRunner instance.
  * Each instance maintains its own map of running processes.
  */
@@ -46,9 +80,12 @@ export function createProcessRunner(): ProcessRunner {
       const id = generateId();
 
       try {
+        // Resolve command path (handles RALPH_BIN for ralph commands)
+        const resolvedCommand = resolveCommand(opts.command);
+
         // Parse command - split by whitespace for simple commands
         // For more complex commands, use shell
-        const child = spawn(opts.command, {
+        const child = spawn(resolvedCommand, {
           cwd: opts.cwd,
           shell: true,
           stdio: ['ignore', 'pipe', 'pipe'],

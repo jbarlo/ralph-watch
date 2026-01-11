@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { createProcessRunner } from './process-runner';
+import { createProcessRunner, resolveCommand } from './process-runner';
 import { isOk, isErr } from '@/lib/result';
 import { isRunning, isExited, isNotFound } from '@/lib/process-runner';
 
@@ -399,5 +399,66 @@ describe('ProcessRunner', () => {
         expect(idx2).toBeLessThan(idx3);
       }
     });
+  });
+});
+
+describe('resolveCommand', () => {
+  const originalEnv = process.env.RALPH_BIN;
+
+  afterEach(() => {
+    if (originalEnv !== undefined) {
+      process.env.RALPH_BIN = originalEnv;
+    } else {
+      delete process.env.RALPH_BIN;
+    }
+  });
+
+  it('should return command unchanged when RALPH_BIN is not set', () => {
+    delete process.env.RALPH_BIN;
+    expect(resolveCommand('ralph-once')).toBe('ralph-once');
+  });
+
+  it('should return non-ralph command unchanged when RALPH_BIN is set', () => {
+    process.env.RALPH_BIN = '/path/to/bin';
+    expect(resolveCommand('echo hello')).toBe('echo hello');
+  });
+
+  it('should prepend RALPH_BIN to ralph command', () => {
+    process.env.RALPH_BIN = '/path/to/bin';
+    expect(resolveCommand('ralph')).toBe('/path/to/bin/ralph');
+  });
+
+  it('should prepend RALPH_BIN to ralph-once command', () => {
+    process.env.RALPH_BIN = '/path/to/bin';
+    expect(resolveCommand('ralph-once')).toBe('/path/to/bin/ralph-once');
+  });
+
+  it('should preserve arguments when prepending RALPH_BIN', () => {
+    process.env.RALPH_BIN = '/path/to/bin';
+    expect(resolveCommand('ralph-once --verbose')).toBe(
+      '/path/to/bin/ralph-once --verbose',
+    );
+  });
+
+  it('should handle RALPH_BIN with trailing slash', () => {
+    process.env.RALPH_BIN = '/path/to/bin/';
+    expect(resolveCommand('ralph-once')).toBe('/path/to/bin/ralph-once');
+  });
+
+  it('should handle commands with leading whitespace', () => {
+    process.env.RALPH_BIN = '/path/to/bin';
+    expect(resolveCommand('  ralph-once')).toBe('/path/to/bin/ralph-once');
+  });
+
+  it('should not modify commands that contain ralph but do not start with it', () => {
+    process.env.RALPH_BIN = '/path/to/bin';
+    expect(resolveCommand('my-ralph-tool')).toBe('my-ralph-tool');
+  });
+
+  it('should handle ralph commands with multiple arguments', () => {
+    process.env.RALPH_BIN = '/path/to/bin';
+    expect(resolveCommand('ralph run --flag value')).toBe(
+      '/path/to/bin/ralph run --flag value',
+    );
   });
 });
