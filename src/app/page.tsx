@@ -5,7 +5,9 @@ import { trpc } from '@/lib/trpc';
 import type { Ticket } from '@/lib/schemas';
 import { TicketList } from '@/components/TicketList';
 import { ProgressViewer } from '@/components/ProgressViewer';
+import { EditTicketForm } from '@/components/EditTicketForm';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -62,9 +64,17 @@ function Header() {
  */
 interface DetailPanelProps {
   ticket: Ticket | null;
+  onTicketUpdated?: () => void;
 }
 
-function DetailPanel({ ticket }: DetailPanelProps) {
+function DetailPanel({ ticket, onTicketUpdated }: DetailPanelProps) {
+  const [isEditing, setIsEditing] = useState(false);
+
+  const handleEditSuccess = () => {
+    setIsEditing(false);
+    onTicketUpdated?.();
+  };
+
   if (!ticket) {
     return (
       <div className="flex h-full flex-col">
@@ -85,6 +95,28 @@ function DetailPanel({ ticket }: DetailPanelProps) {
     );
   }
 
+  if (isEditing) {
+    return (
+      <div className="flex h-full flex-col gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              Edit Ticket #{ticket.id}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <EditTicketForm
+              ticket={ticket}
+              onSuccess={handleEditSuccess}
+              onCancel={() => setIsEditing(false)}
+            />
+          </CardContent>
+        </Card>
+        <ProgressViewer height="300px" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-full flex-col gap-4">
       <Card>
@@ -93,15 +125,24 @@ function DetailPanel({ ticket }: DetailPanelProps) {
             <CardTitle className="text-base">
               #{ticket.id}: {ticket.title}
             </CardTitle>
-            <Badge
-              variant="outline"
-              className={cn(
-                'shrink-0 capitalize',
-                getStatusBadgeClass(ticket.status),
-              )}
-            >
-              {formatStatus(ticket.status)}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge
+                variant="outline"
+                className={cn(
+                  'shrink-0 capitalize',
+                  getStatusBadgeClass(ticket.status),
+                )}
+              >
+                {formatStatus(ticket.status)}
+              </Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+              >
+                Edit
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -164,11 +205,18 @@ function MobileTabs({ activeTab, onTabChange }: MobileTabsProps) {
 }
 
 export default function Home() {
-  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
   const [mobileTab, setMobileTab] = useState<'tickets' | 'details'>('tickets');
 
+  // Fetch tickets to get the selected ticket data
+  const { data: tickets } = trpc.tickets.list.useQuery();
+
+  // Get the selected ticket from the fetched list
+  const selectedTicket =
+    tickets?.find((t) => t.id === selectedTicketId) ?? null;
+
   const handleTicketSelect = (ticket: Ticket | null) => {
-    setSelectedTicket(ticket);
+    setSelectedTicketId(ticket?.id ?? null);
     if (ticket) {
       setMobileTab('details');
     }
@@ -190,7 +238,7 @@ export default function Home() {
           <ScrollArea className="h-[calc(100vh-7rem)] lg:h-[calc(100vh-4.5rem)]">
             <TicketList
               onTicketSelect={handleTicketSelect}
-              selectedTicketId={selectedTicket?.id ?? null}
+              selectedTicketId={selectedTicketId}
             />
           </ScrollArea>
         </div>

@@ -151,3 +151,17 @@
 - Files added: src/components/ProgressViewer.tsx
 - Files modified: src/app/page.tsx
 - Verified: `pnpm check` passes (all 49 tests pass)
+
+## Ticket #10: Edit ticket functionality
+- Created src/components/EditTicketForm.tsx with tRPC integration
+- Fields: title (required), description (textarea), priority (number), status (select dropdown)
+- Status dropdown shows all valid statuses: pending, in_progress, completed, failed
+- Submit via trpc.tickets.update.useMutation()
+- Toast notifications for success and error states
+- Inline editing in detail panel with Edit button toggle
+- Cancel button returns to view mode without saving
+- Updated Home component to track selectedTicketId instead of full ticket object
+- Ticket data now syncs from tRPC query, auto-refreshes after edits
+- Files added: src/components/EditTicketForm.tsx
+- Files modified: src/app/page.tsx
+- Verified: `pnpm check` passes (all 49 tests pass)

@@ -88,7 +88,7 @@
       "id": 10,
       "title": "Edit ticket functionality",
       "description": "Add edit mode to ticket detail/card. Inline editing or modal. Can edit title, description, priority, status. Save via tRPC update mutation.",
-      "status": "pending",
+      "status": "completed",
       "priority": 6
     },
     {
