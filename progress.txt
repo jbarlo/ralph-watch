@@ -18,3 +18,13 @@
 - Ran pnpm format to fix quote styles across codebase
 - Files changed: package.json, tsconfig.json, eslint.config.mjs, .prettierrc, .prettierignore
 - Verified: `pnpm check` passes (lint + typecheck)
+
+## Ticket #21: Result type utilities for railway-oriented flow
+- Created src/lib/result.ts with railway-oriented programming utilities
+- Implemented Result<T, E> discriminated union (Ok/Err)
+- Added constructor functions: ok(), err()
+- Added type guards: isOk(), isErr()
+- Added transformations: map(), flatMap(), mapErr()
+- Added utilities: unwrapOr(), tryCatch(), tryCatchAsync()
+- Files added: src/lib/result.ts
+- Verified: `pnpm check` passes
