@@ -7,3 +7,14 @@
 - Added tailwind.config.ts, updated postcss.config.mjs and globals.css for Tailwind v3
 - Files added: package.json, tsconfig.json, next.config.ts, eslint.config.mjs, postcss.config.mjs, tailwind.config.ts, src/, public/
 - Verified: `pnpm build` and `pnpm lint` pass
+
+## Ticket #20: ESLint + Prettier + strict TS + quality check
+- Installed prettier, eslint-config-prettier, eslint-plugin-prettier, lodash, @types/lodash
+- Created .prettierrc with singleQuote, semi, tabWidth 2
+- Updated eslint.config.mjs to extend prettier (flat config format)
+- Created .prettierignore to exclude read-only files
+- Enabled noUncheckedIndexedAccess in tsconfig.json
+- Added scripts: format, lint (updated), typecheck, check
+- Ran pnpm format to fix quote styles across codebase
+- Files changed: package.json, tsconfig.json, eslint.config.mjs, .prettierrc, .prettierignore
+- Verified: `pnpm check` passes (lint + typecheck)

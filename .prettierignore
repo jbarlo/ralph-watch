@@ -1,0 +1,11 @@
+# Build output
+.next
+out
+build
+
+# Package manager
+node_modules
+pnpm-lock.yaml
+
+# Read-only files (mounted from outside)
+CLAUDE.md

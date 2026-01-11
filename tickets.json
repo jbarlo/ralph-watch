@@ -11,7 +11,7 @@
       "id": 20,
       "title": "ESLint + Prettier + strict TS + quality check",
       "description": "Install prettier, eslint-config-prettier, eslint-plugin-prettier, lodash, @types/lodash. Create .prettierrc (singleQuote, semi, tabWidth 2). Update .eslintrc to extend prettier. Enable noUncheckedIndexedAccess in tsconfig.json compilerOptions. Add scripts: `format`, `lint`, `typecheck` (tsc --noEmit), `check` (runs all). `pnpm check` must pass after every ticket.",
-      "status": "pending",
+      "status": "completed",
       "priority": 2
     },
     {
