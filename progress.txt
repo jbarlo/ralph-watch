@@ -178,3 +178,15 @@
 - Files added: src/components/DeleteTicketButton.tsx, src/components/ui/alert-dialog.tsx
 - Files modified: src/app/page.tsx, src/components/ui/button.tsx
 - Verified: `pnpm check` passes (all 49 tests pass)
+
+## Ticket #13: SSE endpoint for file watching
+- Installed chokidar v5.0.0 for file watching
+- Created src/app/api/watch/route.ts SSE endpoint
+- Uses singleton FSWatcher to watch tickets.json and progress.txt in RALPH_DIR
+- Broadcasts file change events to all connected SSE clients
+- Event types: 'connected' (on connect), 'tickets' (tickets.json changed), 'progress' (progress.txt changed), 'error'
+- Uses awaitWriteFinish option for stability (100ms threshold)
+- Proper cleanup when clients disconnect
+- Files added: src/app/api/watch/route.ts
+- Files modified: package.json
+- Verified: `pnpm check` passes (all 49 tests pass)

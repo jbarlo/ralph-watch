@@ -109,7 +109,7 @@
       "id": 13,
       "title": "SSE endpoint for file watching",
       "description": "Create src/app/api/watch/route.ts SSE endpoint. Use chokidar to watch tickets.json and progress.txt in RALPH_DIR. Send events on file changes. Client reconnects on disconnect.",
-      "status": "pending",
+      "status": "completed",
       "priority": 7
     },
     {
