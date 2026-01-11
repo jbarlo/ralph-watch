@@ -49,3 +49,10 @@
 - Files added: components.json, src/lib/utils.ts, src/components/ui/*.tsx, src/hooks/use-toast.ts
 - Files modified: tailwind.config.ts, src/app/globals.css, package.json
 - Verified: `pnpm check` passes (lint + typecheck + tests)
+
+## Ticket #3: Clean .gitignore
+- Updated .env* pattern to be more specific (.env*.local only)
+- Verified all required patterns covered: node_modules, .next, *.tsbuildinfo, .DS_Store
+- Confirmed ralph files (tickets.json, progress.txt, CLAUDE.md) remain tracked
+- Files changed: .gitignore
+- Verified: `pnpm check` passes

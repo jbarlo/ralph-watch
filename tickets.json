@@ -39,7 +39,7 @@
       "id": 3,
       "title": "Clean .gitignore",
       "description": "Ensure .gitignore covers: node_modules, .next, .env*.local, *.tsbuildinfo, .DS_Store. Keep ralph files (tickets.json, progress.txt, RALPH.md) tracked.",
-      "status": "pending",
+      "status": "completed",
       "priority": 2
     },
     {
