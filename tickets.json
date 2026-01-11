@@ -46,7 +46,7 @@
       "id": 4,
       "title": "Zod schemas for ralph files",
       "description": "Create src/lib/schemas.ts with loose Zod schemas. Ticket: id (number), title (string), description (string optional), status (string, default 'pending'), priority (number optional). Use .passthrough() to allow unknown fields. TicketsFile: tickets array. Export types.",
-      "status": "pending",
+      "status": "completed",
       "priority": 3
     },
     {

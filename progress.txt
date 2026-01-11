@@ -56,3 +56,14 @@
 - Confirmed ralph files (tickets.json, progress.txt, CLAUDE.md) remain tracked
 - Files changed: .gitignore
 - Verified: `pnpm check` passes
+
+## Ticket #4: Zod schemas for ralph files
+- Installed zod v4.3.5
+- Created src/lib/schemas.ts with loose Zod schemas using passthrough()
+- TicketSchema: id (number), title (string), description (optional), status (default 'pending'), priority (optional)
+- TicketsFileSchema: { tickets: Ticket[] } with passthrough for unknown fields
+- Added CreateTicketSchema and UpdateTicketSchema for API operations
+- Created src/lib/schemas.test.ts with 17 integration tests
+- Files added: src/lib/schemas.ts, src/lib/schemas.test.ts
+- Files modified: package.json
+- Verified: `pnpm check` passes (all 33 tests pass)
