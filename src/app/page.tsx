@@ -7,6 +7,7 @@ import { TicketList } from '@/components/TicketList';
 import { ProgressViewer } from '@/components/ProgressViewer';
 import { EditTicketForm } from '@/components/EditTicketForm';
 import { DeleteTicketButton } from '@/components/DeleteTicketButton';
+import { ConnectionStatusIndicator } from '@/components/ConnectionStatus';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,12 +50,13 @@ function Header() {
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-14 items-center gap-4 px-4 lg:px-6">
         <h1 className="text-lg font-semibold">Ralph Watch</h1>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex flex-1 items-center gap-2 text-sm text-muted-foreground">
           <span className="hidden sm:inline">Project:</span>
           <code className="rounded bg-muted px-2 py-0.5 font-mono text-xs">
             {isLoading ? '...' : projectPath}
           </code>
         </div>
+        <ConnectionStatusIndicator />
       </div>
     </header>
   );

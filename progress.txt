@@ -190,3 +190,17 @@
 - Files added: src/app/api/watch/route.ts
 - Files modified: package.json
 - Verified: `pnpm check` passes (all 49 tests pass)
+
+## Ticket #14: Live updates via SSE
+- Created src/hooks/use-file-watch.ts with useFileWatch hook
+- Connects to /api/watch SSE endpoint via EventSource
+- Listens for 'tickets' events and invalidates tickets tRPC queries
+- Listens for 'progress' events and invalidates progress tRPC queries
+- Automatic reconnection after 3 seconds on disconnect
+- State-driven connection: 'connecting' -> 'connected' -> 'disconnected' -> 'connecting'
+- Created src/components/ConnectionStatus.tsx with ConnectionStatusIndicator component
+- Shows colored dot (green=connected, yellow=connecting, red=disconnected) and status text
+- Integrated into Header component in page.tsx
+- Files added: src/hooks/use-file-watch.ts, src/components/ConnectionStatus.tsx
+- Files modified: src/app/page.tsx
+- Verified: `pnpm check` passes (all 49 tests pass)

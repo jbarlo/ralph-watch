@@ -116,7 +116,7 @@
       "id": 14,
       "title": "Live updates via SSE",
       "description": "Create useFileWatch hook that connects to SSE endpoint. On 'tickets' event, invalidate tickets query. On 'progress' event, invalidate progress query. Show connection status indicator.",
-      "status": "pending",
+      "status": "completed",
       "priority": 8
     },
     {
