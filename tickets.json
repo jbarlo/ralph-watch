@@ -363,7 +363,7 @@
     {
       "id": 53,
       "title": "use streamdown library to display description block in main pane, not in ticket view",
-      "status": "in_progress",
+      "status": "completed",
       "priority": 1
     },
     {
@@ -377,6 +377,13 @@
       "title": "use streamdown on the progress log display",
       "status": "pending",
       "priority": 12
+    },
+    {
+      "id": 56,
+      "title": "fix selected tab styling",
+      "description": "remember that border highlights can be cut off by the parent container if the element is already full width/height. a selection border is useful, but need to not look broken and cutoff",
+      "status": "pending",
+      "priority": 13
     }
   ]
 }

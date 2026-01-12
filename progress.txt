@@ -747,3 +747,15 @@
 - Files added: src/lib/process-state.ts, src/lib/process-state.test.ts
 - Files modified: src/hooks/use-event-stream.ts, src/components/RalphSidePanel.tsx, src/components/RalphSidePanel.test.tsx
 - Verified: `pnpm check` passes (all 225 tests pass)
+## Ticket #53: use streamdown library to display description block in main pane, not in ticket view
+- Installed streamdown (1.6.11) and @tailwindcss/typography for markdown support
+- Created src/components/DescriptionViewer.tsx wrapping streamdown's Streamdown component
+- Added streamdown dist folder to tailwind.config.ts content paths
+- Added tailwindTypography plugin to tailwind.config.ts
+- Updated DetailPanel in src/app/project/[path]/page.tsx to use DescriptionViewer
+- Updated MobileTicketDetail in src/components/MobileLayout.tsx to use DescriptionViewer
+- Removed description display from TicketList.tsx (ticket view) - descriptions now only shown in main detail pane
+- Files added: src/components/DescriptionViewer.tsx
+- Files modified: package.json, tailwind.config.ts, src/app/project/[path]/page.tsx, src/components/MobileLayout.tsx, src/components/TicketList.tsx
+- Verified: `pnpm check` passes (all 225 tests pass)
+
