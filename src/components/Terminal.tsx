@@ -45,15 +45,32 @@ export function Terminal({
     xtermRef.current?.write(`\r\n\x1b[31m[Error: ${message}]\x1b[0m\r\n`);
   }, []);
 
-  const { status, pid, exitCode, connect, disconnect, sendInput, resize } =
-    useTerminal({
-      wsUrl,
-      cwd: projectPath,
-      onOutput: handleOutput,
-      onReady: handleReady,
-      onExit: handleExit,
-      onError: handleError,
-    });
+  const handleReconnecting = useCallback((attempt: number) => {
+    xtermRef.current?.write(
+      `\r\n\x1b[33m[Reconnecting (attempt ${attempt})...]\x1b[0m\r\n`,
+    );
+  }, []);
+
+  const {
+    status,
+    pid,
+    exitCode,
+    reconnectAttempt,
+    connect,
+    disconnect,
+    sendInput,
+    resize,
+  } = useTerminal({
+    wsUrl,
+    cwd: projectPath,
+    autoReconnect: true,
+    maxReconnectAttempts: 10,
+    onOutput: handleOutput,
+    onReady: handleReady,
+    onExit: handleExit,
+    onError: handleError,
+    onReconnecting: handleReconnecting,
+  });
 
   useEffect(() => {
     if (!terminalRef.current) return;
@@ -143,6 +160,16 @@ export function Terminal({
 
   const isConnected = status === 'connected';
   const isConnecting = status === 'connecting';
+  const isReconnecting = isConnecting && reconnectAttempt > 0;
+
+  const getStatusText = () => {
+    if (isConnected && pid) return `PID: ${pid}`;
+    if (isReconnecting) return `Reconnecting (attempt ${reconnectAttempt})...`;
+    if (isConnecting) return 'Connecting...';
+    if (status === 'disconnected') return 'Disconnected';
+    if (status === 'error') return 'Error';
+    return '';
+  };
 
   return (
     <div className={cn('flex flex-col h-full', className)}>
@@ -159,10 +186,7 @@ export function Terminal({
             )}
           />
           <span className="text-xs text-muted-foreground">
-            {status === 'connected' && pid && `PID: ${pid}`}
-            {status === 'connecting' && 'Connecting...'}
-            {status === 'disconnected' && 'Disconnected'}
-            {status === 'error' && 'Error'}
+            {getStatusText()}
             {exitCode !== null && ` (exited: ${exitCode})`}
           </span>
         </div>
@@ -175,7 +199,7 @@ export function Terminal({
               onClick={handleConnect}
             >
               <RotateCcw className="mr-1 h-3 w-3" />
-              Connect
+              {status === 'error' ? 'Retry' : 'Connect'}
             </Button>
           )}
           {(isConnected || isConnecting) && (

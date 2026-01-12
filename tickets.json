@@ -421,7 +421,7 @@
       "id": 62,
       "title": "Add ralph-stop action + terminal reconnect button",
       "description": "Two small UX additions.\n\n## 1. Add ralph-stop to command buttons\n\nCurrently only ralph-once and ralph are available. Add ralph-stop to kill a running ralph process.\n\n- Add to default commands in project-config.ts (or .ralph-watch.json)\n- Icon: Square or StopCircle from lucide\n- Mark as destructive: true for confirmation dialog\n- Only show/enable when a ralph process is running (optional, nice-to-have)\n\n## 2. Terminal reconnect button\n\nWhen terminal disconnects (server restart, network blip), user has to manually click Connect again.\n\n- Add \"Reconnect\" button that appears after disconnect/error\n- Or: auto-reconnect with backoff (1s, 2s, 4s...) up to ~30s\n- Show reconnection attempts in terminal: \"Reconnecting (attempt 2)...\"\n- Stop auto-reconnect if user manually disconnects\n\nRun pnpm check after.",
-      "status": "pending",
+      "status": "completed",
       "priority": 2
     },
     {

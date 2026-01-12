@@ -18,6 +18,7 @@ export type ProjectConfig = z.infer<typeof ProjectConfigSchema>;
 export const defaultCommands: CommandConfig[] = [
   { label: 'Run Next', cmd: 'ralph-once', icon: 'play' },
   { label: 'Run All', cmd: 'ralph', icon: 'zap' },
+  { label: 'Stop', cmd: 'ralph-stop', icon: 'square', destructive: true },
 ];
 
 export const defaultConfig: ProjectConfig = {
