@@ -997,3 +997,12 @@
 - Updated status from "pending" to "completed" to match progress.txt
 - No pending tickets remaining in backlog
 
+## Ticket #68: Give ticket status badge semantic colours (refix)
+- Previous implementation used 20% opacity backgrounds which were too faint
+- Updated CSS variables to use -bg/-fg suffix pattern for clarity
+- Light theme (Latte): solid pastel backgrounds at ~75% lightness with dark text (~25-30% lightness)
+- Dark theme (Mocha): solid darker backgrounds at ~30-35% lightness with light text (~85-90% lightness)
+- getStatusBadgeClass() now uses solid background colors instead of transparent overlays
+- Color logic centralized in ticket-ui.ts, used by TicketList, page.tsx DetailPanel, and MobileLayout
+- Files modified: src/app/globals.css, src/lib/ticket-ui.ts
+- Verified: pnpm check passes (all 227 tests pass)
