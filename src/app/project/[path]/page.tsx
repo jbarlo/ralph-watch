@@ -243,6 +243,9 @@ function DesktopProjectContent() {
           )}
         >
           <div className="mb-4">
+            <QuickAddBar />
+          </div>
+          <div className="mb-4">
             <TicketFilter value={statusFilter} onChange={setStatusFilter} />
           </div>
           <ScrollArea className="flex-1 lg:h-[calc(100vh-11rem)]">
@@ -252,9 +255,6 @@ function DesktopProjectContent() {
               statusFilter={statusFilter}
             />
           </ScrollArea>
-          <div className="mt-4 border-t pt-4">
-            <QuickAddBar />
-          </div>
         </div>
         <div
           className={cn(

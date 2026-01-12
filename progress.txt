@@ -651,3 +651,9 @@
 - Files added: src/hooks/use-visibility.ts
 - Files modified: src/lib/process-runner.ts, src/server/services/process-runner.ts, src/server/services/process-runner.test.ts, src/app/api/events/route.ts, src/hooks/use-event-stream.ts, src/components/RalphSidePanel.tsx, src/server/routers/process.test.ts
 - Verified: `pnpm check` passes (all 190 tests pass)
+## Ticket #48: Move quick add input above ticket list in desktop mode
+- Moved QuickAddBar from bottom of ticket list section to above it in desktop layout
+- QuickAddBar now appears first, followed by TicketFilter, then TicketList
+- Removed border-t styling since it's no longer a bottom section divider
+- Files modified: src/app/project/[path]/page.tsx
+- Verified: `pnpm check` passes (all 190 tests pass)
