@@ -456,7 +456,7 @@
       "id": 67,
       "title": "Fix terminal toggle shortcut for Linux",
       "description": "Cmd+` doesn't work on Linux with Windows keyboard. Need cross-platform shortcut.\n\n## Problem\n- macOS: Cmd+` works\n- Linux with Windows keyboard: Cmd key doesn't exist, Ctrl+` may conflict with terminal emulators\n\n## Fix\n\n1. Use Ctrl+` on Linux/Windows, Cmd+` on macOS:\n```typescript\nconst isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;\nif ((isMac ? e.metaKey : e.ctrlKey) && e.key === '`') {\n  // toggle\n}\n```\n\n2. Or use a different shortcut that works everywhere (e.g., Ctrl+Shift+T, F12)\n\n3. Or make it configurable in .ralph-watch.json\n\n## Files\n- src/components/BottomTerminalPane.tsx - keyboard handler\n- Consider also adding button in header as fallback\n\nRun pnpm check after.",
-      "status": "in_progress",
+      "status": "completed",
       "priority": 1
     },
     {

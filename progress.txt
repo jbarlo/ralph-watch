@@ -915,3 +915,15 @@
 - Files modified: src/components/BottomTerminalPane.tsx, src/app/project/[path]/page.tsx, scripts/terminal-server.ts
 - Verified: pnpm check passes (all 227 tests pass)
 
+## Ticket #67: Fix terminal toggle shortcut for Linux
+- Problem: Cmd+` doesn't work on Linux with Windows keyboards (no Cmd key)
+- Keyboard handler already used (e.metaKey || e.ctrlKey), so shortcut worked
+- But tooltip text was hardcoded "Cmd+`" which was misleading on Linux/Windows
+- Fix: Added platform detection using navigator.platform
+- Uses useSyncExternalStore for SSR-safe platform detection (returns Ctrl+` on server, then updates)
+- isMac check: navigator.platform.toUpperCase().indexOf('MAC') >= 0
+- macOS shows "Cmd+`", Linux/Windows shows "Ctrl+`"
+- Updated all three tooltip locations: floating button, header bar hint, TerminalToggleButton
+- Files modified: src/components/BottomTerminalPane.tsx
+- Verified: pnpm check passes (all 227 tests pass)
+
