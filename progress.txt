@@ -1110,3 +1110,18 @@
 - Sorting applies after filtering, so works correctly for all tabs (incomplete, all, pending, etc.)
 - Files modified: src/components/TicketList.tsx
 - Verified: pnpm check passes (all 228 tests pass)
+
+## Ticket #79: Add session tracking to terminal server
+- Added TerminalSession interface with id, pty, cwd, label, context, createdAt, lastAccessed, connectedClients
+- Added sessions Map<string, TerminalSession> for session storage
+- Session ID generated as timestamp + random string (no external deps)
+- Query params for session control: ?session=<id>, ?newSession=true, ?label=<name>, ?context=<text>
+- Reattachment logic: if session exists and not newSession, reattach to existing PTY
+- Session lifecycle: orphan timeout (5 min), cleanup interval (1 min), max sessions (10)
+- Added list_sessions message handler - returns SessionInfo[] with id, label, pid, createdAt
+- Added close_session message handler - kills PTY, closes connected clients, removes session
+- Ready message now includes sessionId and reattached boolean
+- Context passing: when context provided, spawns claude with -p '<escaped context>'
+- WebSocket disconnect no longer kills PTY - sessions persist for reattachment
+- Files modified: src/server/services/terminal-server.ts
+- Verified: pnpm check passes (all 228 tests pass)
