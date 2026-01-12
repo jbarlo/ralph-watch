@@ -449,7 +449,7 @@
       "id": 66,
       "title": "Move terminal to right side pane",
       "description": "Bottom pane is too wide and not tall enough for Claude Code. Move to a wide right side pane.\n\n## New Layout\n\n```\n┌─────────────────────────────────┬─────────────────────────┐\n│ Header                          │                         │\n├─────────────────┬───────────────┤                         │\n│                 │               │                         │\n│  Tickets/Detail │ Ralph Side    │   Claude Terminal       │\n│                 │ Panel         │   (wide right pane)     │\n│                 │               │                         │\n│                 │               │                         │\n└─────────────────┴───────────────┴─────────────────────────┘\n```\n\nThe entire current app (tickets, detail, ralph controls) is the left/main section. Terminal is a new wide right pane that takes ~40-50% of screen width.\n\n## Implementation\n\n- Wrap current layout in a horizontal split\n- Terminal pane on right, resizable width\n- Collapsible (hide completely when not needed)\n- Persist width in localStorage\n- Keep keyboard toggle (Ctrl+`)\n- Remove BottomTerminalPane, create RightTerminalPane\n\nRun pnpm check after.",
-      "status": "pending",
+      "status": "completed",
       "priority": 3
     },
     {

@@ -927,3 +927,22 @@
 - Files modified: src/components/BottomTerminalPane.tsx
 - Verified: pnpm check passes (all 227 tests pass)
 
+## Ticket #66: Move terminal to right side pane
+- Moved terminal from bottom pane to right side pane for better Claude Code experience
+- Created src/components/RightTerminalPane.tsx with horizontal resizing
+  - Uses width instead of height (default 600px, min 300px, max 70vw)
+  - Drag handle on left edge for resizing
+  - Same keyboard shortcut support (Cmd/Ctrl+`)
+  - Fixed positioning at viewport right
+  - Width persisted to localStorage
+- Updated src/app/project/[path]/page.tsx
+  - Replaced BottomTerminalPane with RightTerminalPane
+  - Changed from paddingBottom to paddingRight for main content
+  - Imports updated: useTerminalHeight → useTerminalWidth
+- Deleted src/components/BottomTerminalPane.tsx
+- Layout: main app content gets left portion, terminal takes right side
+- Files added: src/components/RightTerminalPane.tsx
+- Files modified: src/app/project/[path]/page.tsx
+- Files deleted: src/components/BottomTerminalPane.tsx
+- Verified: pnpm check passes (all 227 tests pass)
+

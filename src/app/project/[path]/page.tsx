@@ -27,10 +27,10 @@ import { cn } from '@/lib/utils';
 import { FileText } from 'lucide-react';
 import Link from 'next/link';
 import {
-  BottomTerminalPane,
+  RightTerminalPane,
   TerminalToggleButton,
-  useTerminalHeight,
-} from '@/components/BottomTerminalPane';
+  useTerminalWidth,
+} from '@/components/RightTerminalPane';
 
 /**
  * Header component showing project name and controls
@@ -293,7 +293,7 @@ function DesktopProjectContent() {
 function HomeContent() {
   const isMobile = useIsMobile();
   const projectPath = useProjectPath();
-  const terminalHeight = useTerminalHeight();
+  const terminalWidth = useTerminalWidth();
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -304,7 +304,7 @@ function HomeContent() {
         <>
           <div
             className="flex flex-1 flex-col overflow-hidden"
-            style={{ paddingBottom: terminalHeight }}
+            style={{ paddingRight: terminalWidth }}
           >
             <div className="flex flex-1 overflow-hidden">
               <div className="flex flex-1 flex-col overflow-hidden">
@@ -313,7 +313,7 @@ function HomeContent() {
               <RalphSidePanel />
             </div>
           </div>
-          <BottomTerminalPane projectPath={projectPath} />
+          <RightTerminalPane projectPath={projectPath} />
         </>
       )}
     </div>

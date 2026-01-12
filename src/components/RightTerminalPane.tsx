@@ -4,18 +4,18 @@ import { useEffect, useState, useCallback, useSyncExternalStore } from 'react';
 import { Terminal } from '@/components/Terminal';
 import { Button } from '@/components/ui/button';
 import {
-  ChevronUp,
-  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Terminal as TerminalIcon,
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const STORAGE_KEY_VISIBLE = 'ralph-terminal-visible';
-const STORAGE_KEY_HEIGHT = 'ralph-terminal-height';
-const DEFAULT_HEIGHT = 300;
-const MIN_HEIGHT = 100;
-const MAX_HEIGHT_RATIO = 0.6; // 60vh
+const STORAGE_KEY_WIDTH = 'ralph-terminal-width';
+const DEFAULT_WIDTH = 600;
+const MIN_WIDTH = 300;
+const MAX_WIDTH_RATIO = 0.7; // 70vw
 
 function getShortcutSnapshot(): string {
   if (typeof navigator === 'undefined') return 'Ctrl+`';
@@ -40,20 +40,20 @@ function getStoredVisibility(): boolean {
   }
 }
 
-function getStoredHeight(): number {
-  if (typeof window === 'undefined') return DEFAULT_HEIGHT;
+function getStoredWidth(): number {
+  if (typeof window === 'undefined') return DEFAULT_WIDTH;
   try {
-    const stored = localStorage.getItem(STORAGE_KEY_HEIGHT);
+    const stored = localStorage.getItem(STORAGE_KEY_WIDTH);
     if (stored !== null) {
       const parsed = parseInt(stored, 10);
-      if (!isNaN(parsed) && parsed >= MIN_HEIGHT) {
+      if (!isNaN(parsed) && parsed >= MIN_WIDTH) {
         return parsed;
       }
     }
   } catch {
     // localStorage unavailable
   }
-  return DEFAULT_HEIGHT;
+  return DEFAULT_WIDTH;
 }
 
 const visibilityListeners = new Set<() => void>();
@@ -82,63 +82,74 @@ function setVisibility(value: boolean): void {
   visibilityListeners.forEach((cb) => cb());
 }
 
-const heightListeners = new Set<() => void>();
-let heightSnapshot = getStoredHeight();
+const widthListeners = new Set<() => void>();
+let widthSnapshot = getStoredWidth();
 
-function subscribeHeight(callback: () => void): () => void {
-  heightListeners.add(callback);
-  return () => heightListeners.delete(callback);
+function subscribeWidth(callback: () => void): () => void {
+  widthListeners.add(callback);
+  return () => widthListeners.delete(callback);
 }
 
-function getHeightSnapshot(): number {
-  return heightSnapshot;
+function getWidthSnapshot(): number {
+  return widthSnapshot;
 }
 
-function getHeightServerSnapshot(): number {
-  return DEFAULT_HEIGHT;
+function getWidthServerSnapshot(): number {
+  return DEFAULT_WIDTH;
 }
 
-function setHeightSnapshot(value: number): void {
-  heightSnapshot = value;
+function setWidthSnapshot(value: number): void {
+  widthSnapshot = value;
   try {
-    localStorage.setItem(STORAGE_KEY_HEIGHT, String(value));
+    localStorage.setItem(STORAGE_KEY_WIDTH, String(value));
   } catch {
     // localStorage unavailable
   }
-  heightListeners.forEach((cb) => cb());
+  widthListeners.forEach((cb) => cb());
 }
 
 /**
- * Hook to get current terminal pane height (for adding content padding)
+ * Hook to get current terminal pane width (for adjusting main content)
  */
-export function useTerminalHeight(): number {
+export function useTerminalWidth(): number {
   const isVisible = useSyncExternalStore(
     subscribeVisibility,
     getVisibilitySnapshot,
     getVisibilityServerSnapshot,
   );
-  const height = useSyncExternalStore(
-    subscribeHeight,
-    getHeightSnapshot,
-    getHeightServerSnapshot,
+  const width = useSyncExternalStore(
+    subscribeWidth,
+    getWidthSnapshot,
+    getWidthServerSnapshot,
   );
-  return isVisible ? height : 0;
+  return isVisible ? width : 0;
 }
 
-interface BottomTerminalPaneProps {
+/**
+ * Hook to check if terminal is visible
+ */
+export function useTerminalVisible(): boolean {
+  return useSyncExternalStore(
+    subscribeVisibility,
+    getVisibilitySnapshot,
+    getVisibilityServerSnapshot,
+  );
+}
+
+interface RightTerminalPaneProps {
   projectPath: string;
 }
 
-export function BottomTerminalPane({ projectPath }: BottomTerminalPaneProps) {
+export function RightTerminalPane({ projectPath }: RightTerminalPaneProps) {
   const isVisible = useSyncExternalStore(
     subscribeVisibility,
     getVisibilitySnapshot,
     getVisibilityServerSnapshot,
   );
-  const height = useSyncExternalStore(
-    subscribeHeight,
-    getHeightSnapshot,
-    getHeightServerSnapshot,
+  const width = useSyncExternalStore(
+    subscribeWidth,
+    getWidthSnapshot,
+    getWidthServerSnapshot,
   );
   const shortcut = useSyncExternalStore(
     subscribeNoop,
@@ -147,8 +158,8 @@ export function BottomTerminalPane({ projectPath }: BottomTerminalPaneProps) {
   );
   const [isDragging, setIsDragging] = useState(false);
 
-  const setHeight = (value: number) => {
-    setHeightSnapshot(value);
+  const setWidth = (value: number) => {
+    setWidthSnapshot(value);
   };
 
   // Keyboard shortcut: Cmd/Ctrl + `
@@ -173,9 +184,9 @@ export function BottomTerminalPane({ projectPath }: BottomTerminalPaneProps) {
     if (!isDragging) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      const maxHeight = window.innerHeight * MAX_HEIGHT_RATIO;
-      const newHeight = window.innerHeight - e.clientY;
-      setHeight(Math.min(Math.max(newHeight, MIN_HEIGHT), maxHeight));
+      const maxWidth = window.innerWidth * MAX_WIDTH_RATIO;
+      const newWidth = window.innerWidth - e.clientX;
+      setWidth(Math.min(Math.max(newWidth, MIN_WIDTH), maxWidth));
     };
 
     const handleMouseUp = () => {
@@ -212,56 +223,58 @@ export function BottomTerminalPane({ projectPath }: BottomTerminalPaneProps) {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 border-t bg-background flex flex-col z-40"
-      style={{ height }}
+      className="fixed top-0 right-0 bottom-0 border-l bg-background flex flex-row z-40"
+      style={{ width }}
     >
       {/* Drag handle */}
       <div
         className={cn(
-          'h-1 cursor-row-resize bg-border hover:bg-primary/50 transition-colors',
+          'w-1 cursor-col-resize bg-border hover:bg-primary/50 transition-colors',
           isDragging && 'bg-primary',
         )}
         onMouseDown={handleMouseDown}
       />
 
-      {/* Header bar */}
-      <div className="flex items-center justify-between border-b px-3 py-1.5 bg-muted/50">
-        <div className="flex items-center gap-2">
-          <TerminalIcon className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Claude Terminal</span>
-          <span className="text-xs text-muted-foreground">
-            ({shortcut} to toggle)
-          </span>
+      <div className="flex flex-1 flex-col min-w-0">
+        {/* Header bar */}
+        <div className="flex items-center justify-between border-b px-3 py-1.5 bg-muted/50">
+          <div className="flex items-center gap-2">
+            <TerminalIcon className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">Claude Terminal</span>
+            <span className="text-xs text-muted-foreground">
+              ({shortcut} to toggle)
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0"
+              onClick={toggleTerminal}
+              title={isVisible ? 'Collapse' : 'Expand'}
+            >
+              {isVisible ? (
+                <ChevronRight className="h-4 w-4" />
+              ) : (
+                <ChevronLeft className="h-4 w-4" />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+              onClick={closeTerminal}
+              title="Close Terminal"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0"
-            onClick={toggleTerminal}
-            title={isVisible ? 'Collapse' : 'Expand'}
-          >
-            {isVisible ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronUp className="h-4 w-4" />
-            )}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-            onClick={closeTerminal}
-            title="Close Terminal"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
 
-      {/* Terminal content */}
-      <div className="flex-1 min-h-0">
-        <Terminal projectPath={projectPath} className="h-full" />
+        {/* Terminal content */}
+        <div className="flex-1 min-h-0">
+          <Terminal projectPath={projectPath} className="h-full" />
+        </div>
       </div>
     </div>
   );
