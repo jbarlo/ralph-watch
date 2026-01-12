@@ -23,6 +23,20 @@ describe('processReducer', () => {
       expect(state).toEqual({ status: 'starting', command: 'ralph-once' });
     });
 
+    it('transitions to running on ATTACH action', () => {
+      const state = processReducer(initialProcessState, {
+        type: 'ATTACH',
+        id: 'existing-proc',
+        pid: 789,
+      });
+      expect(state).toEqual({
+        status: 'running',
+        id: 'existing-proc',
+        pid: 789,
+        lines: [],
+      });
+    });
+
     it('ignores invalid actions', () => {
       const invalidActions: ProcessAction[] = [
         { type: 'STARTED', id: 'test', pid: 123 },
@@ -253,6 +267,20 @@ describe('processReducer', () => {
         command: 'ralph',
       });
       expect(state).toEqual({ status: 'starting', command: 'ralph' });
+    });
+
+    it('transitions to running on ATTACH action', () => {
+      const state = processReducer(completedState, {
+        type: 'ATTACH',
+        id: 'another-proc',
+        pid: 999,
+      });
+      expect(state).toEqual({
+        status: 'running',
+        id: 'another-proc',
+        pid: 999,
+        lines: [],
+      });
     });
 
     it('ignores invalid actions', () => {

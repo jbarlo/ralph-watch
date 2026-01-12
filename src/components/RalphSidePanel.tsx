@@ -10,6 +10,7 @@ import {
   Trash2,
   RefreshCw,
   Settings,
+  Radio,
   type LucideIcon,
 } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
@@ -40,6 +41,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
 
 const iconMap: Record<string, LucideIcon> = {
@@ -70,6 +77,12 @@ export function RalphSidePanel() {
 
   const configQuery = trpc.config.get.useQuery();
   const commands = configQuery.data?.commands ?? [];
+
+  const listQuery = trpc.process.list.useQuery(undefined, {
+    enabled: !isProcessRunning(state) && !isStarting(state),
+    refetchInterval: 5000,
+  });
+  const runningProcesses = listQuery.data ?? [];
 
   const processId = getProcessId(state);
   const lines = getLines(state);
@@ -283,13 +296,26 @@ export function RalphSidePanel() {
     setCommandLabel(null);
   };
 
+  const handleAttach = (id: string, pid: number) => {
+    if (isRunning || starting) return;
+    setCommandLabel('Attached Process');
+    dispatch({ type: 'ATTACH', id, pid });
+    setIsCollapsed(false);
+    toast({
+      title: 'Following process',
+      description: `Attached to process PID: ${pid}`,
+    });
+  };
+
   const buttonsDisabled = isRunning || starting;
   const stopDisabled = !isRunning || isStopping;
 
   const getStatusText = () => {
     if (starting) return 'Starting...';
     if (isRunning && commandLabel) {
-      return `Running: ${commandLabel}...`;
+      return commandLabel === 'Attached Process'
+        ? 'Following...'
+        : `Running: ${commandLabel}...`;
     }
     if (completed) {
       return exitCode === 0 ? 'Completed' : `Failed (code ${exitCode})`;
@@ -364,6 +390,32 @@ export function RalphSidePanel() {
                     </Button>
                   );
                 })}
+                {runningProcesses.length > 0 && !buttonsDisabled && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 min-w-[100px]"
+                        data-testid="follow-button"
+                      >
+                        <Radio className="mr-1 h-4 w-4" />
+                        Follow ({runningProcesses.length})
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      {runningProcesses.map((proc) => (
+                        <DropdownMenuItem
+                          key={proc.id}
+                          onClick={() => handleAttach(proc.id, proc.pid)}
+                        >
+                          <span className="mr-2 h-2 w-2 animate-pulse rounded-full bg-blue-500" />
+                          PID {proc.pid}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
 
               {isRunning && (

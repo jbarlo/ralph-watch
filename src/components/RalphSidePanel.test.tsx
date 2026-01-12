@@ -92,6 +92,13 @@ vi.mock('@/lib/trpc', () => ({
           refetch: mockRefetch,
         })),
       },
+      list: {
+        useQuery: vi.fn(() => ({
+          data: [],
+          isLoading: false,
+          error: null,
+        })),
+      },
     },
   },
 }));

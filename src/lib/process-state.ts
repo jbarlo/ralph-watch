@@ -81,6 +81,12 @@ export type ProcessActionSetLines = {
   readonly lines: ProcessOutputLine[];
 };
 
+export type ProcessActionAttach = {
+  readonly type: 'ATTACH';
+  readonly id: string;
+  readonly pid: number;
+};
+
 export type ProcessAction =
   | ProcessActionStart
   | ProcessActionStarted
@@ -90,7 +96,8 @@ export type ProcessAction =
   | ProcessActionReset
   | ProcessActionReconcile
   | ProcessActionReplayStart
-  | ProcessActionSetLines;
+  | ProcessActionSetLines
+  | ProcessActionAttach;
 
 export const initialProcessState: ProcessStateIdle = { status: 'idle' };
 
@@ -102,6 +109,14 @@ export function processReducer(
     case 'idle':
       if (action.type === 'START') {
         return { status: 'starting', command: action.command };
+      }
+      if (action.type === 'ATTACH') {
+        return {
+          status: 'running',
+          id: action.id,
+          pid: action.pid,
+          lines: [],
+        };
       }
       break;
 
@@ -153,6 +168,14 @@ export function processReducer(
       }
       if (action.type === 'START') {
         return { status: 'starting', command: action.command };
+      }
+      if (action.type === 'ATTACH') {
+        return {
+          status: 'running',
+          id: action.id,
+          pid: action.pid,
+          lines: [],
+        };
       }
       break;
   }
