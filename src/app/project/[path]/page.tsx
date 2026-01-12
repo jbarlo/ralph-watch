@@ -11,7 +11,9 @@ import { EditTicketForm } from '@/components/EditTicketForm';
 import { DeleteTicketButton } from '@/components/DeleteTicketButton';
 import { ConnectionStatusIndicator } from '@/components/ConnectionStatus';
 import { RalphSidePanel } from '@/components/RalphSidePanel';
+import { MobileLayout } from '@/components/MobileLayout';
 import { useProjectPath } from '@/components/providers/TRPCProvider';
+import { useIsMobile } from '@/hooks/use-media-query';
 import { deriveProjectName } from '@/lib/recent-projects';
 import { getStatusBadgeClass, formatStatus } from '@/lib/ticket-ui';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -167,16 +169,16 @@ function DetailPanel({
 }
 
 /**
- * Mobile tabs for switching between tickets and details
+ * Desktop tabs for switching between tickets and details (medium screens only)
  */
-interface MobileTabsProps {
+interface DesktopTabsProps {
   activeTab: 'tickets' | 'details';
   onTabChange: (tab: 'tickets' | 'details') => void;
 }
 
-function MobileTabs({ activeTab, onTabChange }: MobileTabsProps) {
+function DesktopTabs({ activeTab, onTabChange }: DesktopTabsProps) {
   return (
-    <div className="flex border-b lg:hidden">
+    <div className="hidden md:flex lg:hidden border-b">
       <button
         className={cn(
           'flex-1 px-4 py-2 text-sm font-medium transition-colors',
@@ -204,40 +206,40 @@ function MobileTabs({ activeTab, onTabChange }: MobileTabsProps) {
 }
 
 /**
- * Main content component
+ * Desktop project content (for md+ screens)
  */
-function ProjectContent() {
+function DesktopProjectContent() {
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
-  const [mobileTab, setMobileTab] = useState<'tickets' | 'details'>('tickets');
+  const [desktopTab, setDesktopTab] = useState<'tickets' | 'details'>(
+    'tickets',
+  );
   const [statusFilter, setStatusFilter] = useState<TicketStatus>('all');
 
-  // Fetch tickets to get the selected ticket data
   const { data: tickets } = trpc.tickets.list.useQuery();
 
-  // Get the selected ticket from the fetched list
   const selectedTicket =
     tickets?.find((t) => t.id === selectedTicketId) ?? null;
 
   const handleTicketSelect = (ticket: Ticket | null) => {
     setSelectedTicketId(ticket?.id ?? null);
     if (ticket) {
-      setMobileTab('details');
+      setDesktopTab('details');
     }
   };
 
   const handleTicketDeleted = () => {
     setSelectedTicketId(null);
-    setMobileTab('tickets');
+    setDesktopTab('tickets');
   };
 
   return (
     <>
-      <MobileTabs activeTab={mobileTab} onTabChange={setMobileTab} />
+      <DesktopTabs activeTab={desktopTab} onTabChange={setDesktopTab} />
       <main className="flex flex-1 overflow-hidden">
         <div
           className={cn(
-            'flex w-full flex-col border-r p-4 lg:w-[400px] lg:flex',
-            mobileTab === 'tickets' ? 'flex' : 'hidden',
+            'hidden md:flex w-full flex-col border-r p-4 lg:w-[400px]',
+            desktopTab === 'tickets' ? 'md:flex' : 'md:hidden lg:flex',
           )}
         >
           <div className="mb-4">
@@ -256,8 +258,8 @@ function ProjectContent() {
         </div>
         <div
           className={cn(
-            'flex-1 p-4 lg:block',
-            mobileTab === 'details' ? 'block' : 'hidden',
+            'hidden flex-1 p-4 lg:block',
+            desktopTab === 'details' ? 'md:block' : 'md:hidden lg:block',
           )}
         >
           <ScrollArea className="h-[calc(100vh-7rem)] lg:h-[calc(100vh-4.5rem)]">
@@ -276,15 +278,21 @@ function ProjectContent() {
  * Home content wrapper
  */
 function HomeContent() {
+  const isMobile = useIsMobile();
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
-      <div className="flex flex-1 overflow-hidden">
-        <div className="flex flex-1 flex-col overflow-hidden">
-          <ProjectContent />
+      {isMobile ? (
+        <MobileLayout />
+      ) : (
+        <div className="flex flex-1 overflow-hidden">
+          <div className="flex flex-1 flex-col overflow-hidden">
+            <DesktopProjectContent />
+          </div>
+          <RalphSidePanel />
         </div>
-        <RalphSidePanel />
-      </div>
+      )}
     </div>
   );
 }

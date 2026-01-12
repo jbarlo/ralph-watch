@@ -35,15 +35,16 @@ function TicketCard({
   return (
     <Card
       className={cn(
-        'cursor-pointer transition-colors hover:bg-accent/50',
+        'cursor-pointer transition-colors hover:bg-accent/50 active:bg-accent/70',
+        'min-h-[56px]',
         isSelected && 'ring-2 ring-primary',
         isDraft && 'opacity-60',
       )}
       onClick={() => onSelect(ticket)}
     >
-      <CardHeader className="pb-2">
+      <CardHeader className="p-3 md:p-4 pb-2">
         <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-sm font-medium leading-tight">
+          <CardTitle className="text-sm md:text-base font-medium leading-tight">
             #{ticket.id}: {ticket.title}
           </CardTitle>
           <div className="flex items-center gap-2">
@@ -51,7 +52,7 @@ function TicketCard({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-5 px-2 text-xs"
+                className="h-7 px-2 text-xs min-w-[44px]"
                 onClick={handleMarkReady}
                 disabled={isMarkingReady}
               >
@@ -61,7 +62,7 @@ function TicketCard({
             <Badge
               variant="outline"
               className={cn(
-                'shrink-0 capitalize',
+                'shrink-0 capitalize text-xs',
                 getStatusBadgeClass(ticket.status),
               )}
             >
@@ -72,7 +73,7 @@ function TicketCard({
       </CardHeader>
       {(ticket.priority !== undefined ||
         (isSelected && ticket.description)) && (
-        <CardContent className="pt-0">
+        <CardContent className="pt-0 px-3 md:px-4 pb-3">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             {ticket.priority !== undefined && (
               <span>Priority: {ticket.priority}</span>

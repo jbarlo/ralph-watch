@@ -82,9 +82,9 @@ export function QuickAddBar({ className }: QuickAddBarProps) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Quick add ticket (Enter = draft, Shift+Enter = pending)"
+          placeholder="Quick add (Enter = draft)"
           disabled={createMutation.isPending}
-          className="pr-8"
+          className="pr-8 h-11 md:h-9 text-base md:text-sm"
         />
         {createMutation.isPending && (
           <div className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -97,11 +97,12 @@ export function QuickAddBar({ className }: QuickAddBarProps) {
         size="icon"
         onClick={() => setIsExpanded(true)}
         title="Expand full form"
+        className="h-11 w-11 md:h-9 md:w-9"
       >
         {isExpanded ? (
-          <ChevronDown className="h-4 w-4" />
+          <ChevronDown className="h-5 w-5 md:h-4 md:w-4" />
         ) : (
-          <Plus className="h-4 w-4" />
+          <Plus className="h-5 w-5 md:h-4 md:w-4" />
         )}
       </Button>
     </div>

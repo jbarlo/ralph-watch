@@ -597,3 +597,31 @@
 - Files added: src/lib/project-config.ts
 - Files modified: src/server/routers/config.ts, src/components/RalphSidePanel.tsx, src/components/RalphSidePanel.test.tsx
 - Verified: `pnpm check` passes (all 186 tests pass)
+
+## Ticket #46: Mobile-responsive UI
+- Created src/hooks/use-media-query.ts with useMediaQuery and useIsMobile hooks
+  - Uses useSyncExternalStore for SSR-safe media query detection
+  - Returns false during SSR to avoid hydration mismatch
+- Created src/components/BottomTabBar.tsx
+  - Three tabs: Tickets, Progress, Run
+  - Fixed to bottom with 64px height for touch targets
+  - Active tab indicator and running process indicator on Run tab
+  - Hidden on md+ breakpoint (desktop)
+- Created src/components/MobileLayout.tsx
+  - Full mobile experience managing tab state
+  - Tickets tab: filter, ticket list, ticket detail, quick-add
+  - Progress tab: progress.txt viewer
+  - Run tab: command buttons, stop button, process output viewer
+  - Reuses process management logic from RalphSidePanel
+- Updated src/app/project/[path]/page.tsx
+  - Uses useIsMobile hook to detect viewport size
+  - Renders MobileLayout on mobile (<768px)
+  - Renders desktop layout with RalphSidePanel on desktop
+  - Renamed MobileTabs to DesktopTabs (for medium screens only)
+- Touch-friendly adjustments
+  - TicketList: min-height 56px, larger padding, active state styling
+  - TicketFilter: min-height 36px on mobile, active state
+  - QuickAddBar: height 44px on mobile, larger icons
+- Files added: src/hooks/use-media-query.ts, src/components/BottomTabBar.tsx, src/components/MobileLayout.tsx
+- Files modified: src/app/project/[path]/page.tsx, src/components/TicketList.tsx, src/components/TicketFilter.tsx, src/components/QuickAddBar.tsx
+- Verified: `pnpm check` passes (all 186 tests pass)
