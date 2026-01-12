@@ -1,89 +1,75 @@
 'use client';
 
+import { createContext, useContext, type ReactNode, useMemo } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
-import { useState, useEffect } from 'react';
 import superjson from 'superjson';
 import { trpc } from '@/lib/trpc';
-import { useProjectContext } from './ProjectProvider';
 
 function getBaseUrl() {
   if (typeof window !== 'undefined') {
-    // Browser: use relative URL
     return '';
   }
-  // SSR: use localhost
   return `http://localhost:${process.env.PORT ?? 3000}`;
 }
 
-// Module-level variable to store the current ralph directory
-// This is accessed by the httpBatchLink headers callback
-let currentRalphDir: string | undefined;
-
-/**
- * Get the current ralph directory for tRPC requests
- * Called by httpBatchLink headers callback
- */
-function getRalphDirForHeaders(): Record<string, string> {
-  const headers: Record<string, string> = {};
-  if (currentRalphDir) {
-    headers['x-ralph-dir'] = currentRalphDir;
-  }
-  return headers;
+interface ProjectContextValue {
+  projectPath: string;
 }
 
-// Create clients outside of component to ensure single instance
-let queryClientInstance: QueryClient | null = null;
-let trpcClientInstance: ReturnType<typeof trpc.createClient> | null = null;
+const ProjectContext = createContext<ProjectContextValue | null>(null);
 
-function getQueryClient() {
-  if (!queryClientInstance) {
-    queryClientInstance = new QueryClient({
+/**
+ * Hook to access the current project path from URL
+ */
+export function useProjectPath(): string {
+  const context = useContext(ProjectContext);
+  if (!context) {
+    throw new Error('useProjectPath must be used within TRPCProvider');
+  }
+  return context.projectPath;
+}
+
+interface TRPCProviderProps {
+  children: ReactNode;
+  projectPath: string;
+}
+
+export function TRPCProvider({ children, projectPath }: TRPCProviderProps) {
+  // Create fresh clients when projectPath changes
+  // This ensures React Query cache is scoped per-project
+  const { queryClient, trpcClient } = useMemo(() => {
+    const qc = new QueryClient({
       defaultOptions: {
         queries: {
-          staleTime: 5 * 1000, // 5 seconds
+          staleTime: 5 * 1000,
           refetchOnWindowFocus: true,
         },
       },
     });
-  }
-  return queryClientInstance;
-}
 
-function getTRPCClient() {
-  if (!trpcClientInstance) {
-    trpcClientInstance = trpc.createClient({
+    const tc = trpc.createClient({
       links: [
         httpBatchLink({
           url: `${getBaseUrl()}/api/trpc`,
           transformer: superjson,
-          headers: getRalphDirForHeaders,
+          headers: () => ({
+            'x-ralph-dir': projectPath,
+          }),
         }),
       ],
     });
-  }
-  return trpcClientInstance;
-}
 
-interface TRPCProviderProps {
-  children: React.ReactNode;
-}
-
-export function TRPCProvider({ children }: TRPCProviderProps) {
-  const { activeProjectPath, defaultProjectPath } = useProjectContext();
-
-  // Update the module-level variable when project changes
-  useEffect(() => {
-    currentRalphDir = activeProjectPath ?? defaultProjectPath ?? undefined;
-  }, [activeProjectPath, defaultProjectPath]);
-
-  // Use stable client instances
-  const [queryClient] = useState(getQueryClient);
-  const [trpcClient] = useState(getTRPCClient);
+    return { queryClient: qc, trpcClient: tc };
+  }, [projectPath]);
 
   return (
-    <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </trpc.Provider>
+    <ProjectContext.Provider value={{ projectPath }}>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
+      </trpc.Provider>
+    </ProjectContext.Provider>
   );
 }

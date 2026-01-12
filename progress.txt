@@ -516,3 +516,22 @@
 - Updated mock ProcessRunner in process.test.ts to include onExit
 - Files modified: src/lib/process-runner.ts, src/server/services/process-runner.ts, src/app/api/process/[id]/stream/route.ts, src/server/routers/process.test.ts, src/server/services/process-runner.test.ts
 - Verified: `pnpm check` passes (all 209 tests pass)
+
+## Ticket #42: URL-based project routing
+- Replaced localStorage/context project management with URL-based routing
+- Created src/lib/project-path.ts with encodeProjectPath()/decodeProjectPath() (base64url)
+- Created src/app/project/[path]/page.tsx - main project view with ticket list, details, RalphSidePanel
+- Created src/app/project/[path]/layout.tsx - wraps with TRPCProvider, passes decoded project path
+- Updated src/app/page.tsx to be project picker - shows recent projects from cookies
+- Created src/lib/recent-projects.ts with cookie-based recent project storage
+- Simplified TRPCProvider - now takes projectPath prop directly, creates fresh clients per project
+- Added useProjectPath() hook for components to access current project
+- Updated ConnectionStatusIndicator to use useProjectPath() instead of old context
+- Deleted: ProjectProvider.tsx, AppProviders.tsx, use-projects.ts, use-projects.test.ts, ProjectSwitcher.tsx, projects.ts
+- Updated layout.tsx - removed AppProviders wrapper, TRPCProvider now lives in project layout
+- Added 14 tests for project-path encoding/decoding
+- Data flow now: URL → Next.js params → decoded in layout → TRPCProvider context → useProjectPath() hook
+- Files added: src/lib/project-path.ts, src/lib/project-path.test.ts, src/lib/recent-projects.ts, src/app/project/[path]/page.tsx, src/app/project/[path]/layout.tsx
+- Files modified: src/app/page.tsx, src/app/layout.tsx, src/components/providers/TRPCProvider.tsx, src/components/ConnectionStatus.tsx
+- Files deleted: src/components/providers/ProjectProvider.tsx, src/components/providers/AppProviders.tsx, src/hooks/use-projects.ts, src/hooks/use-projects.test.ts, src/components/ProjectSwitcher.tsx, src/lib/projects.ts
+- Verified: `pnpm check` passes (all 215 tests pass)

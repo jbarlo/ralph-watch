@@ -7,7 +7,7 @@ import {
   type TicketStatusChange,
 } from '@/hooks/use-file-watch';
 import { useNotifications } from '@/hooks/use-notifications';
-import { useProjectContext } from '@/components/providers/ProjectProvider';
+import { useProjectPath } from '@/components/providers/TRPCProvider';
 import { trpc } from '@/lib/trpc';
 import { cn } from '@/lib/utils';
 
@@ -72,11 +72,8 @@ export function ConnectionStatusIndicator({
   className,
 }: ConnectionStatusProps) {
   const { showNotification, permission, isSupported } = useNotifications();
-  const { activeProjectPath, defaultProjectPath } = useProjectContext();
+  const projectPath = useProjectPath();
   const utils = trpc.useUtils();
-
-  // Use active project or fall back to default
-  const ralphDir = activeProjectPath ?? defaultProjectPath ?? undefined;
 
   // Invalidate tickets queries when file changes
   const handleTicketsChange = useCallback(() => {
@@ -114,7 +111,7 @@ export function ConnectionStatusIndicator({
     onProgressChange: handleProgressChange,
     onTicketStatusChange: handleTicketStatusChange,
     getTickets,
-    ralphDir,
+    ralphDir: projectPath,
   });
 
   const notificationIndicator = getNotificationIndicator(

@@ -70,8 +70,9 @@ Append to progress.txt after each ticket:
 Run `pnpm check` after completing each ticket. Must pass before marking ticket complete.
 
 **Comments:**
+
 - Only keep comments that provide helpful context on purpose
-- Declarative, not imperative (describe *what it is*, not *how it was introduced*)
+- Declarative, not imperative (describe _what it is_, not _how it was introduced_)
 - If variable/function name makes purpose clear, no comment needed
 - Never: `// Added for ticket #123`, `// Fixed bug where X`, `// TODO: already done`
 - Good: explaining non-obvious design decisions, clarifying intent where code alone isn't sufficient
