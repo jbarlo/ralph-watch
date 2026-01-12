@@ -463,7 +463,8 @@
       "id": 68,
       "title": "give ticket status badge semantic colours. ensure badge colour logic is centralized and used both in sidebar and ticket description",
       "status": "completed",
-      "priority": 111
+      "priority": 111,
+      "description": "the badges should use catppuccin theme colours if not already specified in the tailwind config. the background colour should be the semantic colour, while the foreground colour is still readable"
     },
     {
       "id": 69,
