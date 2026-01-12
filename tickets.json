@@ -428,7 +428,7 @@
       "id": 63,
       "title": "append ticket id to route to preserve selection",
       "description": "move source of truth of selected ticket id to the route",
-      "status": "in_progress",
+      "status": "completed",
       "priority": 11
     }
   ]

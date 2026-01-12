@@ -890,3 +890,14 @@
   - Status display refactored to getStatusText() helper
 - Files modified: src/lib/project-config.ts, src/hooks/use-terminal.ts, src/components/Terminal.tsx
 - Verified: `pnpm check` passes (all 227 tests pass)
+
+## Ticket #63: append ticket id to route to preserve selection
+- Created src/hooks/use-selected-ticket.ts hook for URL-based selection state
+- Hook uses ?ticket=N query param to store selected ticket ID
+- Updated DesktopProjectContent to use useSelectedTicket() instead of useState
+- Updated MobileLayout to use useSelectedTicket() instead of useState
+- showTicketDetail in mobile now derived from selectedTicketId !== null
+- Selection now survives page refresh and can be bookmarked/shared
+- Files added: src/hooks/use-selected-ticket.ts
+- Files modified: src/app/project/[path]/page.tsx, src/components/MobileLayout.tsx
+- Verified: `pnpm check` passes (all 227 tests pass)
