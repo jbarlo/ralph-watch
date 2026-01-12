@@ -6,7 +6,6 @@ import type { Ticket } from '@/lib/schemas';
 import { TicketList } from '@/components/TicketList';
 import { TicketFilter, type TicketStatus } from '@/components/TicketFilter';
 import { QuickAddBar } from '@/components/QuickAddBar';
-import { ProgressViewer } from '@/components/ProgressViewer';
 import { DescriptionViewer } from '@/components/DescriptionViewer';
 import { EditTicketForm } from '@/components/EditTicketForm';
 import { DeleteTicketButton } from '@/components/DeleteTicketButton';
@@ -18,11 +17,13 @@ import { useProjectPath } from '@/components/providers/TRPCProvider';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { deriveProjectName } from '@/lib/recent-projects';
 import { getStatusBadgeClass, formatStatus } from '@/lib/ticket-ui';
+import { encodeProjectPath } from '@/lib/project-path';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { FileText } from 'lucide-react';
 import Link from 'next/link';
 
 /**
@@ -46,6 +47,12 @@ function Header() {
             </span>
           </div>
         </div>
+        <Link href={`/project/${encodeProjectPath(projectPath)}/progress`}>
+          <Button variant="ghost" size="sm" className="gap-2">
+            <FileText className="h-4 w-4" />
+            <span className="hidden sm:inline">Progress Log</span>
+          </Button>
+        </Link>
         <ThemeToggle />
         <ConnectionStatusIndicator />
       </div>
@@ -87,9 +94,6 @@ function DetailPanel({
             </p>
           </CardContent>
         </Card>
-        <div className="mt-4">
-          <ProgressViewer height="300px" />
-        </div>
       </div>
     );
   }
@@ -111,7 +115,6 @@ function DetailPanel({
             />
           </CardContent>
         </Card>
-        <ProgressViewer height="300px" />
       </div>
     );
   }
@@ -167,7 +170,6 @@ function DetailPanel({
           )}
         </CardContent>
       </Card>
-      <ProgressViewer height="300px" />
     </div>
   );
 }

@@ -799,3 +799,28 @@
 - Updated RalphSidePanel.test.tsx to mock process.list.useQuery
 - Files modified: src/lib/process-state.ts, src/lib/process-state.test.ts, src/components/RalphSidePanel.tsx, src/components/RalphSidePanel.test.tsx
 - Verified: `pnpm check` passes (all 227 tests pass)
+
+## Ticket #58: Move progress log to dedicated page/tab with scroll buttons
+- Created dedicated progress page at src/app/project/[path]/progress/page.tsx
+- Added floating scroll-to-top and scroll-to-bottom buttons to ProgressViewer component
+  - Buttons appear in bottom-right corner when scrolling is possible
+  - Scroll-to-top button: hidden when at top, visible when scrolled down
+  - Scroll-to-bottom button: hidden when at bottom, visible when scrolled up
+  - Smooth scrolling animation for both directions
+  - Buttons use secondary variant with shadow and rounded-full styling
+- Added showScrollButtons prop to ProgressViewer (default false)
+- Progress page features:
+  - Full-height viewer with scroll buttons enabled
+  - Back to Tickets navigation button
+  - Header with project name and path
+  - Theme toggle and connection status indicator
+- Added Progress Log button to main project page header (desktop)
+  - Uses FileText icon from lucide-react
+  - Links to /project/[encodedPath]/progress
+- Removed embedded ProgressViewer from DetailPanel
+  - Progress now accessed via dedicated page instead of inline card
+- Used queueMicrotask pattern to satisfy ESLint set-state-in-effect rule for scroll position detection
+- Files added: src/app/project/[path]/progress/page.tsx
+- Files modified: src/components/ProgressViewer.tsx, src/app/project/[path]/page.tsx
+- Verified: `pnpm check` passes (all 227 tests pass)
+
