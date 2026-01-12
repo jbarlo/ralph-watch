@@ -15,13 +15,13 @@ export function useTicketFilter() {
   const statusParam = searchParams.get('status');
   const status: TicketStatus = isValidTicketStatus(statusParam)
     ? statusParam
-    : 'all';
+    : 'incomplete';
 
   const setStatus = useCallback(
     (newStatus: TicketStatus) => {
       const params = new URLSearchParams(searchParams.toString());
 
-      if (newStatus === 'all') {
+      if (newStatus === 'incomplete') {
         params.delete('status');
       } else {
         params.set('status', newStatus);

@@ -119,10 +119,17 @@ export function TicketList({
     markReadyMutation.mutate({ id: ticketId, data: { status: 'pending' } });
   };
 
-  // Filter tickets by status
   const filteredTickets = useMemo(() => {
     if (!tickets) return [];
     if (statusFilter === 'all') return tickets;
+    if (statusFilter === 'incomplete') {
+      return tickets.filter(
+        (t) =>
+          t.status === 'draft' ||
+          t.status === 'pending' ||
+          t.status === 'in_progress',
+      );
+    }
     return tickets.filter((t) => t.status === statusFilter);
   }, [tickets, statusFilter]);
 
