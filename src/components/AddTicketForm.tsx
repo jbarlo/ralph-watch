@@ -9,33 +9,32 @@ import { useToast } from '@/hooks/use-toast';
 
 export interface AddTicketFormProps {
   onSuccess?: () => void;
+  defaultStatus?: 'draft' | 'pending';
 }
 
-export function AddTicketForm({ onSuccess }: AddTicketFormProps) {
+export function AddTicketForm({
+  onSuccess,
+  defaultStatus = 'pending',
+}: AddTicketFormProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<number>(1);
+  const [status, setStatus] = useState<'draft' | 'pending'>(defaultStatus);
 
   const { toast } = useToast();
   const utils = trpc.useUtils();
 
   const createMutation = trpc.tickets.create.useMutation({
-    onSuccess: () => {
-      // Clear form
+    onSuccess: (ticket) => {
       setTitle('');
       setDescription('');
       setPriority(1);
-
-      // Invalidate tickets query to refetch
+      setStatus(defaultStatus);
       utils.tickets.list.invalidate();
-
-      // Show success toast
       toast({
-        title: 'Ticket created',
-        description: 'Your ticket has been created successfully.',
+        title: ticket.status === 'draft' ? 'Draft created' : 'Ticket created',
+        description: `"${ticket.title}" added as ${ticket.status}`,
       });
-
-      // Call onSuccess callback if provided
       onSuccess?.();
     },
     onError: (error) => {
@@ -63,6 +62,7 @@ export function AddTicketForm({ onSuccess }: AddTicketFormProps) {
       title: title.trim(),
       description: description.trim() || undefined,
       priority,
+      status,
     });
   };
 
@@ -111,8 +111,42 @@ export function AddTicketForm({ onSuccess }: AddTicketFormProps) {
         </p>
       </div>
 
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-medium">Status</label>
+        <div className="flex gap-4">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="radio"
+              name="status"
+              value="draft"
+              checked={status === 'draft'}
+              onChange={() => setStatus('draft')}
+              className="h-4 w-4"
+            />
+            Draft
+            <span className="text-xs text-muted-foreground">(not ready)</span>
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="radio"
+              name="status"
+              value="pending"
+              checked={status === 'pending'}
+              onChange={() => setStatus('pending')}
+              className="h-4 w-4"
+            />
+            Pending
+            <span className="text-xs text-muted-foreground">(ready)</span>
+          </label>
+        </div>
+      </div>
+
       <Button type="submit" disabled={createMutation.isPending}>
-        {createMutation.isPending ? 'Creating...' : 'Create Ticket'}
+        {createMutation.isPending
+          ? 'Creating...'
+          : status === 'draft'
+            ? 'Create Draft'
+            : 'Create Ticket'}
       </Button>
     </form>
   );

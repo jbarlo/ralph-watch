@@ -7,6 +7,8 @@
  */
 export function getStatusBadgeClass(status: string): string {
   switch (status) {
+    case 'draft':
+      return 'bg-gray-500/20 text-gray-500 border-gray-500/30';
     case 'pending':
       return 'bg-yellow-500/20 text-yellow-700 border-yellow-500/30';
     case 'in_progress':

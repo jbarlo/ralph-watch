@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 
 export type TicketStatus =
   | 'all'
+  | 'draft'
   | 'pending'
   | 'in_progress'
   | 'completed'
@@ -11,6 +12,7 @@ export type TicketStatus =
 
 const STATUS_OPTIONS: { value: TicketStatus; label: string }[] = [
   { value: 'all', label: 'All' },
+  { value: 'draft', label: 'Draft' },
   { value: 'pending', label: 'Pending' },
   { value: 'in_progress', label: 'In Progress' },
   { value: 'completed', label: 'Completed' },
@@ -47,7 +49,12 @@ export function isValidTicketStatus(
   status: string | null,
 ): status is TicketStatus {
   if (!status) return false;
-  return ['all', 'pending', 'in_progress', 'completed', 'failed'].includes(
-    status,
-  );
+  return [
+    'all',
+    'draft',
+    'pending',
+    'in_progress',
+    'completed',
+    'failed',
+  ].includes(status);
 }

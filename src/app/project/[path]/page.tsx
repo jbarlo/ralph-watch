@@ -5,6 +5,7 @@ import { trpc } from '@/lib/trpc';
 import type { Ticket } from '@/lib/schemas';
 import { TicketList } from '@/components/TicketList';
 import { TicketFilter, type TicketStatus } from '@/components/TicketFilter';
+import { QuickAddBar } from '@/components/QuickAddBar';
 import { ProgressViewer } from '@/components/ProgressViewer';
 import { EditTicketForm } from '@/components/EditTicketForm';
 import { DeleteTicketButton } from '@/components/DeleteTicketButton';
@@ -235,20 +236,23 @@ function ProjectContent() {
       <main className="flex flex-1 overflow-hidden">
         <div
           className={cn(
-            'w-full border-r p-4 lg:w-[400px] lg:block',
-            mobileTab === 'tickets' ? 'block' : 'hidden',
+            'flex w-full flex-col border-r p-4 lg:w-[400px] lg:flex',
+            mobileTab === 'tickets' ? 'flex' : 'hidden',
           )}
         >
           <div className="mb-4">
             <TicketFilter value={statusFilter} onChange={setStatusFilter} />
           </div>
-          <ScrollArea className="h-[calc(100vh-10rem)] lg:h-[calc(100vh-7.5rem)]">
+          <ScrollArea className="flex-1 lg:h-[calc(100vh-11rem)]">
             <TicketList
               onTicketSelect={handleTicketSelect}
               selectedTicketId={selectedTicketId}
               statusFilter={statusFilter}
             />
           </ScrollArea>
+          <div className="mt-4 border-t pt-4">
+            <QuickAddBar />
+          </div>
         </div>
         <div
           className={cn(

@@ -5,6 +5,7 @@ import { trpc } from '@/lib/trpc';
 import type { Ticket } from '@/lib/schemas';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { getStatusBadgeClass, formatStatus } from '@/lib/ticket-ui';
 import type { TicketStatus } from '@/components/TicketFilter';
@@ -13,14 +14,30 @@ interface TicketCardProps {
   ticket: Ticket;
   isSelected: boolean;
   onSelect: (ticket: Ticket) => void;
+  onMarkReady?: (ticketId: number) => void;
+  isMarkingReady?: boolean;
 }
 
-function TicketCard({ ticket, isSelected, onSelect }: TicketCardProps) {
+function TicketCard({
+  ticket,
+  isSelected,
+  onSelect,
+  onMarkReady,
+  isMarkingReady,
+}: TicketCardProps) {
+  const isDraft = ticket.status === 'draft';
+
+  const handleMarkReady = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onMarkReady?.(ticket.id);
+  };
+
   return (
     <Card
       className={cn(
         'cursor-pointer transition-colors hover:bg-accent/50',
         isSelected && 'ring-2 ring-primary',
+        isDraft && 'opacity-60',
       )}
       onClick={() => onSelect(ticket)}
     >
@@ -29,15 +46,28 @@ function TicketCard({ ticket, isSelected, onSelect }: TicketCardProps) {
           <CardTitle className="text-sm font-medium leading-tight">
             #{ticket.id}: {ticket.title}
           </CardTitle>
-          <Badge
-            variant="outline"
-            className={cn(
-              'shrink-0 capitalize',
-              getStatusBadgeClass(ticket.status),
+          <div className="flex items-center gap-2">
+            {isDraft && onMarkReady && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-5 px-2 text-xs"
+                onClick={handleMarkReady}
+                disabled={isMarkingReady}
+              >
+                {isMarkingReady ? '...' : 'Ready'}
+              </Button>
             )}
-          >
-            {formatStatus(ticket.status)}
-          </Badge>
+            <Badge
+              variant="outline"
+              className={cn(
+                'shrink-0 capitalize',
+                getStatusBadgeClass(ticket.status),
+              )}
+            >
+              {formatStatus(ticket.status)}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
       {(ticket.priority !== undefined ||
@@ -73,12 +103,28 @@ export function TicketList({
   const [internalSelectedId, setInternalSelectedId] = useState<number | null>(
     null,
   );
+  const [markingReadyId, setMarkingReadyId] = useState<number | null>(null);
 
-  // Use controlled or uncontrolled selection
   const effectiveSelectedId =
     selectedTicketId !== undefined ? selectedTicketId : internalSelectedId;
 
   const { data: tickets, isLoading, error } = trpc.tickets.list.useQuery();
+  const utils = trpc.useUtils();
+
+  const markReadyMutation = trpc.tickets.update.useMutation({
+    onSuccess: () => {
+      utils.tickets.list.invalidate();
+      setMarkingReadyId(null);
+    },
+    onError: () => {
+      setMarkingReadyId(null);
+    },
+  });
+
+  const handleMarkReady = (ticketId: number) => {
+    setMarkingReadyId(ticketId);
+    markReadyMutation.mutate({ id: ticketId, data: { status: 'pending' } });
+  };
 
   // Filter tickets by status
   const filteredTickets = useMemo(() => {
@@ -143,6 +189,8 @@ export function TicketList({
           ticket={ticket}
           isSelected={effectiveSelectedId === ticket.id}
           onSelect={handleSelect}
+          onMarkReady={handleMarkReady}
+          isMarkingReady={markingReadyId === ticket.id}
         />
       ))}
     </div>

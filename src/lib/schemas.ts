@@ -1,9 +1,10 @@
 import { z } from 'zod';
 
 /**
- * Ticket status values
+ * Ticket status values. 'draft' tickets are ignored by ralph (not ready for execution).
  */
 export const ticketStatuses = [
+  'draft',
   'pending',
   'in_progress',
   'completed',
@@ -47,6 +48,7 @@ export const CreateTicketSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
   priority: z.number().optional(),
+  status: z.enum(['draft', 'pending']).optional(),
 });
 
 export type CreateTicket = z.infer<typeof CreateTicketSchema>;

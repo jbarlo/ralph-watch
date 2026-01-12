@@ -558,3 +558,24 @@
 - Files modified: src/components/ConnectionStatus.tsx, src/components/RalphSidePanel.tsx, src/components/ProcessOutputViewer.tsx
 - Files deleted: src/app/api/watch/route.ts, src/app/api/process/[id]/stream/route.ts, src/hooks/use-file-watch.ts, src/hooks/use-process-output.ts, src/hooks/use-process-output.test.ts, src/components/RalphControls.tsx
 - Verified: `pnpm check` passes (all 186 tests pass)
+
+## Ticket #44: Quick-add tickets with draft status
+- Added 'draft' to ticketStatuses in src/lib/schemas.ts
+- Updated CreateTicketSchema to accept optional status (draft|pending)
+- Updated tickets router create mutation to use provided status
+- Added draft badge styling (gray/muted) to src/lib/ticket-ui.ts
+- Added 'draft' to TicketFilter status options and validation
+- Created src/components/QuickAddBar.tsx:
+  - Always-visible input bar at bottom of ticket list
+  - Enter = create as draft, Shift+Enter = create as pending
+  - '+' button expands to full AddTicketForm
+  - Auto-focus stays in input for rapid entry
+- Updated AddTicketForm with status radio buttons (draft/pending)
+- Updated TicketList:
+  - Draft tickets show dimmed/faded (opacity-60)
+  - 'Ready' button on draft tickets promotes to pending status
+  - Added markReady mutation with optimistic UI
+- Integrated QuickAddBar into project page layout below ticket list
+- Files added: src/components/QuickAddBar.tsx
+- Files modified: src/lib/schemas.ts, src/lib/ticket-ui.ts, src/server/routers/tickets.ts, src/components/TicketFilter.tsx, src/components/AddTicketForm.tsx, src/components/TicketList.tsx, src/app/project/[path]/page.tsx
+- Verified: `pnpm check` passes (all 186 tests pass)

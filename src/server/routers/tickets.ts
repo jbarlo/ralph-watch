@@ -117,7 +117,7 @@ export const ticketsRouter = router({
         id: getNextId(data.tickets),
         title: input.title,
         description: input.description,
-        status: 'pending',
+        status: input.status ?? 'pending',
         priority: input.priority,
       };
 
