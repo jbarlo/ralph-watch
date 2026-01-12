@@ -1,19 +1,16 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import {
-  useFileWatch,
+  useEventStream,
   type ConnectionStatus,
   type TicketStatusChange,
-} from '@/hooks/use-file-watch';
+} from '@/hooks/use-event-stream';
 import { useNotifications } from '@/hooks/use-notifications';
 import { useProjectPath } from '@/components/providers/TRPCProvider';
 import { trpc } from '@/lib/trpc';
 import { cn } from '@/lib/utils';
 
-/**
- * Get indicator dot color based on connection status
- */
 function getStatusColor(status: ConnectionStatus): string {
   switch (status) {
     case 'connected':
@@ -25,9 +22,6 @@ function getStatusColor(status: ConnectionStatus): string {
   }
 }
 
-/**
- * Get display text for connection status
- */
 function getStatusText(status: ConnectionStatus): string {
   switch (status) {
     case 'connected':
@@ -39,9 +33,6 @@ function getStatusText(status: ConnectionStatus): string {
   }
 }
 
-/**
- * Get notification permission indicator text
- */
 function getNotificationIndicator(
   permission: string,
   isSupported: boolean,
@@ -49,7 +40,7 @@ function getNotificationIndicator(
   if (!isSupported) return null;
   switch (permission) {
     case 'granted':
-      return null; // Don't show anything when granted
+      return null;
     case 'denied':
       return '(notifications blocked)';
     case 'default':
@@ -63,11 +54,6 @@ interface ConnectionStatusProps {
   className?: string;
 }
 
-/**
- * Connection status indicator for file watch SSE
- * Shows a colored dot and status text
- * Also handles desktop notifications for ticket status changes
- */
 export function ConnectionStatusIndicator({
   className,
 }: ConnectionStatusProps) {
@@ -75,22 +61,18 @@ export function ConnectionStatusIndicator({
   const projectPath = useProjectPath();
   const utils = trpc.useUtils();
 
-  // Invalidate tickets queries when file changes
   const handleTicketsChange = useCallback(() => {
     void utils.tickets.list.invalidate();
   }, [utils.tickets.list]);
 
-  // Invalidate progress queries when file changes
   const handleProgressChange = useCallback(() => {
     void utils.progress.read.invalidate();
   }, [utils.progress.read]);
 
-  // Get current tickets data for status change detection
   const getTickets = useCallback(() => {
     return utils.tickets.list.getData();
   }, [utils.tickets.list]);
 
-  // Handle ticket status changes with desktop notifications
   const handleTicketStatusChange = useCallback(
     (change: TicketStatusChange) => {
       const statusEmoji = change.newStatus === 'completed' ? '✅' : '❌';
@@ -106,12 +88,15 @@ export function ConnectionStatusIndicator({
     [showNotification],
   );
 
-  const status = useFileWatch({
+  const topics = useMemo(() => ['tickets', 'progress'], []);
+
+  const { connectionStatus } = useEventStream({
+    project: projectPath,
+    topics,
     onTicketsChange: handleTicketsChange,
     onProgressChange: handleProgressChange,
     onTicketStatusChange: handleTicketStatusChange,
     getTickets,
-    ralphDir: projectPath,
   });
 
   const notificationIndicator = getNotificationIndicator(
@@ -125,11 +110,13 @@ export function ConnectionStatusIndicator({
         'flex items-center gap-2 text-xs text-muted-foreground',
         className,
       )}
-      title={`File watching: ${getStatusText(status)}`}
+      title={`File watching: ${getStatusText(connectionStatus)}`}
     >
-      <span className={cn('h-2 w-2 rounded-full', getStatusColor(status))} />
+      <span
+        className={cn('h-2 w-2 rounded-full', getStatusColor(connectionStatus))}
+      />
       <span className="hidden sm:inline">
-        {getStatusText(status)}
+        {getStatusText(connectionStatus)}
         {notificationIndicator && (
           <span className="ml-1 text-yellow-600">{notificationIndicator}</span>
         )}

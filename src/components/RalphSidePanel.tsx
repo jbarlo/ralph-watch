@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { trpc } from '@/lib/trpc';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { ProcessOutputViewer } from '@/components/ProcessOutputViewer';
-import { useProcessOutput } from '@/hooks/use-process-output';
+import { useEventStream } from '@/hooks/use-event-stream';
+import { useProjectPath } from '@/components/providers/TRPCProvider';
+import type { ProcessOutputLine } from '@/lib/process-runner';
 import { cn } from '@/lib/utils';
 
 type CommandType = 'runOnce' | 'runAll';
@@ -17,15 +19,47 @@ interface RunningProcess {
 
 export function RalphSidePanel() {
   const { toast } = useToast();
+  const projectPath = useProjectPath();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [runningProcess, setRunningProcess] = useState<RunningProcess | null>(
     null,
   );
   const [lastExitCode, setLastExitCode] = useState<number | null>(null);
+  const [lines, setLines] = useState<ProcessOutputLine[]>([]);
+  const [processExitCode, setProcessExitCode] = useState<number | null>(null);
 
-  const { exitCode, connectionStatus, lines } = useProcessOutput(
-    runningProcess?.id ?? null,
+  const topics = useMemo(() => {
+    const t: string[] = [];
+    if (runningProcess) {
+      t.push(`process:${runningProcess.id}`);
+    }
+    return t;
+  }, [runningProcess]);
+
+  const handleProcessOutput = useCallback(
+    (processId: string, line: ProcessOutputLine) => {
+      if (runningProcess && processId === runningProcess.id) {
+        setLines((prev) => [...prev, line]);
+      }
+    },
+    [runningProcess],
   );
+
+  const handleProcessExit = useCallback(
+    (processId: string, code: number | null) => {
+      if (runningProcess && processId === runningProcess.id) {
+        setProcessExitCode(code);
+      }
+    },
+    [runningProcess],
+  );
+
+  const { connectionStatus } = useEventStream({
+    project: projectPath,
+    topics,
+    onProcessOutput: handleProcessOutput,
+    onProcessExit: handleProcessExit,
+  });
 
   const startMutation = trpc.process.start.useMutation({
     onSuccess: (handle, variables) => {
@@ -35,6 +69,8 @@ export function RalphSidePanel() {
 
       setRunningProcess({ id: handle.id, commandType });
       setLastExitCode(null);
+      setLines([]);
+      setProcessExitCode(null);
       setIsCollapsed(false);
 
       toast({
@@ -72,7 +108,7 @@ export function RalphSidePanel() {
 
   const prevExitCodeRef = useRef<number | null>(null);
 
-  const handleProcessExit = useCallback(
+  const handleProcessComplete = useCallback(
     (code: number) => {
       setLastExitCode(code);
       setRunningProcess(null);
@@ -96,15 +132,15 @@ export function RalphSidePanel() {
   useEffect(() => {
     if (
       runningProcess &&
-      exitCode !== null &&
+      processExitCode !== null &&
       prevExitCodeRef.current === null
     ) {
-      queueMicrotask(() => handleProcessExit(exitCode));
+      queueMicrotask(() => handleProcessComplete(processExitCode));
     }
-    prevExitCodeRef.current = exitCode;
-  }, [runningProcess, exitCode, handleProcessExit]);
+    prevExitCodeRef.current = processExitCode;
+  }, [runningProcess, processExitCode, handleProcessComplete]);
 
-  const isRunning = runningProcess !== null && exitCode === null;
+  const isRunning = runningProcess !== null && processExitCode === null;
   const isStarting = startMutation.isPending;
   const isStopping = killMutation.isPending;
 
@@ -125,6 +161,7 @@ export function RalphSidePanel() {
 
   const handleClearOutput = () => {
     setLastExitCode(null);
+    setLines([]);
   };
 
   const runOnceDisabled = isRunning || isStarting;
@@ -270,6 +307,9 @@ export function RalphSidePanel() {
           <div className="flex-1 overflow-hidden p-3">
             {hasOutput || isRunning ? (
               <ProcessOutputViewer
+                lines={lines}
+                exitCode={processExitCode}
+                connectionStatus={connectionStatus}
                 processId={runningProcess?.id ?? null}
                 height="100%"
                 title="Output"

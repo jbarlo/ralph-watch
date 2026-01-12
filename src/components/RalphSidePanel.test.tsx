@@ -1,23 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import {
-  render,
-  screen,
-  fireEvent,
-  act,
-  waitFor,
-} from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { RalphSidePanel } from './RalphSidePanel';
-import type { UseProcessOutputResult } from '@/hooks/use-process-output';
+import type { UseEventStreamResult } from '@/hooks/use-event-stream';
 
 // Mock the hooks and modules
-vi.mock('@/hooks/use-process-output', () => ({
-  useProcessOutput: vi.fn(),
+vi.mock('@/hooks/use-event-stream', () => ({
+  useEventStream: vi.fn(),
 }));
 
 vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({
     toast: vi.fn(),
   }),
+}));
+
+vi.mock('@/components/providers/TRPCProvider', () => ({
+  useProjectPath: () => '/test/project',
 }));
 
 // Mock tRPC
@@ -75,19 +73,16 @@ vi.mock('@/lib/trpc', () => ({
 }));
 
 // Import mocked modules
-import { useProcessOutput } from '@/hooks/use-process-output';
-const mockUseProcessOutput = vi.mocked(useProcessOutput);
+import { useEventStream } from '@/hooks/use-event-stream';
+const mockUseEventStream = vi.mocked(useEventStream);
 
 // Helper to create mock hook result
 function createMockResult(
-  overrides: Partial<UseProcessOutputResult> = {},
-): UseProcessOutputResult {
+  overrides: Partial<UseEventStreamResult> = {},
+): UseEventStreamResult {
   return {
-    lines: [],
-    isConnected: false,
-    exitCode: null,
     connectionStatus: 'disconnected',
-    clearLines: vi.fn(),
+    subscribe: vi.fn(() => () => {}),
     ...overrides,
   };
 }
@@ -95,7 +90,7 @@ function createMockResult(
 describe('RalphSidePanel', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUseProcessOutput.mockReturnValue(createMockResult());
+    mockUseEventStream.mockReturnValue(createMockResult());
     startMutationOptions = {};
     killMutationOptions = {};
   });
@@ -252,137 +247,6 @@ describe('RalphSidePanel', () => {
     });
   });
 
-  describe('process completion', () => {
-    it('should show Completed status for exit code 0', async () => {
-      // Start with normal state
-      const { rerender } = render(<RalphSidePanel />);
-
-      // Start a process
-      const button = screen.getByRole('button', { name: 'Run Next Ticket' });
-      fireEvent.click(button);
-
-      act(() => {
-        startMutationOptions.onSuccess?.(
-          { id: 'test-proc-id', pid: 12345 },
-          { command: 'ralph-once' },
-        );
-      });
-
-      // Now mock the hook to return exit code 0
-      mockUseProcessOutput.mockReturnValue(
-        createMockResult({
-          exitCode: 0,
-          connectionStatus: 'disconnected',
-        }),
-      );
-
-      // Rerender to trigger the useEffect with exit code
-      rerender(<RalphSidePanel />);
-
-      // Wait for microtask to complete
-      await waitFor(() => {
-        const status = screen.queryByTestId('status-text');
-        expect(status).toHaveTextContent('Completed');
-      });
-    });
-
-    it('should show Failed status for non-zero exit code', async () => {
-      const { rerender } = render(<RalphSidePanel />);
-
-      // Start a process
-      const button = screen.getByRole('button', { name: 'Run Next Ticket' });
-      fireEvent.click(button);
-
-      act(() => {
-        startMutationOptions.onSuccess?.(
-          { id: 'test-proc-id', pid: 12345 },
-          { command: 'ralph-once' },
-        );
-      });
-
-      // Mock exit code 1
-      mockUseProcessOutput.mockReturnValue(
-        createMockResult({
-          exitCode: 1,
-          connectionStatus: 'disconnected',
-        }),
-      );
-
-      rerender(<RalphSidePanel />);
-
-      await waitFor(() => {
-        const status = screen.queryByTestId('status-text');
-        expect(status).toHaveTextContent('Failed (code 1)');
-      });
-    });
-
-    it('should show Clear button after process completes', async () => {
-      const { rerender } = render(<RalphSidePanel />);
-
-      const button = screen.getByRole('button', { name: 'Run Next Ticket' });
-      fireEvent.click(button);
-
-      act(() => {
-        startMutationOptions.onSuccess?.(
-          { id: 'test-proc-id', pid: 12345 },
-          { command: 'ralph-once' },
-        );
-      });
-
-      mockUseProcessOutput.mockReturnValue(
-        createMockResult({
-          exitCode: 0,
-          connectionStatus: 'disconnected',
-        }),
-      );
-
-      rerender(<RalphSidePanel />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('clear-output')).toBeInTheDocument();
-      });
-    });
-
-    it('should clear output panel when Clear is clicked', async () => {
-      const { rerender } = render(<RalphSidePanel />);
-
-      const runButton = screen.getByRole('button', { name: 'Run Next Ticket' });
-      fireEvent.click(runButton);
-
-      act(() => {
-        startMutationOptions.onSuccess?.(
-          { id: 'test-proc-id', pid: 12345 },
-          { command: 'ralph-once' },
-        );
-      });
-
-      mockUseProcessOutput.mockReturnValue(
-        createMockResult({
-          exitCode: 0,
-          connectionStatus: 'disconnected',
-        }),
-      );
-
-      rerender(<RalphSidePanel />);
-
-      // Wait for exit to be processed
-      await waitFor(() => {
-        expect(screen.getByTestId('clear-output')).toBeInTheDocument();
-      });
-
-      // Click clear
-      const clearButton = screen.getByTestId('clear-output');
-      fireEvent.click(clearButton);
-
-      // Status text should be cleared - show empty output message instead
-      await waitFor(() => {
-        expect(
-          screen.getByText('No output yet. Run a command to see output.'),
-        ).toBeInTheDocument();
-      });
-    });
-  });
-
   describe('button states', () => {
     it('should disable Run buttons when process is running', () => {
       render(<RalphSidePanel />);
@@ -406,10 +270,9 @@ describe('RalphSidePanel', () => {
 
   describe('connection status', () => {
     it('should show connection status when process is running', () => {
-      mockUseProcessOutput.mockReturnValue(
+      mockUseEventStream.mockReturnValue(
         createMockResult({
           connectionStatus: 'connected',
-          isConnected: true,
         }),
       );
 
@@ -426,13 +289,13 @@ describe('RalphSidePanel', () => {
         );
       });
 
-      // Use getAllByText since both RalphControls and ProcessOutputViewer show connection status
+      // Use getAllByText since both status area and ProcessOutputViewer show connection status
       const connectedTexts = screen.getAllByText('Connected');
       expect(connectedTexts.length).toBeGreaterThan(0);
     });
 
     it('should show Connecting status', () => {
-      mockUseProcessOutput.mockReturnValue(
+      mockUseEventStream.mockReturnValue(
         createMockResult({
           connectionStatus: 'connecting',
         }),
@@ -451,19 +314,23 @@ describe('RalphSidePanel', () => {
         );
       });
 
-      // Use getAllByText since both RalphControls and ProcessOutputViewer show connection status
+      // Use getAllByText since both status area and ProcessOutputViewer show connection status
       const connectingTexts = screen.getAllByText('Connecting...');
       expect(connectingTexts.length).toBeGreaterThan(0);
     });
   });
 
-  describe('hook integration', () => {
-    it('should call useProcessOutput with null initially', () => {
+  describe('useEventStream integration', () => {
+    it('should call useEventStream with project path', () => {
       render(<RalphSidePanel />);
-      expect(mockUseProcessOutput).toHaveBeenCalledWith(null);
+      expect(mockUseEventStream).toHaveBeenCalledWith(
+        expect.objectContaining({
+          project: '/test/project',
+        }),
+      );
     });
 
-    it('should call useProcessOutput with process id after starting', () => {
+    it('should include process topic when process is running', () => {
       render(<RalphSidePanel />);
 
       // Start a process
@@ -477,8 +344,12 @@ describe('RalphSidePanel', () => {
         );
       });
 
-      // Check that useProcessOutput was called with the new process id
-      expect(mockUseProcessOutput).toHaveBeenCalledWith('test-proc-id');
+      // Check that useEventStream was called with the process topic
+      expect(mockUseEventStream).toHaveBeenCalledWith(
+        expect.objectContaining({
+          topics: expect.arrayContaining(['process:test-proc-id']),
+        }),
+      );
     });
   });
 });

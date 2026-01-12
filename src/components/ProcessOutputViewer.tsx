@@ -5,43 +5,22 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  useProcessOutput,
-  type ProcessOutputConnectionStatus,
-} from '@/hooks/use-process-output';
+import type { ProcessOutputLine } from '@/lib/process-runner';
+import type { ConnectionStatus } from '@/hooks/use-event-stream';
 import { cn } from '@/lib/utils';
 
 export interface ProcessOutputViewerProps {
-  /**
-   * Process ID to subscribe to
-   */
+  lines: ProcessOutputLine[];
+  exitCode: number | null;
+  connectionStatus: ConnectionStatus;
   processId: string | null | undefined;
-  /**
-   * Height of the scroll area (CSS value)
-   * @default '300px'
-   */
   height?: string;
-  /**
-   * Optional title for the card header
-   * @default 'Process Output'
-   */
   title?: string;
-  /**
-   * Whether to wrap the viewer in a card
-   * @default true
-   */
   showCard?: boolean;
-  /**
-   * Initial auto-scroll state
-   * @default true
-   */
   initialAutoScroll?: boolean;
 }
 
-/**
- * Get connection status badge styling
- */
-function getStatusBadge(status: ProcessOutputConnectionStatus) {
+function getStatusBadge(status: ConnectionStatus) {
   switch (status) {
     case 'connected':
       return { variant: 'default' as const, label: 'Connected' };
@@ -52,21 +31,19 @@ function getStatusBadge(status: ProcessOutputConnectionStatus) {
   }
 }
 
-/**
- * Component to display real-time process output with auto-scroll functionality
- */
 export function ProcessOutputViewer({
+  lines,
+  exitCode,
+  connectionStatus,
   processId,
   height = '300px',
   title = 'Process Output',
   showCard = true,
   initialAutoScroll = true,
 }: ProcessOutputViewerProps) {
-  const { lines, exitCode, connectionStatus } = useProcessOutput(processId);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [autoScroll, setAutoScroll] = useState(initialAutoScroll);
 
-  // Auto-scroll to bottom when new lines arrive
   useEffect(() => {
     if (autoScroll && lines.length > 0) {
       const viewport = scrollAreaRef.current?.querySelector(

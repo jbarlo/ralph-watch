@@ -535,3 +535,26 @@
 - Files modified: src/app/page.tsx, src/app/layout.tsx, src/components/providers/TRPCProvider.tsx, src/components/ConnectionStatus.tsx
 - Files deleted: src/components/providers/ProjectProvider.tsx, src/components/providers/AppProviders.tsx, src/hooks/use-projects.ts, src/hooks/use-projects.test.ts, src/components/ProjectSwitcher.tsx, src/lib/projects.ts
 - Verified: `pnpm check` passes (all 215 tests pass)
+## Ticket #43: Unify SSE into single event stream
+- Consolidated /api/watch and /api/process/[id]/stream into single /api/events endpoint
+- Created src/app/api/events/route.ts - unified SSE endpoint supporting multiple topics
+  - Topics: 'tickets', 'progress', 'process:{id}'
+  - Events: {topic: string, type: string, data: any}
+  - File watchers for tickets.json and progress.txt
+  - Process output via runner.onOutput() and runner.onExit()
+- Created src/hooks/use-event-stream.ts - unified client hook
+  - Takes project path and topics array
+  - Returns connectionStatus and subscribe function
+  - Supports dynamic topic changes (reconnects when topics change)
+  - onTicketsChange, onProgressChange, onProcessOutput, onProcessExit callbacks
+- Updated ConnectionStatusIndicator to use useEventStream with topics=['tickets', 'progress']
+- Updated RalphSidePanel to use useEventStream with dynamic process topic
+- Updated ProcessOutputViewer to be a controlled component (receives lines/exitCode/connectionStatus as props)
+- Deleted old SSE endpoints: /api/watch/route.ts, /api/process/[id]/stream/route.ts
+- Deleted old hooks: use-file-watch.ts, use-process-output.ts, use-process-output.test.ts
+- Deleted unused RalphControls.tsx component
+- Updated tests: ProcessOutputViewer.test.tsx, RalphSidePanel.test.tsx
+- Files added: src/app/api/events/route.ts, src/hooks/use-event-stream.ts
+- Files modified: src/components/ConnectionStatus.tsx, src/components/RalphSidePanel.tsx, src/components/ProcessOutputViewer.tsx
+- Files deleted: src/app/api/watch/route.ts, src/app/api/process/[id]/stream/route.ts, src/hooks/use-file-watch.ts, src/hooks/use-process-output.ts, src/hooks/use-process-output.test.ts, src/components/RalphControls.tsx
+- Verified: `pnpm check` passes (all 186 tests pass)
