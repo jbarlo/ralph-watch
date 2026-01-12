@@ -117,6 +117,21 @@ export function Terminal({
     xtermRef.current = term;
     fitAddonRef.current = fitAddon;
 
+    // Handle Ctrl-C: if text selected, copy; otherwise send SIGINT
+    term.attachCustomKeyEventHandler((event) => {
+      if (event.ctrlKey && event.key === 'c' && event.type === 'keydown') {
+        const hasSelection = term.hasSelection();
+        if (hasSelection) {
+          // Copy selected text
+          navigator.clipboard.writeText(term.getSelection());
+          return false; // Prevent xterm from sending \x03
+        }
+        // No selection - let xterm send \x03 (SIGINT)
+        return true;
+      }
+      return true; // Let xterm handle all other keys
+    });
+
     term.onData((data) => {
       sendInput(data);
     });

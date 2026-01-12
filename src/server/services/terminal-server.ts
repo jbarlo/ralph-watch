@@ -7,6 +7,9 @@ const ALLOW_REMOTE =
   'yes-i-understand-this-is-dangerous';
 
 const DEFAULT_PORT = 3001;
+const CLAUDE_COMMAND = process.env.CLAUDE_COMMAND || 'claude';
+
+console.log(`Using CLAUDE_COMMAND: ${CLAUDE_COMMAND}`);
 
 interface TerminalMessage {
   type: 'input' | 'resize';
@@ -60,7 +63,8 @@ export function createTerminalServer(port: number = DEFAULT_PORT) {
     let ptyProcess: pty.IPty | null = null;
 
     try {
-      ptyProcess = pty.spawn('claude', [], {
+      // Use shell to handle aliases, npx commands, etc.
+      ptyProcess = pty.spawn('/bin/sh', ['-c', CLAUDE_COMMAND], {
         name: 'xterm-256color',
         cols: defaultCols,
         rows: defaultRows,
