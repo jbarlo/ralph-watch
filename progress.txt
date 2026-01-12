@@ -861,3 +861,16 @@
 - Files modified: package.json, README.md, .env.example, src/app/globals.css, src/components/RalphSidePanel.tsx, src/components/RalphSidePanel.test.tsx, src/lib/process-state.test.ts
 - Verified: `pnpm check` passes (all 227 tests pass)
 
+
+## Ticket #61: Terminal UX: bottom pane + auto-start server
+- Installed concurrently to run Next.js and terminal server together
+- Updated dev script: `concurrently -n next,term -c blue,green "next dev" "tsx scripts/terminal-server.ts"`
+- Created BottomTerminalPane component with resizable height via drag handle
+- Added keyboard shortcut Cmd/Ctrl+` to toggle terminal visibility
+- Added TerminalToggleButton in header for easy toggle access
+- Moved terminal from side panel tab to dedicated bottom pane
+- Removed terminal tab from RalphSidePanel (now shows output only)
+- Terminal height and visibility state persisted in localStorage
+- Uses useSyncExternalStore for cross-component visibility sync
+- Files changed: package.json, src/components/BottomTerminalPane.tsx (new), src/app/project/[path]/page.tsx, src/components/RalphSidePanel.tsx, src/components/RalphSidePanel.test.tsx
+- Tests: all 227 tests pass
