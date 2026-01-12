@@ -56,12 +56,10 @@ function getOrCreateWatcher(ralphDir: string): DirectoryWatcher {
     );
     const encoded = new TextEncoder().encode(message);
 
-    // Broadcast to all connected clients for this directory
     for (const controller of clients) {
       try {
         controller.enqueue(encoded);
       } catch {
-        // Client disconnected, will be cleaned up
         clients.delete(controller);
       }
     }
@@ -117,18 +115,14 @@ function maybeCleanupWatcher(ralphDir: string): void {
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const ralphDir = url.searchParams.get('dir') ?? getRalphDir();
-
-  // Get or create watcher for this directory
   const directoryWatcher = getOrCreateWatcher(ralphDir);
 
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
-      // Register this client
       directoryWatcher.clients.add(controller);
 
-      // Send initial connected event
       const connectMessage = formatSSE(
         'connected',
         JSON.stringify({
@@ -139,13 +133,10 @@ export async function GET(request: Request): Promise<Response> {
       controller.enqueue(encoder.encode(connectMessage));
     },
     cancel(controller) {
-      // Clean up when client disconnects
       directoryWatcher.clients.delete(controller);
       console.log(
         `[watch] Client disconnected from ${ralphDir}. Active clients: ${directoryWatcher.clients.size}`,
       );
-
-      // Clean up watcher if no more clients
       maybeCleanupWatcher(ralphDir);
     },
   });

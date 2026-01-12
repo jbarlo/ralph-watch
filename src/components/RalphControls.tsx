@@ -13,44 +13,27 @@ import {
 import { useProcessOutput } from '@/hooks/use-process-output';
 import { cn } from '@/lib/utils';
 
-/**
- * Type of ralph command being run
- */
 type CommandType = 'runOnce' | 'runAll';
 
-/**
- * Running process state
- */
 interface RunningProcess {
   id: string;
   commandType: CommandType;
 }
 
-/**
- * Controls for running ralph commands with real-time output streaming.
- * Replaces fire-and-forget approach with ProcessRunner for full lifecycle management.
- */
 export function RalphControls() {
   const { toast } = useToast();
-
-  // Currently running process (only one at a time)
   const [runningProcess, setRunningProcess] = useState<RunningProcess | null>(
     null,
   );
-  // Output panel visibility
   const [outputOpen, setOutputOpen] = useState(false);
-  // Track last exit code for display after process completes
   const [lastExitCode, setLastExitCode] = useState<number | null>(null);
 
-  // Subscribe to process output
   const { exitCode, connectionStatus } = useProcessOutput(
     runningProcess?.id ?? null,
   );
 
-  // Start process mutation
   const startMutation = trpc.process.start.useMutation({
     onSuccess: (handle, variables) => {
-      // Determine command type from command string
       const commandType: CommandType = variables.command.includes('ralph-once')
         ? 'runOnce'
         : 'runAll';
@@ -76,7 +59,6 @@ export function RalphControls() {
     },
   });
 
-  // Kill process mutation
   const killMutation = trpc.process.kill.useMutation({
     onSuccess: () => {
       toast({
@@ -93,10 +75,8 @@ export function RalphControls() {
     },
   });
 
-  // Track the previous exit code to detect changes
   const prevExitCodeRef = useRef<number | null>(null);
 
-  // Handle process exit callback (called outside of useEffect to satisfy ESLint)
   const handleProcessExit = useCallback(
     (code: number) => {
       setLastExitCode(code);
@@ -118,15 +98,12 @@ export function RalphControls() {
     [toast],
   );
 
-  // Detect exit code changes and trigger handler
   useEffect(() => {
-    // Only trigger when exitCode changes from null to a value while we have a running process
     if (
       runningProcess &&
       exitCode !== null &&
       prevExitCodeRef.current === null
     ) {
-      // Use queueMicrotask to avoid setState during render
       queueMicrotask(() => handleProcessExit(exitCode));
     }
     prevExitCodeRef.current = exitCode;
@@ -156,12 +133,10 @@ export function RalphControls() {
     setOutputOpen(false);
   };
 
-  // Compute button states
   const runOnceDisabled = isRunning || isStarting;
   const runAllDisabled = isRunning || isStarting;
   const stopDisabled = !isRunning || isStopping;
 
-  // Determine what to show in the collapsible header
   const getStatusText = () => {
     if (isStarting) return 'Starting...';
     if (isRunning) {
@@ -180,7 +155,6 @@ export function RalphControls() {
 
   return (
     <div className="space-y-2">
-      {/* Control buttons */}
       <div className="flex gap-2 items-center">
         <Button
           size="sm"
@@ -212,7 +186,6 @@ export function RalphControls() {
           </Button>
         )}
 
-        {/* Status indicator */}
         {statusText && (
           <span
             className={cn(
@@ -228,7 +201,6 @@ export function RalphControls() {
         )}
       </div>
 
-      {/* Collapsible output panel */}
       {showOutput && (
         <Collapsible open={outputOpen} onOpenChange={setOutputOpen}>
           <div className="flex items-center gap-2">

@@ -28,11 +28,10 @@ function getNotificationPermission(): NotificationPermission {
 }
 
 /**
- * Subscribe to permission changes (no-op, permission doesn't have events)
+ * No-op subscription: Notification.permission doesn't emit change events.
+ * Updates happen via requestPermission promise resolution.
  */
 function subscribeToPermission(): () => void {
-  // Notification permission doesn't emit events for changes
-  // We'll update when requestPermission resolves
   return () => {};
 }
 
@@ -50,9 +49,6 @@ function getIsSupportedServerSnapshot(): boolean {
   return false;
 }
 
-/**
- * Subscribe to support changes (no-op, support status is static)
- */
 function subscribeToSupport(): () => void {
   return () => {};
 }
@@ -67,32 +63,27 @@ function subscribeToSupport(): () => void {
  * @returns Permission state and showNotification function
  */
 export function useNotifications() {
-  // Use useSyncExternalStore for SSR-safe permission access
   const currentPermission = useSyncExternalStore(
     subscribeToPermission,
     getNotificationPermission,
-    () => 'default' as NotificationPermission, // Server snapshot
+    () => 'default' as NotificationPermission,
   );
 
   const [permission, setPermission] =
     useState<NotificationPermission>(currentPermission);
   const [isTabFocused, setIsTabFocused] = useState(true);
 
-  // Use useSyncExternalStore for SSR-safe isSupported access
   const isSupported = useSyncExternalStore(
     subscribeToSupport,
     getIsSupportedSnapshot,
     getIsSupportedServerSnapshot,
   );
 
-  // Request notification permission on mount
   useEffect(() => {
-    // Check if notifications are supported
     if (!('Notification' in window)) {
       return;
     }
 
-    // Request permission if not already granted or denied
     if (Notification.permission === 'default') {
       void Notification.requestPermission().then((result) => {
         setPermission(result as NotificationPermission);
@@ -100,7 +91,6 @@ export function useNotifications() {
     }
   }, []);
 
-  // Track tab focus state
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
@@ -124,12 +114,8 @@ export function useNotifications() {
     };
   }, []);
 
-  /**
-   * Show a notification if permission is granted and tab is not focused
-   */
   const showNotification = useCallback(
     (options: NotificationOptions): boolean => {
-      // Check if notifications are supported and permitted
       if (typeof window === 'undefined' || !('Notification' in window)) {
         return false;
       }
@@ -138,7 +124,6 @@ export function useNotifications() {
         return false;
       }
 
-      // Only show if tab is not focused
       if (isTabFocused) {
         return false;
       }

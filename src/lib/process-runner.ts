@@ -5,13 +5,11 @@
 
 import type { Result } from './result';
 
-// Process handle returned when a process is started
 export interface ProcessHandle {
   readonly id: string;
   readonly pid: number;
 }
 
-// Process status discriminated union
 export type ProcessStatusRunning = {
   readonly state: 'running';
   readonly pid: number;
@@ -31,20 +29,17 @@ export type ProcessStatus =
   | ProcessStatusExited
   | ProcessStatusNotFound;
 
-// Output line from a process
 export interface ProcessOutputLine {
   readonly stream: 'stdout' | 'stderr';
   readonly line: string;
   readonly timestamp: number;
 }
 
-// Start options for spawning a process
 export interface ProcessStartOptions {
   readonly command: string;
   readonly cwd: string;
 }
 
-// ProcessRunner interface - contract for implementations
 export interface ProcessRunner {
   /**
    * Start a new process with the given command in the specified directory.
@@ -77,7 +72,6 @@ export interface ProcessRunner {
   listRunning(): ProcessHandle[];
 }
 
-// Type guards for ProcessStatus
 export function isRunning(
   status: ProcessStatus,
 ): status is ProcessStatusRunning {
@@ -94,7 +88,6 @@ export function isNotFound(
   return status.state === 'not_found';
 }
 
-// Helper to create ProcessStatus values
 export const ProcessStatusFactory = {
   running(pid: number): ProcessStatusRunning {
     return { state: 'running', pid };

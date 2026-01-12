@@ -37,7 +37,6 @@ export interface UseProcessOutputResult {
   clearLines: () => void;
 }
 
-// Empty stable result for when processId is null/undefined
 const EMPTY_LINES: ProcessOutputLine[] = [];
 const NOOP = () => {};
 
@@ -68,7 +67,6 @@ export function useProcessOutput(
   }, []);
 
   useEffect(() => {
-    // Don't connect if no processId
     if (!processId) {
       return;
     }
@@ -85,7 +83,6 @@ export function useProcessOutput(
     const eventSource = new EventSource(url);
     eventSourceRef.current = eventSource;
 
-    // Handle initial connection
     eventSource.addEventListener('connected', (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data) as {
@@ -99,7 +96,6 @@ export function useProcessOutput(
       }
     });
 
-    // Handle output events
     eventSource.addEventListener('output', (event: MessageEvent) => {
       try {
         const line = JSON.parse(event.data) as ProcessOutputLine;
@@ -109,7 +105,6 @@ export function useProcessOutput(
       }
     });
 
-    // Handle exit events
     eventSource.addEventListener('exit', (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data) as { code: number | null };
@@ -122,24 +117,20 @@ export function useProcessOutput(
       }
     });
 
-    // Handle connection errors
     eventSource.onerror = () => {
       console.log('[useProcessOutput] Connection error');
       setConnectionStatus('disconnected');
       eventSource.close();
     };
 
-    // Cleanup on unmount or processId change
     return () => {
       console.log('[useProcessOutput] Cleaning up connection');
       eventSource.close();
       eventSourceRef.current = null;
-      // Set to disconnected on cleanup - will be overridden by new connection if processId changes
       setConnectionStatus('disconnected');
     };
   }, [processId]);
 
-  // Return stable empty values when no processId
   if (!processId) {
     return {
       lines: EMPTY_LINES,

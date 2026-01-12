@@ -19,7 +19,6 @@ function formatSSE(event: ProcessStreamEventType, data: string): string {
   return `event: ${event}\ndata: ${data}\n\n`;
 }
 
-// Module-level runner for dependency injection (testing)
 let _runner: ProcessRunner | null = null;
 
 export function setRunner(runner: ProcessRunner | null): void {
@@ -40,8 +39,6 @@ export async function GET(
 ): Promise<Response> {
   const { id } = await params;
   const runner = getRunner();
-
-  // Check if process exists
   const status = runner.getStatus(id);
   if (status.state === 'not_found') {
     return new Response(JSON.stringify({ error: 'Process not found' }), {
@@ -56,7 +53,6 @@ export async function GET(
 
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
-      // Send initial connected event
       const connectMessage = formatSSE(
         'connected',
         JSON.stringify({
@@ -66,17 +62,15 @@ export async function GET(
       );
       controller.enqueue(encoder.encode(connectMessage));
 
-      // Subscribe to process output
       unsubscribe = runner.onOutput(id, (line: ProcessOutputLine) => {
         try {
           const outputMessage = formatSSE('output', JSON.stringify(line));
           controller.enqueue(encoder.encode(outputMessage));
         } catch {
-          // Controller closed, cleanup will happen in cancel
+          // Controller closed
         }
       });
 
-      // Poll for exit status (since onOutput doesn't notify on exit)
       checkInterval = setInterval(() => {
         const currentStatus = runner.getStatus(id);
         if (isExited(currentStatus)) {
@@ -91,7 +85,6 @@ export async function GET(
             // Already closed
           }
 
-          // Cleanup
           if (checkInterval) {
             clearInterval(checkInterval);
             checkInterval = null;
@@ -103,7 +96,6 @@ export async function GET(
         }
       }, 100);
 
-      // If already exited, send exit immediately
       if (isExited(status)) {
         const exitMessage = formatSSE(
           'exit',
@@ -123,7 +115,6 @@ export async function GET(
       }
     },
     cancel() {
-      // Clean up when client disconnects
       if (checkInterval) {
         clearInterval(checkInterval);
         checkInterval = null;

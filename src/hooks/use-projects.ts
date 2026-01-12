@@ -29,11 +29,12 @@ function notifySubscribers(): void {
   }
 }
 
-// Must be a stable reference to avoid infinite re-render loop
 const EMPTY_PROJECTS: Project[] = [];
 
-// Cache for projects to avoid returning new array references on each call
-// This fixes useSyncExternalStore infinite loop caused by JSON.parse creating new arrays
+/**
+ * Projects cache with stable references.
+ * useSyncExternalStore requires stable references - JSON.parse creates new arrays each call
+ */
 let projectsCache: Project[] = EMPTY_PROJECTS;
 let projectsCacheInitialized = false;
 
@@ -52,7 +53,6 @@ function refreshCache(): void {
  */
 function getProjectsSnapshot(): Project[] {
   if (typeof window === 'undefined') return EMPTY_PROJECTS;
-  // Initialize cache on first client-side read
   if (!projectsCacheInitialized) {
     projectsCache = getProjects();
     projectsCacheInitialized = true;
@@ -105,31 +105,21 @@ export function useProjects() {
     getServerActiveSnapshot,
   );
 
-  // Local state for filter (per active project)
-  // Initialize from localStorage if we have an active project
   const [filter, setFilterState] = useState<{ status?: string }>(() => {
     if (typeof window === 'undefined') return {};
     const path = getActiveProject();
     return path ? getProjectFilter(path) : {};
   });
 
-  /**
-   * Add a new project
-   */
   const addProject = useCallback((path: string, name?: string): Project => {
     const project = addProjectToStorage(path, name ?? deriveProjectName(path));
-    // Refresh cache (includes activeProjectCache) and notify
     activeProjectCache = getActiveProject();
     refreshCache();
     return project;
   }, []);
 
-  /**
-   * Remove a project
-   */
   const removeProject = useCallback((path: string): void => {
     removeProjectFromStorage(path);
-    // If removing active project, clear it
     if (activeProjectCache === path) {
       const remaining = getProjects();
       if (remaining.length > 0 && remaining[0]) {
@@ -142,18 +132,12 @@ export function useProjects() {
     refreshCache();
   }, []);
 
-  /**
-   * Set the active project
-   */
   const setActiveProject = useCallback((path: string): void => {
     setActiveProjectInStorage(path);
     activeProjectCache = path;
     refreshCache();
   }, []);
 
-  /**
-   * Set filter for current project and persist
-   */
   const setFilter = useCallback(
     (newFilter: { status?: string }): void => {
       if (activeProjectPath) {
@@ -164,9 +148,6 @@ export function useProjects() {
     [activeProjectPath],
   );
 
-  /**
-   * Get currently active project object
-   */
   const activeProject = activeProjectPath
     ? (projects.find((p) => p.path === activeProjectPath) ?? null)
     : null;

@@ -270,8 +270,36 @@
       "id": 39,
       "title": "Clean up comments per style guide",
       "description": "Audit all source files for comments. Remove: comments that restate what code does, imperative comments explaining history ('added for X', 'fixed bug where Y'), TODO comments for completed work. Keep: comments providing context on purpose, explaining non-obvious design decisions. If variable/function name is clear, no comment needed. Run pnpm check after.",
-      "status": "pending",
+      "status": "completed",
       "priority": 4
+    },
+    {
+      "id": 40,
+      "title": "Add process output ring buffer",
+      "description": "ProcessRunner buffers ALL output lines forever - memory leak for long processes. Fix: Add MAX_OUTPUT_LINES = 5000 constant. When pushing to output array, if length exceeds max, shift oldest. Run pnpm check after.",
+      "status": "pending",
+      "priority": 5
+    },
+    {
+      "id": 41,
+      "title": "Add onExit callback to ProcessRunner",
+      "description": "SSE endpoint polls every 100ms for process exit - wasteful. Fix: Add onExit(id, callback) to ProcessRunner interface. Store exit callbacks in Map, fire from child.on('exit'). Update /api/process/[id]/stream to use onExit instead of setInterval. Run pnpm check after.",
+      "status": "pending",
+      "priority": 5
+    },
+    {
+      "id": 42,
+      "title": "URL-based project routing",
+      "description": "ARCHITECTURAL REFACTOR: Replace localStorage/context project management with URL-based routing.\n\n## Why\nCurrent flow is 5 layers: localStorage → ProjectProvider → useProjectContext → TRPCProvider header → server ctx. Complex, causes hydration issues, not bookmarkable.\n\n## Target Architecture\n- URL structure: /project/[encodedPath]/ where encodedPath is base64url of absolute path\n- Project available everywhere via Next.js params - no context needed\n- React Query keys naturally scoped per-project (different URL = different cache)\n- SSE endpoints get project from URL\n\n## Implementation Steps\n1. Create src/lib/project-path.ts with encodeProjectPath()/decodeProjectPath() helpers (base64url)\n2. Create src/app/project/[path]/page.tsx - move current page.tsx content here, get project from params\n3. Create src/app/project/[path]/layout.tsx - wrap with TRPCProvider, pass project to context\n4. Update src/app/page.tsx to be project picker: list recent projects (from cookie), link to add new\n5. Update src/server/trpc.ts context creation - read project from x-ralph-dir header OR from request URL\n6. Update TRPCProvider - remove header logic, project comes from URL now\n7. Update SSE endpoints (/api/watch, /api/process/[id]/stream) - read project from query param ?dir=\n8. Update useFileWatch - pass project as param instead of reading from context\n9. Delete: ProjectProvider.tsx, useProjectContext references, localStorage project logic in projects.ts\n10. Add cookie helpers: getRecentProjects(), addRecentProject() for the picker\n\n## Files to Change\n- CREATE: src/app/project/[path]/page.tsx, src/app/project/[path]/layout.tsx, src/lib/project-path.ts\n- MODIFY: src/app/page.tsx (becomes picker), src/server/trpc.ts, TRPCProvider.tsx, useFileWatch.ts, SSE routes\n- DELETE: ProjectProvider.tsx, most of projects.ts\n\n## Data Flow After\nUser navigates to /project/L21udC9kYXRhLy4uLg==/ → Next.js extracts [path] param → decoded in layout → passed to tRPC context → available server-side. No localStorage, no context threading, no hydration mismatch.\n\nRun pnpm check after.",
+      "status": "pending",
+      "priority": 6
+    },
+    {
+      "id": 43,
+      "title": "Unify SSE into single event stream",
+      "description": "ARCHITECTURAL REFACTOR: Consolidate /api/watch and /api/process/[id]/stream into single /api/events endpoint. Do this AFTER ticket #42 (URL-based routing).\n\n## Why\nCurrently 2 separate SSE endpoints doing similar things - separate connection management, message formatting, cleanup logic. Client manages 2 EventSource connections.\n\n## Target Architecture\nSingle endpoint: /api/events?project=encodedPath&topics=tickets,progress,process:id1,process:id2\n- Subscribe to multiple topics in one connection\n- All events have shape: {topic: string, type: string, data: any}\n- Topics: 'tickets', 'progress', 'process:{id}'\n- Event types per topic: tickets/progress have 'change', process has 'output'/'exit'\n\n## Implementation Steps\n1. Create src/app/api/events/route.ts - unified SSE endpoint\n   - Parse topics from query param\n   - For 'tickets'/'progress' topics: setup chokidar watcher (reuse logic from /api/watch)\n   - For 'process:id' topics: subscribe via runner.onOutput() and runner.onExit()\n   - Emit events as {topic, type, data} JSON\n   - Handle cleanup on disconnect\n2. Create src/hooks/use-event-stream.ts - unified client hook\n   - Takes: project, topics[] (can be dynamic)\n   - Returns: subscribe(topic, handler) function, connectionStatus\n   - Internally manages single EventSource, dispatches by topic\n3. Update components to use useEventStream instead of useFileWatch/useProcessOutput\n   - ConnectionStatus: subscribe to 'tickets', 'progress'\n   - RalphSidePanel: subscribe to 'process:{id}' when process running\n4. Delete old endpoints and hooks:\n   - DELETE: /api/watch/route.ts, /api/process/[id]/stream/route.ts\n   - DELETE: use-file-watch.ts, use-process-output.ts\n\n## Event Examples\n{topic: 'tickets', type: 'change', data: {file: 'tickets.json'}}\n{topic: 'progress', type: 'change', data: {file: 'progress.txt'}}\n{topic: 'process:abc123', type: 'output', data: {stream: 'stdout', line: '...', timestamp: 123}}\n{topic: 'process:abc123', type: 'exit', data: {code: 0}}\n\n## Result\nClient: 2 connections → 1 connection\nServer: 2 SSE endpoints → 1 endpoint\nHooks: useFileWatch + useProcessOutput → useEventStream\n\nRun pnpm check after.",
+      "status": "pending",
+      "priority": 7
     }
   ]
 }

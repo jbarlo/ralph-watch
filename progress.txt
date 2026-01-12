@@ -486,3 +486,13 @@
 - Files added: src/lib/ticket-ui.ts
 - Files modified: src/app/page.tsx, src/components/TicketList.tsx
 - Verified: `pnpm check` passes (all 203 tests pass)
+
+## Ticket #39: Clean up comments per style guide
+- Audited all source files for comments per style guide rules
+- Removed section header comments that restated what code does (e.g., "// Constructors", "// Type guards")
+- Removed imperative comments explaining history or obvious code behavior
+- Kept comments providing context on design decisions (e.g., useSyncExternalStore cache rationale)
+- Removed JSX comments labeling UI sections (e.g., "Collapse toggle", "Control buttons")
+- Consolidated multi-line comment blocks where appropriate
+- Files modified: src/lib/result.ts, src/lib/process-runner.ts, src/lib/projects.ts, src/hooks/use-projects.ts, src/hooks/use-notifications.ts, src/hooks/use-file-watch.ts, src/hooks/use-process-output.ts, src/app/api/watch/route.ts, src/app/api/process/[id]/stream/route.ts, src/server/services/process-runner.ts, src/components/RalphSidePanel.tsx, src/components/RalphControls.tsx
+- Verified: `pnpm check` passes (all 203 tests pass)

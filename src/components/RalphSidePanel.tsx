@@ -8,56 +8,33 @@ import { ProcessOutputViewer } from '@/components/ProcessOutputViewer';
 import { useProcessOutput } from '@/hooks/use-process-output';
 import { cn } from '@/lib/utils';
 
-/**
- * Type of ralph command being run
- */
 type CommandType = 'runOnce' | 'runAll';
 
-/**
- * Running process state
- */
 interface RunningProcess {
   id: string;
   commandType: CommandType;
 }
 
-/**
- * Persistent side panel for ralph controls and real-time output streaming.
- * Contains:
- * 1) Run Next Ticket and Run All buttons always visible at top
- * 2) Stop/Cancel button when process is running
- * 3) ProcessOutputViewer showing real-time output
- * 4) Collapsible panel design
- */
 export function RalphSidePanel() {
   const { toast } = useToast();
-
-  // Panel collapsed state
   const [isCollapsed, setIsCollapsed] = useState(false);
-
-  // Currently running process (only one at a time)
   const [runningProcess, setRunningProcess] = useState<RunningProcess | null>(
     null,
   );
-  // Track last exit code for display after process completes
   const [lastExitCode, setLastExitCode] = useState<number | null>(null);
 
-  // Subscribe to process output
   const { exitCode, connectionStatus, lines } = useProcessOutput(
     runningProcess?.id ?? null,
   );
 
-  // Start process mutation
   const startMutation = trpc.process.start.useMutation({
     onSuccess: (handle, variables) => {
-      // Determine command type from command string
       const commandType: CommandType = variables.command.includes('ralph-once')
         ? 'runOnce'
         : 'runAll';
 
       setRunningProcess({ id: handle.id, commandType });
       setLastExitCode(null);
-      // Auto-expand panel when running
       setIsCollapsed(false);
 
       toast({
@@ -77,7 +54,6 @@ export function RalphSidePanel() {
     },
   });
 
-  // Kill process mutation
   const killMutation = trpc.process.kill.useMutation({
     onSuccess: () => {
       toast({
@@ -94,10 +70,8 @@ export function RalphSidePanel() {
     },
   });
 
-  // Track the previous exit code to detect changes
   const prevExitCodeRef = useRef<number | null>(null);
 
-  // Handle process exit callback
   const handleProcessExit = useCallback(
     (code: number) => {
       setLastExitCode(code);
@@ -119,7 +93,6 @@ export function RalphSidePanel() {
     [toast],
   );
 
-  // Detect exit code changes and trigger handler
   useEffect(() => {
     if (
       runningProcess &&
@@ -154,12 +127,10 @@ export function RalphSidePanel() {
     setLastExitCode(null);
   };
 
-  // Compute button states
   const runOnceDisabled = isRunning || isStarting;
   const runAllDisabled = isRunning || isStarting;
   const stopDisabled = !isRunning || isStopping;
 
-  // Status text
   const getStatusText = () => {
     if (isStarting) return 'Starting...';
     if (isRunning) {
@@ -183,7 +154,6 @@ export function RalphSidePanel() {
         isCollapsed ? 'w-12' : 'w-[350px]',
       )}
     >
-      {/* Collapse toggle */}
       <div className="flex items-center justify-between border-b p-2">
         {!isCollapsed && (
           <span className="text-sm font-medium">Ralph Controls</span>
@@ -199,7 +169,6 @@ export function RalphSidePanel() {
         </Button>
       </div>
 
-      {/* Collapsed view: just show running indicator */}
       {isCollapsed && (
         <div className="flex flex-1 flex-col items-center gap-2 p-2">
           {isRunning && (
@@ -220,10 +189,8 @@ export function RalphSidePanel() {
         </div>
       )}
 
-      {/* Expanded view */}
       {!isCollapsed && (
         <div className="flex flex-1 flex-col overflow-hidden">
-          {/* Control buttons */}
           <div className="space-y-3 border-b p-3">
             <div className="flex gap-2">
               <Button
@@ -260,7 +227,6 @@ export function RalphSidePanel() {
               </Button>
             )}
 
-            {/* Status indicator */}
             {statusText && (
               <div className="flex items-center justify-between">
                 <span
@@ -288,7 +254,6 @@ export function RalphSidePanel() {
               </div>
             )}
 
-            {/* Clear button */}
             {!isRunning && lastExitCode !== null && (
               <Button
                 variant="ghost"
@@ -302,7 +267,6 @@ export function RalphSidePanel() {
             )}
           </div>
 
-          {/* Output viewer */}
           <div className="flex-1 overflow-hidden p-3">
             {hasOutput || isRunning ? (
               <ProcessOutputViewer

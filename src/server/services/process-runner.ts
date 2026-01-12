@@ -15,7 +15,6 @@ import {
   ProcessStatusFactory,
 } from '@/lib/process-runner';
 
-// Internal process record
 interface ProcessRecord {
   child: ChildProcess;
   handle: ProcessHandle;
@@ -25,7 +24,6 @@ interface ProcessRecord {
   outputCallbacks: Set<(line: ProcessOutputLine) => void>;
 }
 
-// Simple ID generator using timestamp + random
 function generateId(): string {
   const timestamp = Date.now().toString(36);
   const random = Math.random().toString(36).substring(2, 8);
@@ -46,7 +44,6 @@ export function resolveCommand(command: string): string {
     return command;
   }
 
-  // Trim and extract the first word (command name)
   const trimmedCommand = command.trim();
   const firstSpaceIndex = trimmedCommand.indexOf(' ');
   const commandName =
@@ -56,9 +53,7 @@ export function resolveCommand(command: string): string {
   const commandArgs =
     firstSpaceIndex === -1 ? '' : trimmedCommand.substring(firstSpaceIndex);
 
-  // Check if this is a ralph command
   if (commandName.startsWith('ralph')) {
-    // Ensure RALPH_BIN doesn't have trailing slash
     const binPath = ralphBin.endsWith('/') ? ralphBin.slice(0, -1) : ralphBin;
     return `${binPath}/${commandName}${commandArgs}`;
   }
@@ -80,23 +75,17 @@ export function createProcessRunner(): ProcessRunner {
       const id = generateId();
 
       try {
-        // Resolve command path (handles RALPH_BIN for ralph commands)
         const resolvedCommand = resolveCommand(opts.command);
-
-        // Parse command - split by whitespace for simple commands
-        // For more complex commands, use shell
         const child = spawn(resolvedCommand, {
           cwd: opts.cwd,
           shell: true,
           stdio: ['ignore', 'pipe', 'pipe'],
         });
 
-        // Handle spawn error
         if (!child.pid) {
           child.on('error', (error) => {
             resolve(err(error));
           });
-          // If no immediate pid and no error yet, wait a tick
           setImmediate(() => {
             if (!child.pid && !child.killed) {
               resolve(
@@ -119,7 +108,6 @@ export function createProcessRunner(): ProcessRunner {
 
         processes.set(id, record);
 
-        // Setup stdout reader
         if (child.stdout) {
           const stdoutReader = createInterface({ input: child.stdout });
           stdoutReader.on('line', (line) => {
@@ -133,7 +121,6 @@ export function createProcessRunner(): ProcessRunner {
           });
         }
 
-        // Setup stderr reader
         if (child.stderr) {
           const stderrReader = createInterface({ input: child.stderr });
           stderrReader.on('line', (line) => {
@@ -147,16 +134,13 @@ export function createProcessRunner(): ProcessRunner {
           });
         }
 
-        // Handle process exit
         child.on('exit', (code) => {
           record.exited = true;
           record.exitCode = code;
         });
 
-        // Handle process error (after spawn)
         child.on('error', (error) => {
           record.exited = true;
-          // If not already exited normally, treat as error exit
           if (record.exitCode === null) {
             record.exitCode = -1;
           }
@@ -205,7 +189,6 @@ export function createProcessRunner(): ProcessRunner {
       try {
         const killed = record.child.kill('SIGTERM');
         if (!killed) {
-          // Try SIGKILL as fallback
           record.child.kill('SIGKILL');
         }
         resolve(ok(undefined));
@@ -221,17 +204,12 @@ export function createProcessRunner(): ProcessRunner {
   ): () => void {
     const record = processes.get(id);
     if (!record) {
-      // Return no-op unsubscribe for unknown processes
       return () => {};
     }
 
-    // Replay existing output
     record.output.forEach((line) => cb(line));
-
-    // Register callback for future output
     record.outputCallbacks.add(cb);
 
-    // Return unsubscribe function
     return () => {
       record.outputCallbacks.delete(cb);
     };
@@ -256,7 +234,6 @@ export function createProcessRunner(): ProcessRunner {
   };
 }
 
-// Singleton instance for server-side use
 let _instance: ProcessRunner | null = null;
 
 export function getProcessRunner(): ProcessRunner {

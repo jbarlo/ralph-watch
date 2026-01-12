@@ -69,8 +69,6 @@ export function saveProjects(projects: Project[]): void {
  */
 export function addProject(path: string, name?: string): Project {
   const projects = getProjects();
-
-  // Check if already exists
   const existing = projects.find((p) => p.path === path);
   if (existing) {
     return existing;
@@ -95,7 +93,6 @@ export function removeProject(path: string): void {
   const filtered = projects.filter((p) => p.path !== path);
   saveProjects(filtered);
 
-  // Also clear filter state for this project
   const filters = getProjectFilters();
   delete filters[path];
   saveProjectFilters(filters);

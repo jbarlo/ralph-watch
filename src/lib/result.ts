@@ -3,12 +3,10 @@
  * Use Result<T, E> for fallible operations instead of throwing exceptions.
  */
 
-// Discriminated union for Result type
 export type Ok<T> = { readonly _tag: 'ok'; readonly value: T };
 export type Err<E> = { readonly _tag: 'err'; readonly error: E };
 export type Result<T, E> = Ok<T> | Err<E>;
 
-// Constructors
 export function ok<T>(value: T): Ok<T> {
   return { _tag: 'ok', value };
 }
@@ -17,7 +15,6 @@ export function err<E>(error: E): Err<E> {
   return { _tag: 'err', error };
 }
 
-// Type guards
 export function isOk<T, E>(result: Result<T, E>): result is Ok<T> {
   return result._tag === 'ok';
 }
@@ -26,7 +23,6 @@ export function isErr<T, E>(result: Result<T, E>): result is Err<E> {
   return result._tag === 'err';
 }
 
-// Transformations
 export function map<T, U, E>(
   result: Result<T, E>,
   fn: (value: T) => U,
@@ -57,7 +53,6 @@ export function mapErr<T, E, F>(
   return result;
 }
 
-// Utility: unwrap with default
 export function unwrapOr<T, E>(result: Result<T, E>, defaultValue: T): T {
   if (isOk(result)) {
     return result.value;
@@ -65,7 +60,6 @@ export function unwrapOr<T, E>(result: Result<T, E>, defaultValue: T): T {
   return defaultValue;
 }
 
-// Utility: convert throwing function to Result-returning
 export function tryCatch<T, E = Error>(fn: () => T): Result<T, E> {
   try {
     return ok(fn());
@@ -74,7 +68,6 @@ export function tryCatch<T, E = Error>(fn: () => T): Result<T, E> {
   }
 }
 
-// Utility: async version of tryCatch
 export async function tryCatchAsync<T, E = Error>(
   fn: () => Promise<T>,
 ): Promise<Result<T, E>> {

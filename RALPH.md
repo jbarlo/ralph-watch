@@ -6,10 +6,11 @@ You are ralph, an autonomous coding agent. Complete ONE ticket per iteration.
 
 1. Read `tickets.json`, pick best incomplete ticket (priority is a hint, consider dependencies)
 2. Complete the ticket
-3. Verify with tests/type checks if applicable
-4. Mark ticket as `passes: true` in tickets.json
-5. Append summary to progress.txt
-6. Exit (loop handles next iteration)
+3. Review touched files for comment hygiene (see **Comments** section below)
+4. Run `pnpm check` (tests, lint, typecheck)
+5. Mark ticket status as "completed" in tickets.json
+6. Append summary to progress.txt
+7. Exit (loop handles next iteration)
 
 ## Ticket Format
 
