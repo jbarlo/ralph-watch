@@ -39,6 +39,7 @@ export interface UseEventStreamOptions {
   onProcessReplayStart?: (processId: string) => void;
   onProcessOutput?: (processId: string, line: ProcessOutputLine) => void;
   onProcessExit?: (processId: string, code: number | null) => void;
+  onReconnect?: () => void;
 }
 
 export interface UseEventStreamResult {
@@ -56,6 +57,7 @@ export function useEventStream(
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const previousTicketsRef = useRef<Map<number, string>>(new Map());
   const subscribersRef = useRef<Map<string, Set<TopicHandler>>>(new Map());
+  const hasConnectedBeforeRef = useRef(false);
 
   const optionsRef = useRef(options);
   useEffect(() => {
@@ -157,8 +159,17 @@ export function useEventStream(
         }
 
         if (topic === 'system' && type === 'connected') {
-          console.log('[useEventStream] Connected');
+          const isReconnect = hasConnectedBeforeRef.current;
+          console.log(
+            '[useEventStream]',
+            isReconnect ? 'Reconnected' : 'Connected',
+          );
           setConnectionStatus('connected');
+          hasConnectedBeforeRef.current = true;
+
+          if (isReconnect) {
+            optionsRef.current.onReconnect?.();
+          }
 
           const initialTickets = optionsRef.current.getTickets?.();
           if (initialTickets) {

@@ -41,6 +41,8 @@ const mockConfig = {
   ],
 };
 
+const mockRefetch = vi.fn();
+
 vi.mock('@/lib/trpc', () => ({
   trpc: {
     config: {
@@ -84,6 +86,12 @@ vi.mock('@/lib/trpc', () => ({
           },
         ),
       },
+      status: {
+        useQuery: vi.fn(() => ({
+          data: null,
+          refetch: mockRefetch,
+        })),
+      },
     },
   },
 }));
@@ -107,6 +115,7 @@ describe('RalphSidePanel', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseEventStream.mockReturnValue(createMockResult());
+    mockRefetch.mockResolvedValue({ data: null });
     startMutationOptions = {};
     killMutationOptions = {};
   });

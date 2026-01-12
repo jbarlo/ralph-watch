@@ -713,3 +713,37 @@
 - Chart colors updated to use Catppuccin accent colors (Red, Teal, Blue, Yellow, Mauve)
 - Files modified: src/app/globals.css
 - Verified: `pnpm check` passes (all 197 tests pass)
+
+## Ticket #52: Refactor RalphSidePanel to state machine + server reconciliation
+- Created src/lib/process-state.ts with state machine for process lifecycle
+  - ProcessState: discriminated union (idle | starting | running | completed)
+  - ProcessAction: all possible transitions (START, STARTED, OUTPUT, EXIT, ERROR, RESET, RECONCILE, etc.)
+  - processReducer: pure function handling all state transitions, invalid actions are no-ops
+  - Type guards: isIdle(), isStarting(), isProcessRunning(), isCompleted()
+  - Helper functions: getProcessId(), getLines()
+- Created src/lib/process-state.test.ts with 28 unit tests
+  - Tests for all valid state transitions
+  - Tests for invalid transition handling (no-ops)
+  - Tests for type guards and helper functions
+  - Tests for rapid state change sequences
+- Added onReconnect callback to useEventStream hook
+  - Tracks first connection via hasConnectedBeforeRef
+  - Calls onReconnect on subsequent connections (reconnections)
+- Refactored RalphSidePanel to use useReducer with state machine
+  - Replaced multiple useState hooks with single useReducer(processReducer, initialProcessState)
+  - SSE events dispatch actions to reducer
+  - UI state derived from reducer state via type guards and helpers
+- Implemented server reconciliation on reconnect
+  - On reconnect, queries trpc.process.status for current server state
+  - Dispatches RECONCILE action if server shows process exited/not_found
+  - Handles edge case where SSE disconnects during process exit
+- Updated RalphSidePanel.test.tsx to mock process.status.useQuery
+- Benefits achieved:
+  - Single source of truth (the reducer state)
+  - Impossible states are impossible (discriminated union)
+  - All transitions explicit and testable
+  - Server reconciliation handles SSE disconnect edge cases
+  - No fragile useEffect coordination
+- Files added: src/lib/process-state.ts, src/lib/process-state.test.ts
+- Files modified: src/hooks/use-event-stream.ts, src/components/RalphSidePanel.tsx, src/components/RalphSidePanel.test.tsx
+- Verified: `pnpm check` passes (all 225 tests pass)

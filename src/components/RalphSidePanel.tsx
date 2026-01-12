@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useReducer, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   Play,
   Zap,
@@ -18,6 +18,15 @@ import { useToast } from '@/hooks/use-toast';
 import { ProcessOutputViewer } from '@/components/ProcessOutputViewer';
 import { useEventStream } from '@/hooks/use-event-stream';
 import { useProjectPath } from '@/components/providers/TRPCProvider';
+import {
+  processReducer,
+  initialProcessState,
+  isStarting,
+  isProcessRunning,
+  isCompleted,
+  getProcessId,
+  getLines,
+} from '@/lib/process-state';
 import type { ProcessOutputLine } from '@/lib/process-runner';
 import type { CommandConfig } from '@/lib/project-config';
 import { cn } from '@/lib/utils';
@@ -31,6 +40,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { useState } from 'react';
 
 const iconMap: Record<string, LucideIcon> = {
   play: Play,
@@ -48,107 +58,117 @@ function getIcon(iconName?: string): LucideIcon {
   return iconMap[iconName.toLowerCase()] ?? Terminal;
 }
 
-interface RunningProcess {
-  id: string;
-  label: string;
-}
-
 export function RalphSidePanel() {
   const { toast } = useToast();
   const projectPath = useProjectPath();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [runningProcess, setRunningProcess] = useState<RunningProcess | null>(
-    null,
-  );
-  const [lastExitCode, setLastExitCode] = useState<number | null>(null);
-  const [lines, setLines] = useState<ProcessOutputLine[]>([]);
-  const [processExitCode, setProcessExitCode] = useState<number | null>(null);
+  const [state, dispatch] = useReducer(processReducer, initialProcessState);
   const [confirmCommand, setConfirmCommand] = useState<CommandConfig | null>(
     null,
   );
+  const [commandLabel, setCommandLabel] = useState<string | null>(null);
 
   const configQuery = trpc.config.get.useQuery();
   const commands = configQuery.data?.commands ?? [];
 
-  const getStorageKey = useCallback(
-    (processId: string) => `ralph-output-${processId}`,
-    [],
-  );
+  const processId = getProcessId(state);
+  const lines = getLines(state);
+  const exitCode = isCompleted(state) ? state.exitCode : null;
+
+  const getStorageKey = useCallback((id: string) => `ralph-output-${id}`, []);
 
   useEffect(() => {
-    if (!runningProcess || lines.length === 0) return;
+    if (!processId || lines.length === 0) return;
 
-    const key = getStorageKey(runningProcess.id);
+    const key = getStorageKey(processId);
     try {
       sessionStorage.setItem(key, JSON.stringify(lines));
     } catch {
       // Storage full or unavailable
     }
-  }, [runningProcess, lines, getStorageKey]);
+  }, [processId, lines, getStorageKey]);
 
   const restoreAttemptedRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!runningProcess) {
+    if (!processId) {
       restoreAttemptedRef.current = null;
       return;
     }
 
-    if (restoreAttemptedRef.current === runningProcess.id) {
+    if (restoreAttemptedRef.current === processId) {
       return;
     }
 
-    restoreAttemptedRef.current = runningProcess.id;
-    const key = getStorageKey(runningProcess.id);
+    restoreAttemptedRef.current = processId;
+    const key = getStorageKey(processId);
 
     try {
       const stored = sessionStorage.getItem(key);
       if (stored) {
         const parsed = JSON.parse(stored) as ProcessOutputLine[];
-        if (parsed.length > 0) {
-          // eslint-disable-next-line react-hooks/set-state-in-effect -- Restoring persisted data on process reconnect
-          setLines(parsed);
+        if (parsed.length > 0 && lines.length === 0) {
+          dispatch({ type: 'SET_LINES', id: processId, lines: parsed });
         }
       }
     } catch {
       // Invalid data or unavailable
     }
-  }, [runningProcess, getStorageKey]);
+  }, [processId, getStorageKey, lines.length]);
 
   const topics = useMemo(() => {
     const t: string[] = [];
-    if (runningProcess) {
-      t.push(`process:${runningProcess.id}`);
+    if (processId && isProcessRunning(state)) {
+      t.push(`process:${processId}`);
     }
     return t;
-  }, [runningProcess]);
+  }, [processId, state]);
 
-  const handleProcessReplayStart = useCallback(
-    (processId: string) => {
-      if (runningProcess && processId === runningProcess.id) {
-        setLines([]);
-      }
-    },
-    [runningProcess],
-  );
+  const handleProcessReplayStart = useCallback((id: string) => {
+    dispatch({ type: 'REPLAY_START', id });
+  }, []);
 
   const handleProcessOutput = useCallback(
-    (processId: string, line: ProcessOutputLine) => {
-      if (runningProcess && processId === runningProcess.id) {
-        setLines((prev) => [...prev, line]);
-      }
+    (id: string, line: ProcessOutputLine) => {
+      dispatch({ type: 'OUTPUT', id, line });
     },
-    [runningProcess],
+    [],
   );
 
-  const handleProcessExit = useCallback(
-    (processId: string, code: number | null) => {
-      if (runningProcess && processId === runningProcess.id) {
-        setProcessExitCode(code);
-      }
-    },
-    [runningProcess],
+  const handleProcessExit = useCallback((id: string, code: number | null) => {
+    dispatch({ type: 'EXIT', id, code });
+  }, []);
+
+  const statusQuery = trpc.process.status.useQuery(
+    { id: processId ?? '' },
+    { enabled: false },
   );
+
+  const handleReconnect = useCallback(async () => {
+    if (!processId || !isProcessRunning(state)) return;
+
+    try {
+      const result = await statusQuery.refetch();
+      const serverStatus = result.data;
+
+      if (serverStatus) {
+        if (serverStatus.state === 'exited') {
+          dispatch({
+            type: 'RECONCILE',
+            serverState: 'exited',
+            exitCode: serverStatus.code,
+          });
+        } else if (serverStatus.state === 'not_found') {
+          dispatch({
+            type: 'RECONCILE',
+            serverState: 'not_found',
+          });
+        }
+      }
+    } catch {
+      dispatch({ type: 'RECONCILE', serverState: 'not_found' });
+    }
+  }, [processId, state, statusQuery]);
 
   const { connectionStatus } = useEventStream({
     project: projectPath,
@@ -156,12 +176,14 @@ export function RalphSidePanel() {
     onProcessReplayStart: handleProcessReplayStart,
     onProcessOutput: handleProcessOutput,
     onProcessExit: handleProcessExit,
+    onReconnect: handleReconnect,
   });
 
   const startMutation = trpc.process.start.useMutation({
     onSuccess: (handle, variables) => {
       const label =
         commands.find((c) => c.cmd === variables.command)?.label ?? 'Command';
+      setCommandLabel(label);
 
       try {
         sessionStorage.removeItem(getStorageKey(handle.id));
@@ -170,10 +192,7 @@ export function RalphSidePanel() {
       }
 
       restoreAttemptedRef.current = handle.id;
-      setRunningProcess({ id: handle.id, label });
-      setLastExitCode(null);
-      setLines([]);
-      setProcessExitCode(null);
+      dispatch({ type: 'STARTED', id: handle.id, pid: handle.pid });
       setIsCollapsed(false);
 
       toast({
@@ -182,6 +201,7 @@ export function RalphSidePanel() {
       });
     },
     onError: (error) => {
+      dispatch({ type: 'ERROR', message: error.message });
       toast({
         title: 'Error',
         description: error.message || 'Failed to start process',
@@ -206,86 +226,79 @@ export function RalphSidePanel() {
     },
   });
 
-  const prevExitCodeRef = useRef<number | null>(null);
-
-  const handleProcessComplete = useCallback(
-    (code: number) => {
-      setLastExitCode(code);
-      setRunningProcess(null);
-
-      if (code === 0) {
-        toast({
-          title: 'Process completed',
-          description: 'Command finished successfully',
-        });
-      } else {
-        toast({
-          title: 'Process failed',
-          description: `Command exited with code ${code}`,
-          variant: 'destructive',
-        });
-      }
-    },
-    [toast],
-  );
+  const prevExitCodeRef = useRef<number | null | undefined>(undefined);
 
   useEffect(() => {
-    if (
-      runningProcess &&
-      processExitCode !== null &&
-      prevExitCodeRef.current === null
-    ) {
-      queueMicrotask(() => handleProcessComplete(processExitCode));
-    }
-    prevExitCodeRef.current = processExitCode;
-  }, [runningProcess, processExitCode, handleProcessComplete]);
+    if (isCompleted(state) && prevExitCodeRef.current === undefined) {
+      const code = state.exitCode;
 
-  const isRunning = runningProcess !== null && processExitCode === null;
-  const isStarting = startMutation.isPending;
+      queueMicrotask(() => {
+        if (code === 0) {
+          toast({
+            title: 'Process completed',
+            description: 'Command finished successfully',
+          });
+        } else {
+          toast({
+            title: 'Process failed',
+            description: `Command exited with code ${code}`,
+            variant: 'destructive',
+          });
+        }
+      });
+    }
+    prevExitCodeRef.current = isCompleted(state) ? state.exitCode : undefined;
+  }, [state, toast]);
+
+  const isRunning = isProcessRunning(state);
+  const starting = isStarting(state);
+  const completed = isCompleted(state);
   const isStopping = killMutation.isPending;
 
   const handleRunCommand = (command: CommandConfig) => {
-    if (isRunning || isStarting) return;
+    if (isRunning || starting) return;
     if (command.destructive) {
       setConfirmCommand(command);
     } else {
+      dispatch({ type: 'START', command: command.cmd });
       startMutation.mutate({ command: command.cmd });
     }
   };
 
   const handleConfirmRun = () => {
     if (confirmCommand) {
+      dispatch({ type: 'START', command: confirmCommand.cmd });
       startMutation.mutate({ command: confirmCommand.cmd });
       setConfirmCommand(null);
     }
   };
 
   const handleStop = () => {
-    if (!runningProcess || isStopping) return;
-    killMutation.mutate({ id: runningProcess.id });
+    if (!processId || isStopping) return;
+    killMutation.mutate({ id: processId });
   };
 
   const handleClearOutput = () => {
-    setLastExitCode(null);
-    setLines([]);
+    dispatch({ type: 'RESET' });
+    setCommandLabel(null);
   };
 
-  const buttonsDisabled = isRunning || isStarting;
+  const buttonsDisabled = isRunning || starting;
   const stopDisabled = !isRunning || isStopping;
 
   const getStatusText = () => {
-    if (isStarting) return 'Starting...';
-    if (isRunning) {
-      return `Running: ${runningProcess.label}...`;
+    if (starting) return 'Starting...';
+    if (isRunning && commandLabel) {
+      return `Running: ${commandLabel}...`;
     }
-    if (lastExitCode !== null) {
-      return lastExitCode === 0 ? 'Completed' : `Failed (code ${lastExitCode})`;
+    if (completed) {
+      return exitCode === 0 ? 'Completed' : `Failed (code ${exitCode})`;
     }
     return null;
   };
 
   const statusText = getStatusText();
-  const hasOutput = lines.length > 0 || lastExitCode !== null;
+  const hasOutput = lines.length > 0 || completed;
 
   return (
     <>
@@ -318,13 +331,13 @@ export function RalphSidePanel() {
                 title="Process running"
               />
             )}
-            {lastExitCode === 0 && (
+            {exitCode === 0 && (
               <div
                 className="h-3 w-3 rounded-full bg-green-500"
                 title="Completed"
               />
             )}
-            {lastExitCode !== null && lastExitCode !== 0 && (
+            {exitCode !== null && exitCode !== 0 && (
               <div className="h-3 w-3 rounded-full bg-red-500" title="Failed" />
             )}
           </div>
@@ -347,7 +360,7 @@ export function RalphSidePanel() {
                       data-testid={`command-button-${index}`}
                     >
                       <Icon className="mr-1 h-4 w-4" />
-                      {isStarting ? 'Starting...' : command.label}
+                      {starting ? 'Starting...' : command.label}
                     </Button>
                   );
                 })}
@@ -372,10 +385,8 @@ export function RalphSidePanel() {
                     className={cn(
                       'text-sm',
                       isRunning && 'text-blue-600 animate-pulse',
-                      lastExitCode === 0 && 'text-green-600',
-                      lastExitCode !== null &&
-                        lastExitCode !== 0 &&
-                        'text-destructive',
+                      exitCode === 0 && 'text-green-600',
+                      exitCode !== null && exitCode !== 0 && 'text-destructive',
                     )}
                     data-testid="status-text"
                   >
@@ -393,7 +404,7 @@ export function RalphSidePanel() {
                 </div>
               )}
 
-              {!isRunning && lastExitCode !== null && (
+              {completed && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -410,9 +421,9 @@ export function RalphSidePanel() {
               {hasOutput || isRunning ? (
                 <ProcessOutputViewer
                   lines={lines}
-                  exitCode={processExitCode}
+                  exitCode={exitCode}
                   connectionStatus={connectionStatus}
-                  processId={runningProcess?.id ?? null}
+                  processId={processId}
                   height="100%"
                   title="Output"
                   showCard={false}
