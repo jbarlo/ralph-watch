@@ -687,3 +687,29 @@
 - Files added: src/hooks/use-theme.ts, src/components/ThemeToggle.tsx, src/components/ui/dropdown-menu.tsx
 - Files modified: src/app/layout.tsx, src/app/page.tsx, src/app/project/[path]/page.tsx
 - Verified: `pnpm check` passes (all 197 tests pass)
+
+## Ticket #51: Configure colour schemes to follow Catppuccin styles
+- Updated src/app/globals.css with Catppuccin color palette
+- Light theme: Catppuccin Latte
+  - background: Base (220 23% 95%)
+  - foreground: Text (234 16% 35%)
+  - card/popover: Mantle (220 22% 92%)
+  - primary: Blue (220 91% 54%)
+  - secondary/muted: Surface0 (223 16% 83%)
+  - accent: Mauve (266 85% 58%)
+  - destructive: Red (347 87% 44%)
+  - border: Surface1 (225 14% 77%)
+  - ring: Lavender (231 97% 72%)
+- Dark theme: Catppuccin Mocha
+  - background: Base (240 21% 15%)
+  - foreground: Text (226 64% 88%)
+  - card/popover: Mantle (240 21% 12%)
+  - primary: Blue (217 92% 76%)
+  - secondary/muted: Surface0 (237 16% 23%)
+  - accent: Mauve (267 84% 81%)
+  - destructive: Red (343 81% 75%)
+  - border: Surface1 (234 13% 31%)
+  - ring: Lavender (232 97% 85%)
+- Chart colors updated to use Catppuccin accent colors (Red, Teal, Blue, Yellow, Mauve)
+- Files modified: src/app/globals.css
+- Verified: `pnpm check` passes (all 197 tests pass)
