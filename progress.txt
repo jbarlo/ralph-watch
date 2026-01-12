@@ -1162,3 +1162,23 @@
   - Session without label fallback test
 - Files added: src/components/SessionTabs.tsx, src/components/SessionTabs.test.tsx
 - Verified: pnpm check passes (all 248 tests pass)
+
+## Ticket #82: Integrate session tabs into terminal panes
+- Wired up SessionTabs to RightTerminalPane and MobileLayout
+- Updated Terminal.tsx to accept session props:
+  - sessionId, sessionLabel, sessionContext for session identification
+  - onSessionCreated, onReattached callbacks for session lifecycle
+  - onSessionsUpdated callback to receive session list updates
+  - handleRef prop to expose connect/disconnect/listSessions/closeSession methods
+- Updated RightTerminalPane.tsx:
+  - Added sessions and activeSessionId state management
+  - Renders SessionTabs above Terminal component
+  - Session handlers: handleSelectSession, handleCloseSession, handleNewSession
+  - Active session persisted to localStorage (ralph-terminal-session key)
+- Updated MobileLayout.tsx:
+  - Added session state management (separate key: ralph-terminal-session-mobile)
+  - Added SessionTabs above TerminalComponent in terminal tab
+  - Same session handler pattern as desktop
+- Fixed ESLint issue: renamed terminalRef to handleRef (terminalHandleRef in parent)
+- Files modified: src/components/Terminal.tsx, src/components/RightTerminalPane.tsx, src/components/MobileLayout.tsx
+- Verified: pnpm check passes (all 248 tests pass)
