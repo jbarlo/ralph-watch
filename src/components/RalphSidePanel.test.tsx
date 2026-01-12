@@ -6,7 +6,7 @@ import {
   act,
   waitFor,
 } from '@testing-library/react';
-import { RalphControls } from './RalphControls';
+import { RalphSidePanel } from './RalphSidePanel';
 import type { UseProcessOutputResult } from '@/hooks/use-process-output';
 
 // Mock the hooks and modules
@@ -92,7 +92,7 @@ function createMockResult(
   };
 }
 
-describe('RalphControls', () => {
+describe('RalphSidePanel', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseProcessOutput.mockReturnValue(createMockResult());
@@ -102,36 +102,37 @@ describe('RalphControls', () => {
 
   describe('initial rendering', () => {
     it('should render Run Next Ticket button', () => {
-      render(<RalphControls />);
+      render(<RalphSidePanel />);
       expect(
         screen.getByRole('button', { name: 'Run Next Ticket' }),
       ).toBeInTheDocument();
     });
 
     it('should render Run All button', () => {
-      render(<RalphControls />);
+      render(<RalphSidePanel />);
       expect(
         screen.getByRole('button', { name: 'Run All' }),
       ).toBeInTheDocument();
     });
 
     it('should not show Stop button initially', () => {
-      render(<RalphControls />);
+      render(<RalphSidePanel />);
       expect(
         screen.queryByRole('button', { name: 'Stop' }),
       ).not.toBeInTheDocument();
     });
 
-    it('should not show output panel initially', () => {
-      render(<RalphControls />);
-      expect(screen.queryByText('Hide Output')).not.toBeInTheDocument();
-      expect(screen.queryByText('Show Output')).not.toBeInTheDocument();
+    it('should show empty output message initially', () => {
+      render(<RalphSidePanel />);
+      expect(
+        screen.getByText('No output yet. Run a command to see output.'),
+      ).toBeInTheDocument();
     });
   });
 
   describe('starting processes', () => {
     it('should call start mutation with ralph-once on Run Next Ticket click', () => {
-      render(<RalphControls />);
+      render(<RalphSidePanel />);
 
       const button = screen.getByRole('button', { name: 'Run Next Ticket' });
       fireEvent.click(button);
@@ -140,7 +141,7 @@ describe('RalphControls', () => {
     });
 
     it('should call start mutation with ralph on Run All click', () => {
-      render(<RalphControls />);
+      render(<RalphSidePanel />);
 
       const button = screen.getByRole('button', { name: 'Run All' });
       fireEvent.click(button);
@@ -151,7 +152,7 @@ describe('RalphControls', () => {
 
   describe('running state', () => {
     it('should show status text when process is running', () => {
-      render(<RalphControls />);
+      render(<RalphSidePanel />);
 
       // Click to start
       const button = screen.getByRole('button', { name: 'Run Next Ticket' });
@@ -172,7 +173,7 @@ describe('RalphControls', () => {
     });
 
     it('should show output panel when process is started', () => {
-      render(<RalphControls />);
+      render(<RalphSidePanel />);
 
       const button = screen.getByRole('button', { name: 'Run Next Ticket' });
       fireEvent.click(button);
@@ -184,11 +185,12 @@ describe('RalphControls', () => {
         );
       });
 
-      expect(screen.getByTestId('toggle-output')).toBeInTheDocument();
+      // Output panel is shown automatically - check for the Output title
+      expect(screen.getByText('Output')).toBeInTheDocument();
     });
 
     it('should show Stop button when process is running', () => {
-      render(<RalphControls />);
+      render(<RalphSidePanel />);
 
       const button = screen.getByRole('button', { name: 'Run Next Ticket' });
       fireEvent.click(button);
@@ -206,7 +208,7 @@ describe('RalphControls', () => {
 
   describe('stopping processes', () => {
     it('should call kill mutation when Stop is clicked', () => {
-      render(<RalphControls />);
+      render(<RalphSidePanel />);
 
       // Start a process
       const runButton = screen.getByRole('button', { name: 'Run Next Ticket' });
@@ -227,39 +229,33 @@ describe('RalphControls', () => {
     });
   });
 
-  describe('output panel visibility', () => {
-    it('should toggle output visibility when clicking toggle button', () => {
-      render(<RalphControls />);
+  describe('panel collapse', () => {
+    it('should toggle panel visibility when clicking collapse button', () => {
+      render(<RalphSidePanel />);
 
-      // Start a process to show the output panel
-      const runButton = screen.getByRole('button', { name: 'Run Next Ticket' });
-      fireEvent.click(runButton);
+      // Panel should be expanded initially with "Ralph Controls" title
+      expect(screen.getByText('Ralph Controls')).toBeInTheDocument();
 
-      act(() => {
-        startMutationOptions.onSuccess?.(
-          { id: 'test-proc-id', pid: 12345 },
-          { command: 'ralph-once' },
-        );
-      });
+      // Find collapse button (shows ») and click to collapse
+      const collapseButton = screen.getByTitle('Collapse panel');
+      fireEvent.click(collapseButton);
 
-      // Toggle should say "Hide Output" since outputOpen is true after start
-      expect(screen.getByTestId('toggle-output')).toHaveTextContent(
-        'Hide Output',
-      );
+      // Panel is now collapsed - "Ralph Controls" title should be hidden
+      expect(screen.queryByText('Ralph Controls')).not.toBeInTheDocument();
 
-      // Click to hide
-      fireEvent.click(screen.getByTestId('toggle-output'));
+      // Find expand button (shows «) and click to expand
+      const expandButton = screen.getByTitle('Expand panel');
+      fireEvent.click(expandButton);
 
-      expect(screen.getByTestId('toggle-output')).toHaveTextContent(
-        'Show Output',
-      );
+      // Panel should be expanded again
+      expect(screen.getByText('Ralph Controls')).toBeInTheDocument();
     });
   });
 
   describe('process completion', () => {
     it('should show Completed status for exit code 0', async () => {
       // Start with normal state
-      const { rerender } = render(<RalphControls />);
+      const { rerender } = render(<RalphSidePanel />);
 
       // Start a process
       const button = screen.getByRole('button', { name: 'Run Next Ticket' });
@@ -281,7 +277,7 @@ describe('RalphControls', () => {
       );
 
       // Rerender to trigger the useEffect with exit code
-      rerender(<RalphControls />);
+      rerender(<RalphSidePanel />);
 
       // Wait for microtask to complete
       await waitFor(() => {
@@ -291,7 +287,7 @@ describe('RalphControls', () => {
     });
 
     it('should show Failed status for non-zero exit code', async () => {
-      const { rerender } = render(<RalphControls />);
+      const { rerender } = render(<RalphSidePanel />);
 
       // Start a process
       const button = screen.getByRole('button', { name: 'Run Next Ticket' });
@@ -312,7 +308,7 @@ describe('RalphControls', () => {
         }),
       );
 
-      rerender(<RalphControls />);
+      rerender(<RalphSidePanel />);
 
       await waitFor(() => {
         const status = screen.queryByTestId('status-text');
@@ -321,7 +317,7 @@ describe('RalphControls', () => {
     });
 
     it('should show Clear button after process completes', async () => {
-      const { rerender } = render(<RalphControls />);
+      const { rerender } = render(<RalphSidePanel />);
 
       const button = screen.getByRole('button', { name: 'Run Next Ticket' });
       fireEvent.click(button);
@@ -340,7 +336,7 @@ describe('RalphControls', () => {
         }),
       );
 
-      rerender(<RalphControls />);
+      rerender(<RalphSidePanel />);
 
       await waitFor(() => {
         expect(screen.getByTestId('clear-output')).toBeInTheDocument();
@@ -348,7 +344,7 @@ describe('RalphControls', () => {
     });
 
     it('should clear output panel when Clear is clicked', async () => {
-      const { rerender } = render(<RalphControls />);
+      const { rerender } = render(<RalphSidePanel />);
 
       const runButton = screen.getByRole('button', { name: 'Run Next Ticket' });
       fireEvent.click(runButton);
@@ -367,7 +363,7 @@ describe('RalphControls', () => {
         }),
       );
 
-      rerender(<RalphControls />);
+      rerender(<RalphSidePanel />);
 
       // Wait for exit to be processed
       await waitFor(() => {
@@ -378,14 +374,18 @@ describe('RalphControls', () => {
       const clearButton = screen.getByTestId('clear-output');
       fireEvent.click(clearButton);
 
-      // Output panel should be hidden now
-      expect(screen.queryByTestId('toggle-output')).not.toBeInTheDocument();
+      // Status text should be cleared - show empty output message instead
+      await waitFor(() => {
+        expect(
+          screen.getByText('No output yet. Run a command to see output.'),
+        ).toBeInTheDocument();
+      });
     });
   });
 
   describe('button states', () => {
     it('should disable Run buttons when process is running', () => {
-      render(<RalphControls />);
+      render(<RalphSidePanel />);
 
       // Start a process
       const button = screen.getByRole('button', { name: 'Run Next Ticket' });
@@ -413,7 +413,7 @@ describe('RalphControls', () => {
         }),
       );
 
-      render(<RalphControls />);
+      render(<RalphSidePanel />);
 
       // Start a process
       const button = screen.getByRole('button', { name: 'Run Next Ticket' });
@@ -438,7 +438,7 @@ describe('RalphControls', () => {
         }),
       );
 
-      render(<RalphControls />);
+      render(<RalphSidePanel />);
 
       // Start a process
       const button = screen.getByRole('button', { name: 'Run Next Ticket' });
@@ -459,12 +459,12 @@ describe('RalphControls', () => {
 
   describe('hook integration', () => {
     it('should call useProcessOutput with null initially', () => {
-      render(<RalphControls />);
+      render(<RalphSidePanel />);
       expect(mockUseProcessOutput).toHaveBeenCalledWith(null);
     });
 
     it('should call useProcessOutput with process id after starting', () => {
-      render(<RalphControls />);
+      render(<RalphSidePanel />);
 
       // Start a process
       const button = screen.getByRole('button', { name: 'Run Next Ticket' });

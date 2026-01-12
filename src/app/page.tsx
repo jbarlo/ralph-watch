@@ -10,7 +10,7 @@ import { ProgressViewer } from '@/components/ProgressViewer';
 import { EditTicketForm } from '@/components/EditTicketForm';
 import { DeleteTicketButton } from '@/components/DeleteTicketButton';
 import { ConnectionStatusIndicator } from '@/components/ConnectionStatus';
-import { RalphControls } from '@/components/RalphControls';
+import { RalphSidePanel } from '@/components/RalphSidePanel';
 import { ProjectSwitcher } from '@/components/ProjectSwitcher';
 import { useProjectContext } from '@/components/providers/ProjectProvider';
 import { getProjectFilter, setProjectFilter } from '@/lib/projects';
@@ -85,7 +85,6 @@ function Header() {
             }}
           />
         </div>
-        <RalphControls />
         <ConnectionStatusIndicator />
       </div>
     </header>
@@ -357,7 +356,12 @@ function HomeContent() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
-      <ProjectContent key={projectKey} projectPath={activeProjectPath} />
+      <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <ProjectContent key={projectKey} projectPath={activeProjectPath} />
+        </div>
+        <RalphSidePanel />
+      </div>
     </div>
   );
 }

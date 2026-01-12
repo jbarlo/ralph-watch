@@ -458,3 +458,20 @@
 - getTickets callback uses utils.tickets.list.getData() for status change detection
 - Files modified: src/hooks/use-file-watch.ts, src/components/ConnectionStatus.tsx
 - Verified: `pnpm check` passes (all 203 tests pass)
+
+## Ticket #37: Side panel UX for ralph controls and output
+- Created src/components/RalphSidePanel.tsx as persistent side panel for ralph controls
+- Panel features: Run Next Ticket and Run All buttons at top, Stop button during running
+- ProcessOutputViewer below buttons for real-time output streaming
+- Panel is 350px wide with collapsible design (collapse button toggles visibility)
+- Collapsed view shows status indicators (running/completed/failed dots)
+- Expanded view shows: buttons, status text, connection status, output viewer
+- Auto-expands when process starts, can manually collapse/expand
+- Updated src/app/page.tsx to include RalphSidePanel in layout (right side)
+- Removed RalphControls from header, main content area gets remaining width
+- Updated RalphSidePanel.test.tsx to match new component structure
+- Removed toggle-output tests (output always visible when expanded)
+- Added panel collapse/expand tests
+- Files added: src/components/RalphSidePanel.tsx, src/components/RalphSidePanel.test.tsx
+- Files modified: src/app/page.tsx
+- Verified: `pnpm check` passes (all 203 tests pass)
