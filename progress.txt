@@ -824,3 +824,10 @@
 - Files modified: src/components/ProgressViewer.tsx, src/app/project/[path]/page.tsx
 - Verified: `pnpm check` passes (all 227 tests pass)
 
+## Ticket #59: fix: make incomplete tab the default one
+- Bug: Desktop and mobile layouts used useState with 'all' as default filter
+- Root cause: useTicketFilter hook had correct 'incomplete' default but components didn't use hook
+- Fix: Changed default from 'all' to 'incomplete' in both DesktopProjectContent and MobileLayout
+- Files modified: src/app/project/[path]/page.tsx, src/components/MobileLayout.tsx
+- Verified: `pnpm check` passes (all 227 tests pass)
+
