@@ -1036,3 +1036,27 @@
 - Files added: src/components/TerminalControls.tsx
 - Files modified: src/components/Terminal.tsx, src/components/MobileLayout.tsx
 - Verified: pnpm check passes (all 227 tests pass)
+## Ticket #72: PWA support for mobile home screen install
+- Created public/manifest.json with PWA configuration
+  - App name: Ralph Watch, short name: Ralph
+  - Display: standalone (no browser chrome)
+  - Background and theme colors using Catppuccin Mocha base (#1e1e2e)
+- Created app icons:
+  - public/icon.svg with "R" letter on blue gradient (Catppuccin colors)
+  - public/icon-192.png and public/icon-512.png as PNG fallbacks (solid blue)
+  - scripts/generate-icons.mjs pure JS script for PNG generation
+- Updated src/app/layout.tsx with PWA meta tags via Next.js metadata API:
+  - manifest link
+  - appleWebApp configuration (capable, statusBarStyle, title)
+  - icons (SVG and apple-touch-icon)
+  - mobile-web-app-capable meta tag
+- Added viewport configuration with theme-color for light/dark modes
+  - Light mode: #eff1f5 (Catppuccin Latte)
+  - Dark mode: #1e1e2e (Catppuccin Mocha)
+- Created public/sw.js minimal service worker for install prompt
+  - No caching (dev tool needs live server connection)
+  - skipWaiting and clients.claim for immediate activation
+- Service worker registration in theme script (runs on client load)
+- Files added: public/manifest.json, public/icon.svg, public/icon-192.png, public/icon-512.png, public/sw.js, scripts/generate-icons.mjs
+- Files modified: src/app/layout.tsx
+- Verified: pnpm check passes (all 227 tests pass)
