@@ -5,6 +5,7 @@ import type {
   ProcessRunner,
   ProcessHandle,
   ProcessStatus,
+  ProcessOutputLine,
 } from '@/lib/process-runner';
 import { ok, err } from '@/lib/result';
 import { ProcessStatusFactory } from '@/lib/process-runner';
@@ -35,6 +36,7 @@ function createMockRunner(mocks: {
   listRunning?: () => ProcessHandle[];
   onOutput?: ProcessRunner['onOutput'];
   onExit?: ProcessRunner['onExit'];
+  getOutput?: (id: string) => ProcessOutputLine[];
 }): ProcessRunner {
   return {
     start: mocks.start ?? (async () => ok({ id: 'mock-id', pid: 12345 })),
@@ -43,6 +45,7 @@ function createMockRunner(mocks: {
     listRunning: mocks.listRunning ?? (() => []),
     onOutput: mocks.onOutput ?? (() => () => {}),
     onExit: mocks.onExit ?? (() => () => {}),
+    getOutput: mocks.getOutput ?? (() => []),
   };
 }
 

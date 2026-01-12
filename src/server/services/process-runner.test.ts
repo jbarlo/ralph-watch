@@ -294,6 +294,67 @@ describe('ProcessRunner', () => {
     });
   });
 
+  describe('getOutput', () => {
+    it('should return empty array for unknown process', () => {
+      const output = runner.getOutput('unknown-id');
+      expect(output).toEqual([]);
+    });
+
+    it('should return buffered output lines', async () => {
+      const result = await runner.start({
+        command: 'echo line1; echo line2',
+        cwd: process.cwd(),
+      });
+
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        // Wait for output
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        const output = runner.getOutput(result.value.id);
+        expect(output.length).toBeGreaterThanOrEqual(2);
+        expect(output.map((l) => l.line)).toContain('line1');
+        expect(output.map((l) => l.line)).toContain('line2');
+      }
+    });
+
+    it('should return a copy, not the internal array', async () => {
+      const result = await runner.start({
+        command: 'echo test',
+        cwd: process.cwd(),
+      });
+
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        // Wait for output
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        const output1 = runner.getOutput(result.value.id);
+        const output2 = runner.getOutput(result.value.id);
+
+        expect(output1).not.toBe(output2);
+        expect(output1).toEqual(output2);
+      }
+    });
+
+    it('should include both stdout and stderr in buffer', async () => {
+      const result = await runner.start({
+        command: 'echo stdout; echo stderr >&2',
+        cwd: process.cwd(),
+      });
+
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        // Wait for output
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        const output = runner.getOutput(result.value.id);
+        expect(output.some((l) => l.stream === 'stdout')).toBe(true);
+        expect(output.some((l) => l.stream === 'stderr')).toBe(true);
+      }
+    });
+  });
+
   describe('onExit', () => {
     it('should call callback when process exits', async () => {
       const result = await runner.start({

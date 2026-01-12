@@ -36,6 +36,7 @@ export interface UseEventStreamOptions {
   onProgressChange?: () => void;
   onTicketStatusChange?: (change: TicketStatusChange) => void;
   getTickets?: () => Ticket[] | undefined;
+  onProcessReplayStart?: (processId: string) => void;
   onProcessOutput?: (processId: string, line: ProcessOutputLine) => void;
   onProcessExit?: (processId: string, code: number | null) => void;
 }
@@ -50,6 +51,7 @@ export function useEventStream(
 ): UseEventStreamResult {
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>('connecting');
+  const [reconnectTrigger, setReconnectTrigger] = useState(0);
   const eventSourceRef = useRef<EventSource | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const previousTicketsRef = useRef<Map<number, string>>(new Map());
@@ -179,7 +181,9 @@ export function useEventStream(
           optionsRef.current.onProgressChange?.();
         } else if (topic.startsWith('process:')) {
           const processId = topic.slice('process:'.length);
-          if (type === 'output') {
+          if (type === 'replay-start') {
+            optionsRef.current.onProcessReplayStart?.(processId);
+          } else if (type === 'output') {
             optionsRef.current.onProcessOutput?.(
               processId,
               data as ProcessOutputLine,
@@ -200,13 +204,30 @@ export function useEventStream(
       console.log('[useEventStream] Connection error, will reconnect...');
       setConnectionStatus('disconnected');
       eventSource.close();
+      eventSourceRef.current = null;
 
       reconnectTimeoutRef.current = setTimeout(() => {
-        if (eventSourceRef.current === null) {
-          setConnectionStatus('connecting');
-        }
+        setReconnectTrigger((prev) => prev + 1);
       }, 3000);
     };
+
+    const handleVisibilityChange = () => {
+      if (
+        document.visibilityState === 'visible' &&
+        eventSourceRef.current === null
+      ) {
+        console.log(
+          '[useEventStream] Tab became visible, reconnecting immediately',
+        );
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current);
+          reconnectTimeoutRef.current = null;
+        }
+        setReconnectTrigger((prev) => prev + 1);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       console.log('[useEventStream] Cleaning up connection');
@@ -216,8 +237,9 @@ export function useEventStream(
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
       }
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [options.project, topicsKey, checkTicketStatusChanges]);
+  }, [options.project, topicsKey, checkTicketStatusChanges, reconnectTrigger]);
 
   return {
     connectionStatus,

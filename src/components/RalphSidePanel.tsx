@@ -70,6 +70,51 @@ export function RalphSidePanel() {
   const configQuery = trpc.config.get.useQuery();
   const commands = configQuery.data?.commands ?? [];
 
+  const getStorageKey = useCallback(
+    (processId: string) => `ralph-output-${processId}`,
+    [],
+  );
+
+  useEffect(() => {
+    if (!runningProcess || lines.length === 0) return;
+
+    const key = getStorageKey(runningProcess.id);
+    try {
+      sessionStorage.setItem(key, JSON.stringify(lines));
+    } catch {
+      // Storage full or unavailable
+    }
+  }, [runningProcess, lines, getStorageKey]);
+
+  const restoreAttemptedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!runningProcess) {
+      restoreAttemptedRef.current = null;
+      return;
+    }
+
+    if (restoreAttemptedRef.current === runningProcess.id) {
+      return;
+    }
+
+    restoreAttemptedRef.current = runningProcess.id;
+    const key = getStorageKey(runningProcess.id);
+
+    try {
+      const stored = sessionStorage.getItem(key);
+      if (stored) {
+        const parsed = JSON.parse(stored) as ProcessOutputLine[];
+        if (parsed.length > 0) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect -- Restoring persisted data on process reconnect
+          setLines(parsed);
+        }
+      }
+    } catch {
+      // Invalid data or unavailable
+    }
+  }, [runningProcess, getStorageKey]);
+
   const topics = useMemo(() => {
     const t: string[] = [];
     if (runningProcess) {
@@ -77,6 +122,15 @@ export function RalphSidePanel() {
     }
     return t;
   }, [runningProcess]);
+
+  const handleProcessReplayStart = useCallback(
+    (processId: string) => {
+      if (runningProcess && processId === runningProcess.id) {
+        setLines([]);
+      }
+    },
+    [runningProcess],
+  );
 
   const handleProcessOutput = useCallback(
     (processId: string, line: ProcessOutputLine) => {
@@ -99,6 +153,7 @@ export function RalphSidePanel() {
   const { connectionStatus } = useEventStream({
     project: projectPath,
     topics,
+    onProcessReplayStart: handleProcessReplayStart,
     onProcessOutput: handleProcessOutput,
     onProcessExit: handleProcessExit,
   });
@@ -108,6 +163,13 @@ export function RalphSidePanel() {
       const label =
         commands.find((c) => c.cmd === variables.command)?.label ?? 'Command';
 
+      try {
+        sessionStorage.removeItem(getStorageKey(handle.id));
+      } catch {
+        // Storage unavailable
+      }
+
+      restoreAttemptedRef.current = handle.id;
       setRunningProcess({ id: handle.id, label });
       setLastExitCode(null);
       setLines([]);

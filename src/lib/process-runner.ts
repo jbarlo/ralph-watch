@@ -75,6 +75,13 @@ export interface ProcessRunner {
   onExit(id: string, cb: (code: number | null) => void): () => void;
 
   /**
+   * Get buffered output lines for a process.
+   * Returns empty array if process not found.
+   * Used for replaying output on SSE reconnect.
+   */
+  getOutput(id: string): ProcessOutputLine[];
+
+  /**
    * List all currently running processes.
    */
   listRunning(): ProcessHandle[];

@@ -245,6 +245,14 @@ export function createProcessRunner(): ProcessRunner {
     };
   }
 
+  function getOutput(id: string): ProcessOutputLine[] {
+    const record = processes.get(id);
+    if (!record) {
+      return [];
+    }
+    return [...record.output];
+  }
+
   function listRunning(): ProcessHandle[] {
     const running: ProcessHandle[] = [];
     processes.forEach((record) => {
@@ -261,6 +269,7 @@ export function createProcessRunner(): ProcessRunner {
     kill,
     onOutput,
     onExit,
+    getOutput,
     listRunning,
   };
 }

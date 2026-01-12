@@ -625,3 +625,29 @@
 - Files added: src/hooks/use-media-query.ts, src/components/BottomTabBar.tsx, src/components/MobileLayout.tsx
 - Files modified: src/app/project/[path]/page.tsx, src/components/TicketList.tsx, src/components/TicketFilter.tsx, src/components/QuickAddBar.tsx
 - Verified: `pnpm check` passes (all 186 tests pass)
+
+## Ticket #47: Fix process output loss on tab switch
+- Fixed bug where process output was lost when browser tab was backgrounded
+- Root cause: SSE disconnects when tab is backgrounded, output goes to server buffer, but wasn't replayed on reconnect
+- Added getOutput(id) method to ProcessRunner interface and implementation
+  - Returns copy of buffered output lines for a process
+  - Returns empty array if process not found
+- Updated /api/events SSE endpoint to replay buffered output on subscription
+  - Sends 'replay-start' event before replayed output
+  - Sends buffered lines as 'output' events
+  - Sends 'replay-end' event after replay
+  - Uses timestamp deduplication to avoid re-sending already-sent lines
+- Updated use-event-stream hook with onProcessReplayStart callback
+- Updated RalphSidePanel to handle replay-start by clearing lines
+- Added sessionStorage persistence for process output
+  - Persists lines to sessionStorage on each update
+  - Restores from sessionStorage when process ID reconnects
+  - Clears on new process start
+- Created src/hooks/use-visibility.ts for document visibility detection
+- Added visibility-aware reconnection to use-event-stream
+  - When tab becomes visible and disconnected, reconnects immediately (no 3s delay)
+  - Uses reconnectTrigger state to force effect re-run
+- Added tests for getOutput method in process-runner.test.ts
+- Files added: src/hooks/use-visibility.ts
+- Files modified: src/lib/process-runner.ts, src/server/services/process-runner.ts, src/server/services/process-runner.test.ts, src/app/api/events/route.ts, src/hooks/use-event-stream.ts, src/components/RalphSidePanel.tsx, src/server/routers/process.test.ts
+- Verified: `pnpm check` passes (all 190 tests pass)

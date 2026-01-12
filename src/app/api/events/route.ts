@@ -223,9 +223,39 @@ export async function GET(request: Request): Promise<Response> {
           continue;
         }
 
+        const bufferedOutput = runner.getOutput(processId);
+        if (bufferedOutput.length > 0) {
+          const replayStartMessage = formatSSE({
+            topic: `process:${processId}`,
+            type: 'replay-start',
+            data: { count: bufferedOutput.length },
+          });
+          controller.enqueue(encoder.encode(replayStartMessage));
+
+          for (const line of bufferedOutput) {
+            const outputMessage = formatSSE({
+              topic: `process:${processId}`,
+              type: 'output',
+              data: line,
+            });
+            controller.enqueue(encoder.encode(outputMessage));
+          }
+
+          const replayEndMessage = formatSSE({
+            topic: `process:${processId}`,
+            type: 'replay-end',
+            data: { count: bufferedOutput.length },
+          });
+          controller.enqueue(encoder.encode(replayEndMessage));
+        }
+
+        const seenTimestamps = new Set(bufferedOutput.map((l) => l.timestamp));
         const unsubOutput = runner.onOutput(
           processId,
           (line: ProcessOutputLine) => {
+            if (seenTimestamps.has(line.timestamp)) {
+              return;
+            }
             try {
               const outputMessage = formatSSE({
                 topic: `process:${processId}`,
