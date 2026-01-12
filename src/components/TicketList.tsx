@@ -121,16 +121,20 @@ export function TicketList({
 
   const filteredTickets = useMemo(() => {
     if (!tickets) return [];
-    if (statusFilter === 'all') return tickets;
-    if (statusFilter === 'incomplete') {
-      return tickets.filter(
+    let result: Ticket[];
+    if (statusFilter === 'all') {
+      result = [...tickets];
+    } else if (statusFilter === 'incomplete') {
+      result = tickets.filter(
         (t) =>
           t.status === 'draft' ||
           t.status === 'pending' ||
           t.status === 'in_progress',
       );
+    } else {
+      result = tickets.filter((t) => t.status === statusFilter);
     }
-    return tickets.filter((t) => t.status === statusFilter);
+    return result.sort((a, b) => b.id - a.id);
   }, [tickets, statusFilter]);
 
   const handleSelect = (ticket: Ticket) => {

@@ -1102,3 +1102,11 @@
 - Custom config via .ralph-watch.json terminalButtons field overrides defaults
 - Files modified: src/lib/project-config.ts, src/server/routers/config.ts, src/components/TerminalControls.tsx, src/components/Terminal.tsx
 - Verified: pnpm check passes (all 228 tests pass)
+
+## Ticket #78: Display tickets from latest to oldest in all tabs
+- Updated filteredTickets useMemo in TicketList.tsx to sort tickets by ID descending
+- Changed from returning filtered array directly to sorting with `result.sort((a, b) => b.id - a.id)`
+- Made shallow copy with spread operator for 'all' filter before sorting to avoid mutating original array
+- Sorting applies after filtering, so works correctly for all tabs (incomplete, all, pending, etc.)
+- Files modified: src/components/TicketList.tsx
+- Verified: pnpm check passes (all 228 tests pass)
