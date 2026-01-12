@@ -15,6 +15,7 @@
             pnpm
             git
             jq
+            python3  # needed for node-pty native compilation
           ];
         };
       });

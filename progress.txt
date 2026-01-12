@@ -874,3 +874,19 @@
 - Uses useSyncExternalStore for cross-component visibility sync
 - Files changed: package.json, src/components/BottomTerminalPane.tsx (new), src/app/project/[path]/page.tsx, src/components/RalphSidePanel.tsx, src/components/RalphSidePanel.test.tsx
 - Tests: all 227 tests pass
+## Ticket #62: Add ralph-stop action + terminal reconnect button
+- Added ralph-stop to default commands in src/lib/project-config.ts
+  - Uses 'square' icon, marked as destructive: true (shows confirmation dialog)
+- Implemented auto-reconnect with exponential backoff in use-terminal.ts hook
+  - Reconnect attempts up to 10 times (configurable via maxReconnectAttempts)
+  - Delays: 1s, 2s, 4s, 8s... up to 30s max
+  - Tracks reconnectAttempt state for UI display
+  - Uses doConnectRef pattern to avoid circular dependency with useCallback
+  - Stops auto-reconnect when user manually disconnects
+- Updated Terminal.tsx component
+  - Shows reconnection status: "Reconnecting (attempt N)..."
+  - Yellow terminal message on each reconnection attempt
+  - Button changes from "Connect" to "Retry" after error state
+  - Status display refactored to getStatusText() helper
+- Files modified: src/lib/project-config.ts, src/hooks/use-terminal.ts, src/components/Terminal.tsx
+- Verified: `pnpm check` passes (all 227 tests pass)
