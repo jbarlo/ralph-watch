@@ -442,7 +442,7 @@
       "id": 65,
       "title": "Make terminal font configurable / use better default",
       "description": "Current terminal font (Menlo, Monaco, Courier New) is hard to read compared to typical terminal fonts.\n\n## Options\n\n1. **Use system monospace** - `font-family: ui-monospace, monospace` lets the OS/browser pick\n2. **Match common terminal fonts** - JetBrains Mono, Fira Code, Source Code Pro\n3. **Make configurable** - Add to .ralph-watch.json or localStorage setting\n4. **Detect from system** - Try to read user's terminal font preference\n\n## Implementation\n\nSimplest fix: Update Terminal.tsx xterm config:\n```typescript\nfontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',\n```\n\nOr add web fonts (increases bundle size).\n\nRun pnpm check after.",
-      "status": "pending",
+      "status": "completed",
       "priority": 20
     },
     {
@@ -463,6 +463,12 @@
       "id": 68,
       "title": "give ticket status badge semantic colours. ensure badge colour logic is centralized and used both in sidebar and ticket description",
       "status": "completed",
+      "priority": 111
+    },
+    {
+      "id": 69,
+      "title": "make the ralph control pane and the ticket sidebars resizeable",
+      "status": "pending",
       "priority": 111
     }
   ]

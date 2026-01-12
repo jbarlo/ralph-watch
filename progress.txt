@@ -960,3 +960,12 @@
 - Files modified: src/app/globals.css, src/lib/ticket-ui.ts
 - Verified: pnpm check passes (all 227 tests pass)
 
+## Ticket #65: Make terminal font configurable / use better default
+- Updated xterm.js fontFamily config in src/components/Terminal.tsx
+- Changed from 'Menlo, Monaco, "Courier New", monospace' to improved font stack
+- New font stack: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace'
+- ui-monospace lets OS/browser pick best system monospace font
+- SFMono-Regular for macOS, Consolas for Windows, fallback to Menlo/Monaco
+- Files modified: src/components/Terminal.tsx
+- Verified: pnpm check passes (all 227 tests pass)
+

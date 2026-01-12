@@ -77,7 +77,8 @@ export function Terminal({
 
     const term = new XTerm({
       cursorBlink: true,
-      fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+      fontFamily:
+        'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
       fontSize: 14,
       lineHeight: 1.2,
       theme: {
