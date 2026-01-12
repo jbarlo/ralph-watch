@@ -17,6 +17,7 @@ export function TerminalControls({
   const controls = [
     { label: '^C', data: '\x03', title: 'Send SIGINT (Ctrl+C)' },
     { label: 'Tab', data: '\t', title: 'Send Tab' },
+    { label: 'S-Tab', data: '\x1b[Z', title: 'Send Shift+Tab (reverse tab)' },
     { label: 'Esc', data: '\x1b', title: 'Send Escape' },
     { label: '↑', data: '\x1b[A', title: 'Up arrow' },
     { label: '↓', data: '\x1b[B', title: 'Down arrow' },

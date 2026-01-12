@@ -1077,3 +1077,11 @@
 - Enabled scroll buttons in mobile progress tab by adding showScrollButtons prop to ProgressViewer in MobileLayout.tsx
 - Files modified: src/components/MobileLayout.tsx
 - Verified: pnpm check passes (all 228 tests pass)
+
+## Ticket #75: Add Shift+Tab button to terminal control buttons
+- Added S-Tab button to TerminalControls component
+- Sends \x1b[Z escape sequence (standard reverse-tab/backtab)
+- Placed between Tab and Esc buttons for logical grouping
+- Label "S-Tab" with tooltip "Send Shift+Tab (reverse tab)"
+- Files modified: src/components/TerminalControls.tsx
+- Verified: pnpm check passes (all 228 tests pass)

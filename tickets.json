@@ -510,7 +510,7 @@
       "id": 75,
       "title": "Add Shift+Tab button to terminal control buttons",
       "description": "Terminal control buttons (^C, Tab, Esc, arrows) are missing Shift+Tab. Add a Shift+Tab button that sends the appropriate escape sequence for reverse tab navigation.",
-      "status": "pending",
+      "status": "completed",
       "priority": 2
     },
     {
