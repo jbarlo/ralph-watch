@@ -212,8 +212,9 @@ describe('RalphSidePanel', () => {
         );
       });
 
-      // Output panel is shown automatically - check for the Output title
-      expect(screen.getByText('Output')).toBeInTheDocument();
+      // Output tab and Terminal tab should be visible
+      expect(screen.getAllByText('Output')).toHaveLength(2); // Tab and title
+      expect(screen.getByText('Terminal')).toBeInTheDocument();
     });
 
     it('should show Stop button when process is running', () => {

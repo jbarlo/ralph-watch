@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ralph Watch
+
+A web UI for monitoring and controlling Ralph (autonomous coding agent) workflows.
 
 ## Getting Started
 
-First, run the development server:
+1. Install dependencies:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Configure environment variables (see `.env.example`):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cp .env.example .env.local
+# Edit .env.local with your RALPH_BIN path
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Run the development server:
 
-## Learn More
+```bash
+pnpm dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+4. (Optional) Run the terminal server for embedded Claude terminal:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm terminal
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Open [http://localhost:3000](http://localhost:3000) with your browser.
 
-## Deploy on Vercel
+## Embedded Terminal
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The UI includes an embedded Claude Code terminal. To use it:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Start the terminal WebSocket server:
+
+```bash
+pnpm terminal
+```
+
+2. In the UI, open the side panel and click the "Terminal" tab
+3. Click "Connect" to start a Claude session
+
+The terminal server runs on port 3001 by default (configurable via `TERMINAL_WS_PORT`).
+
+## Remote Terminal Access
+
+By default, the embedded terminal is **localhost-only** for security.
+
+To enable remote access (e.g., for Tailscale):
+
+```bash
+RALPH_ENABLE_REMOTE_TERMINAL=yes-i-understand-this-is-dangerous pnpm terminal
+```
+
+**WARNING:** This exposes a full terminal with your user permissions to anyone who can reach the WebSocket port. No authentication is provided. Only enable this on trusted networks (like Tailscale) where network-level auth exists.
+
+## Scripts
+
+- `pnpm dev` - Start Next.js development server
+- `pnpm build` - Production build
+- `pnpm terminal` - Start terminal WebSocket server
+- `pnpm check` - Run lint, typecheck, and tests
+
+## Environment Variables
+
+See `.env.example` for all available options:
+
+- `RALPH_BIN` - Path to ralph binaries (required)
+- `RALPH_DIR` - Default project directory (optional)
+- `TERMINAL_WS_PORT` - Terminal WebSocket port (default: 3001)
+- `RALPH_ENABLE_REMOTE_TERMINAL` - Enable remote terminal access (dangerous)

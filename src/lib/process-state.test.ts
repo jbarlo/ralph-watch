@@ -172,9 +172,10 @@ describe('processReducer', () => {
     });
 
     it('transitions to completed on EXIT action with matching id', () => {
+      const outputLine = makeLine('output');
       const stateWithLines: ProcessState = {
         ...runningState,
-        lines: [makeLine('output')],
+        lines: [outputLine],
       };
       const state = processReducer(stateWithLines, {
         type: 'EXIT',
@@ -185,7 +186,7 @@ describe('processReducer', () => {
         status: 'completed',
         id: 'proc-1',
         exitCode: 0,
-        lines: [makeLine('output')],
+        lines: [outputLine],
       });
     });
 
