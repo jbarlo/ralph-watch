@@ -437,6 +437,33 @@
       "description": "Bug: Terminal pane can be pushed off-screen when content above it is tall.\n\n## Problem\nBottomTerminalPane is in document flow, not fixed to viewport. When the main content + side panel are tall, the terminal pane renders below the fold and requires scrolling to see.\n\n## Fix\nChange terminal pane to use fixed positioning at viewport bottom:\n\n```tsx\n// When visible, use fixed positioning\nreturn (\n  <div \n    className=\"fixed bottom-0 left-0 right-0 border-t bg-background flex flex-col z-40\"\n    style={{ height }}\n  >\n    ...\n  </div>\n);\n```\n\nAlso need to add padding-bottom to main content area so it doesn't get hidden behind the terminal pane.\n\n## Alternative\nUse a proper panel layout library like react-resizable-panels that handles this correctly.\n\nRun pnpm check after.",
       "status": "completed",
       "priority": 5
+    },
+    {
+      "id": 65,
+      "title": "Make terminal font configurable / use better default",
+      "description": "Current terminal font (Menlo, Monaco, Courier New) is hard to read compared to typical terminal fonts.\n\n## Options\n\n1. **Use system monospace** - `font-family: ui-monospace, monospace` lets the OS/browser pick\n2. **Match common terminal fonts** - JetBrains Mono, Fira Code, Source Code Pro\n3. **Make configurable** - Add to .ralph-watch.json or localStorage setting\n4. **Detect from system** - Try to read user's terminal font preference\n\n## Implementation\n\nSimplest fix: Update Terminal.tsx xterm config:\n```typescript\nfontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',\n```\n\nOr add web fonts (increases bundle size).\n\nRun pnpm check after.",
+      "status": "pending",
+      "priority": 20
+    },
+    {
+      "id": 66,
+      "title": "Move terminal to right side pane",
+      "description": "Bottom pane is too wide and not tall enough for Claude Code. Move to a wide right side pane.\n\n## New Layout\n\n```\n┌─────────────────────────────────┬─────────────────────────┐\n│ Header                          │                         │\n├─────────────────┬───────────────┤                         │\n│                 │               │                         │\n│  Tickets/Detail │ Ralph Side    │   Claude Terminal       │\n│                 │ Panel         │   (wide right pane)     │\n│                 │               │                         │\n│                 │               │                         │\n└─────────────────┴───────────────┴─────────────────────────┘\n```\n\nThe entire current app (tickets, detail, ralph controls) is the left/main section. Terminal is a new wide right pane that takes ~40-50% of screen width.\n\n## Implementation\n\n- Wrap current layout in a horizontal split\n- Terminal pane on right, resizable width\n- Collapsible (hide completely when not needed)\n- Persist width in localStorage\n- Keep keyboard toggle (Ctrl+`)\n- Remove BottomTerminalPane, create RightTerminalPane\n\nRun pnpm check after.",
+      "status": "pending",
+      "priority": 3
+    },
+    {
+      "id": 67,
+      "title": "Fix terminal toggle shortcut for Linux",
+      "description": "Cmd+` doesn't work on Linux with Windows keyboard. Need cross-platform shortcut.\n\n## Problem\n- macOS: Cmd+` works\n- Linux with Windows keyboard: Cmd key doesn't exist, Ctrl+` may conflict with terminal emulators\n\n## Fix\n\n1. Use Ctrl+` on Linux/Windows, Cmd+` on macOS:\n```typescript\nconst isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;\nif ((isMac ? e.metaKey : e.ctrlKey) && e.key === '`') {\n  // toggle\n}\n```\n\n2. Or use a different shortcut that works everywhere (e.g., Ctrl+Shift+T, F12)\n\n3. Or make it configurable in .ralph-watch.json\n\n## Files\n- src/components/BottomTerminalPane.tsx - keyboard handler\n- Consider also adding button in header as fallback\n\nRun pnpm check after.",
+      "status": "in_progress",
+      "priority": 1
+    },
+    {
+      "id": 68,
+      "title": "give ticket status badge semantic colours. ensure badge colour logic is centralized and used both in sidebar and ticket description",
+      "status": "pending",
+      "priority": 111
     }
   ]
 }

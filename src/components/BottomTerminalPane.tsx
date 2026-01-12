@@ -17,6 +17,20 @@ const DEFAULT_HEIGHT = 300;
 const MIN_HEIGHT = 100;
 const MAX_HEIGHT_RATIO = 0.6; // 60vh
 
+function getShortcutSnapshot(): string {
+  if (typeof navigator === 'undefined') return 'Ctrl+`';
+  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  return isMac ? 'Cmd+`' : 'Ctrl+`';
+}
+
+function getShortcutServerSnapshot(): string {
+  return 'Ctrl+`';
+}
+
+function subscribeNoop(): () => void {
+  return () => {};
+}
+
 function getStoredVisibility(): boolean {
   if (typeof window === 'undefined') return false;
   try {
@@ -126,6 +140,11 @@ export function BottomTerminalPane({ projectPath }: BottomTerminalPaneProps) {
     getHeightSnapshot,
     getHeightServerSnapshot,
   );
+  const shortcut = useSyncExternalStore(
+    subscribeNoop,
+    getShortcutSnapshot,
+    getShortcutServerSnapshot,
+  );
   const [isDragging, setIsDragging] = useState(false);
 
   const setHeight = (value: number) => {
@@ -182,7 +201,7 @@ export function BottomTerminalPane({ projectPath }: BottomTerminalPaneProps) {
           onClick={toggleTerminal}
           size="sm"
           className="gap-2 shadow-lg"
-          title="Open Terminal (Cmd+`)"
+          title={`Open Terminal (${shortcut})`}
         >
           <TerminalIcon className="h-4 w-4" />
           Terminal
@@ -211,7 +230,7 @@ export function BottomTerminalPane({ projectPath }: BottomTerminalPaneProps) {
           <TerminalIcon className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-medium">Claude Terminal</span>
           <span className="text-xs text-muted-foreground">
-            (Cmd+` to toggle)
+            ({shortcut} to toggle)
           </span>
         </div>
         <div className="flex items-center gap-1">
@@ -254,6 +273,11 @@ export function TerminalToggleButton() {
     getVisibilitySnapshot,
     getVisibilityServerSnapshot,
   );
+  const shortcut = useSyncExternalStore(
+    subscribeNoop,
+    getShortcutSnapshot,
+    getShortcutServerSnapshot,
+  );
 
   const toggleTerminal = () => {
     setVisibility(!isVisible);
@@ -265,7 +289,11 @@ export function TerminalToggleButton() {
       size="sm"
       onClick={toggleTerminal}
       className="gap-2"
-      title={isVisible ? 'Hide Terminal (Cmd+`)' : 'Show Terminal (Cmd+`)'}
+      title={
+        isVisible
+          ? `Hide Terminal (${shortcut})`
+          : `Show Terminal (${shortcut})`
+      }
     >
       <TerminalIcon className="h-4 w-4" />
       <span className="hidden sm:inline">Terminal</span>
