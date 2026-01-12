@@ -476,7 +476,7 @@
       "id": 70,
       "title": "bug: the ralph controls sidepane doesn't actually resize",
       "description": "this is a hard thing to make an integration test for, so can skip making that",
-      "status": "pending",
+      "status": "completed",
       "priority": 11111
     },
     {

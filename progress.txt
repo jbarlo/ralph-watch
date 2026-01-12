@@ -1006,3 +1006,16 @@
 - Color logic centralized in ticket-ui.ts, used by TicketList, page.tsx DetailPanel, and MobileLayout
 - Files modified: src/app/globals.css, src/lib/ticket-ui.ts
 - Verified: pnpm check passes (all 227 tests pass)
+
+## Ticket #70: Fix ralph controls sidepane resize bug
+- Bug: RalphSidePanel resize handle didn't actually resize the panel
+- Root cause: ResizableHandle used absolute viewport calculation (`window.innerWidth - e.clientX`)
+- This assumed panel extends to viewport edge, but RightTerminalPane may occupy right side
+- Fix: Changed to delta-based resizing in ResizableHandle.tsx
+- On mousedown: capture starting clientX and current storedWidth
+- On mousemove: calculate delta from start, apply to starting width
+- For edge="left": newWidth = startWidth - deltaX (moving left increases width)
+- For edge="right": newWidth = startWidth + deltaX (moving right increases width)
+- This works regardless of panel position in viewport
+- Files modified: src/components/ResizableHandle.tsx
+- Verified: pnpm check passes (all 227 tests pass)
