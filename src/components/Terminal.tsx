@@ -5,6 +5,7 @@ import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { useTerminal } from '@/hooks/use-terminal';
+import { TerminalControls } from '@/components/TerminalControls';
 import { Button } from '@/components/ui/button';
 import { RotateCcw, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -13,12 +14,16 @@ interface TerminalProps {
   projectPath?: string;
   wsPort?: number;
   className?: string;
+  showControls?: boolean;
+  onConnectionChange?: (isConnected: boolean) => void;
 }
 
 export function Terminal({
   projectPath,
   wsPort = 3001,
   className,
+  showControls,
+  onConnectionChange,
 }: TerminalProps) {
   const terminalRef = useRef<HTMLDivElement>(null);
   const xtermRef = useRef<XTerm | null>(null);
@@ -178,6 +183,10 @@ export function Terminal({
   const isConnecting = status === 'connecting';
   const isReconnecting = isConnecting && reconnectAttempt > 0;
 
+  useEffect(() => {
+    onConnectionChange?.(isConnected);
+  }, [isConnected, onConnectionChange]);
+
   const getStatusText = () => {
     if (isConnected && pid) return `PID: ${pid}`;
     if (isReconnecting) return `Reconnecting (attempt ${reconnectAttempt})...`;
@@ -232,6 +241,9 @@ export function Terminal({
         </div>
       </div>
       <div ref={terminalRef} className="flex-1 min-h-0" />
+      {showControls && (
+        <TerminalControls onSendInput={sendInput} disabled={!isConnected} />
+      )}
     </div>
   );
 }

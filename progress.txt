@@ -1019,3 +1019,20 @@
 - This works regardless of panel position in viewport
 - Files modified: src/components/ResizableHandle.tsx
 - Verified: pnpm check passes (all 227 tests pass)
+
+## Ticket #71: Mobile terminal support - add Terminal tab to bottom bar
+- Added Terminal tab to bottom navigation bar for mobile access
+- BottomTabBar already had Terminal tab defined, added isTerminalConnected indicator
+- Updated MobileLayout to render Terminal component when terminal tab is active
+- Created TerminalControls component with mobile-specific control buttons:
+  - ^C (SIGINT), Tab, Esc, ↑, ↓ arrow keys
+  - Touch-friendly button sizing (min 44px)
+  - Disabled state when terminal not connected
+- Added props to Terminal component:
+  - showControls: boolean to show/hide mobile control buttons
+  - onConnectionChange: callback to notify parent of connection state
+- Terminal component now displays control bar at bottom when showControls is true
+- Fixed naming conflict: imported Terminal as TerminalComponent in MobileLayout
+- Files added: src/components/TerminalControls.tsx
+- Files modified: src/components/Terminal.tsx, src/components/MobileLayout.tsx
+- Verified: pnpm check passes (all 227 tests pass)

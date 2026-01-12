@@ -1,26 +1,29 @@
 'use client';
 
-import { ClipboardList, FileText, Play } from 'lucide-react';
+import { ClipboardList, FileText, Play, Terminal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type MobileTab = 'tickets' | 'progress' | 'run';
+export type MobileTab = 'tickets' | 'progress' | 'run' | 'terminal';
 
 interface BottomTabBarProps {
   activeTab: MobileTab;
   onTabChange: (tab: MobileTab) => void;
   isProcessRunning?: boolean;
+  isTerminalConnected?: boolean;
 }
 
 const tabs: { id: MobileTab; label: string; Icon: typeof ClipboardList }[] = [
   { id: 'tickets', label: 'Tickets', Icon: ClipboardList },
   { id: 'progress', label: 'Progress', Icon: FileText },
   { id: 'run', label: 'Run', Icon: Play },
+  { id: 'terminal', label: 'Terminal', Icon: Terminal },
 ];
 
 export function BottomTabBar({
   activeTab,
   onTabChange,
   isProcessRunning,
+  isTerminalConnected,
 }: BottomTabBarProps) {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
@@ -28,6 +31,8 @@ export function BottomTabBar({
         {tabs.map(({ id, label, Icon }) => {
           const isActive = activeTab === id;
           const showRunningIndicator = id === 'run' && isProcessRunning;
+          const showTerminalIndicator =
+            id === 'terminal' && isTerminalConnected;
 
           return (
             <button
@@ -45,6 +50,9 @@ export function BottomTabBar({
                 <Icon className="h-5 w-5" />
                 {showRunningIndicator && (
                   <span className="absolute -right-1 -top-1 h-2 w-2 animate-pulse rounded-full bg-blue-500" />
+                )}
+                {showTerminalIndicator && (
+                  <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-green-500" />
                 )}
               </div>
               <span className="text-xs font-medium">{label}</span>

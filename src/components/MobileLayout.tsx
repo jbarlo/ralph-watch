@@ -9,6 +9,7 @@ import { QuickAddBar } from '@/components/QuickAddBar';
 import { ProgressViewer } from '@/components/ProgressViewer';
 import { DescriptionViewer } from '@/components/DescriptionViewer';
 import { ProcessOutputViewer } from '@/components/ProcessOutputViewer';
+import { Terminal as TerminalComponent } from '@/components/Terminal';
 import { EditTicketForm } from '@/components/EditTicketForm';
 import { DeleteTicketButton } from '@/components/DeleteTicketButton';
 import { BottomTabBar, type MobileTab } from '@/components/BottomTabBar';
@@ -168,6 +169,9 @@ export function MobileLayout() {
   const [lastExitCode, setLastExitCode] = useState<number | null>(null);
   const [lines, setLines] = useState<ProcessOutputLine[]>([]);
   const [processExitCode, setProcessExitCode] = useState<number | null>(null);
+
+  // Terminal tab state
+  const [isTerminalConnected, setIsTerminalConnected] = useState(false);
 
   const { data: tickets } = trpc.tickets.list.useQuery();
   const configQuery = trpc.config.get.useQuery();
@@ -456,10 +460,22 @@ export function MobileLayout() {
         </div>
       )}
 
+      {activeTab === 'terminal' && (
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <TerminalComponent
+            projectPath={projectPath}
+            className="flex-1 min-h-0"
+            showControls
+            onConnectionChange={setIsTerminalConnected}
+          />
+        </div>
+      )}
+
       <BottomTabBar
         activeTab={activeTab}
         onTabChange={setActiveTab}
         isProcessRunning={isRunning}
+        isTerminalConnected={isTerminalConnected}
       />
     </div>
   );
