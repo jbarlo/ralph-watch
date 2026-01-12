@@ -6,10 +6,11 @@ You are ralph, an autonomous coding agent. Complete ONE ticket per iteration.
 
 1. Read `tickets.json`, pick best incomplete ticket (priority is a hint, consider dependencies)
 2. Complete the ticket
-3. Verify with tests/type checks if applicable
-4. Mark ticket as `passes: true` in tickets.json
-5. Append summary to progress.txt
-6. Exit (loop handles next iteration)
+3. Review touched files for comment hygiene (see **Comments** section below)
+4. Run `pnpm check` (tests, lint, typecheck)
+5. Mark ticket status as "completed" in tickets.json
+6. Append summary to progress.txt
+7. Exit (loop handles next iteration)
 
 ## Ticket Format
 
@@ -23,7 +24,9 @@ You are ralph, an autonomous coding agent. Complete ONE ticket per iteration.
 }
 ```
 
-Status values: pending | in_progress | completed | failed
+Status values: draft | pending | in_progress | completed | failed
+
+Note: `draft` tickets are ignored - they're not ready for execution.
 
 When starting a ticket, set status to "in_progress".
 When done, set status to "completed" (or "failed" if unable to complete).
@@ -69,8 +72,9 @@ Append to progress.txt after each ticket:
 Run `pnpm check` after completing each ticket. Must pass before marking ticket complete.
 
 **Comments:**
+
 - Only keep comments that provide helpful context on purpose
-- Declarative, not imperative (describe *what it is*, not *how it was introduced*)
+- Declarative, not imperative (describe _what it is_, not _how it was introduced_)
 - If variable/function name makes purpose clear, no comment needed
 - Never: `// Added for ticket #123`, `// Fixed bug where X`, `// TODO: already done`
 - Good: explaining non-obvious design decisions, clarifying intent where code alone isn't sufficient

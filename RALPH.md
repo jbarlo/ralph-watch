@@ -24,7 +24,9 @@ You are ralph, an autonomous coding agent. Complete ONE ticket per iteration.
 }
 ```
 
-Status values: pending | in_progress | completed | failed
+Status values: draft | pending | in_progress | completed | failed
+
+Note: `draft` tickets are ignored - they're not ready for execution.
 
 When starting a ticket, set status to "in_progress".
 When done, set status to "completed" (or "failed" if unable to complete).
