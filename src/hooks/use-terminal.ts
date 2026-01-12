@@ -4,17 +4,30 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
 
+export interface SessionInfo {
+  id: string;
+  label: string;
+  pid: number;
+  createdAt: number;
+}
+
 interface TerminalMessage {
-  type: 'ready' | 'output' | 'exit' | 'error';
+  type: 'ready' | 'output' | 'exit' | 'error' | 'sessions';
   data?: string;
   pid?: number;
   code?: number;
   message?: string;
+  sessionId?: string;
+  reattached?: boolean;
+  sessions?: SessionInfo[];
 }
 
 interface UseTerminalOptions {
   wsUrl: string;
   cwd?: string;
+  sessionId?: string;
+  sessionLabel?: string;
+  sessionContext?: string;
   autoReconnect?: boolean;
   maxReconnectAttempts?: number;
   onOutput?: (data: string) => void;
@@ -22,6 +35,8 @@ interface UseTerminalOptions {
   onExit?: (code: number) => void;
   onError?: (message: string) => void;
   onReconnecting?: (attempt: number, delay: number) => void;
+  onSessionCreated?: (sessionId: string) => void;
+  onReattached?: (sessionId: string) => void;
 }
 
 interface UseTerminalReturn {
@@ -29,10 +44,14 @@ interface UseTerminalReturn {
   pid: number | null;
   exitCode: number | null;
   reconnectAttempt: number;
+  currentSessionId: string | null;
+  sessions: SessionInfo[];
   connect: () => void;
   disconnect: () => void;
   sendInput: (data: string) => void;
   resize: (cols: number, rows: number) => void;
+  listSessions: () => void;
+  closeSession: (sessionId: string) => void;
 }
 
 const BASE_RECONNECT_DELAY = 1000;
@@ -41,6 +60,9 @@ const MAX_RECONNECT_DELAY = 30000;
 export function useTerminal({
   wsUrl,
   cwd,
+  sessionId,
+  sessionLabel,
+  sessionContext,
   autoReconnect = false,
   maxReconnectAttempts = 10,
   onOutput,
@@ -48,11 +70,15 @@ export function useTerminal({
   onExit,
   onError,
   onReconnecting,
+  onSessionCreated,
+  onReattached,
 }: UseTerminalOptions): UseTerminalReturn {
   const [status, setStatus] = useState<ConnectionStatus>('disconnected');
   const [pid, setPid] = useState<number | null>(null);
   const [exitCode, setExitCode] = useState<number | null>(null);
   const [reconnectAttempt, setReconnectAttempt] = useState(0);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [sessions, setSessions] = useState<SessionInfo[]>([]);
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -67,6 +93,8 @@ export function useTerminal({
     onExit,
     onError,
     onReconnecting,
+    onSessionCreated,
+    onReattached,
   });
 
   useEffect(() => {
@@ -76,6 +104,8 @@ export function useTerminal({
       onExit,
       onError,
       onReconnecting,
+      onSessionCreated,
+      onReattached,
     };
   });
 
@@ -109,6 +139,15 @@ export function useTerminal({
       if (cwd) {
         url.searchParams.set('cwd', cwd);
       }
+      if (sessionId) {
+        url.searchParams.set('session', sessionId);
+      }
+      if (sessionLabel) {
+        url.searchParams.set('label', sessionLabel);
+      }
+      if (sessionContext) {
+        url.searchParams.set('context', sessionContext);
+      }
 
       const ws = new WebSocket(url.toString());
       wsRef.current = ws;
@@ -128,6 +167,14 @@ export function useTerminal({
               if (message.pid !== undefined) {
                 setPid(message.pid);
                 callbacksRef.current.onReady?.(message.pid);
+              }
+              if (message.sessionId) {
+                setCurrentSessionId(message.sessionId);
+                if (message.reattached) {
+                  callbacksRef.current.onReattached?.(message.sessionId);
+                } else {
+                  callbacksRef.current.onSessionCreated?.(message.sessionId);
+                }
               }
               break;
 
@@ -149,6 +196,12 @@ export function useTerminal({
               callbacksRef.current.onError?.(
                 message.message || 'Unknown error',
               );
+              break;
+
+            case 'sessions':
+              if (message.sessions) {
+                setSessions(message.sessions);
+              }
               break;
           }
         } catch {
@@ -197,7 +250,16 @@ export function useTerminal({
         }
       };
     },
-    [wsUrl, cwd, autoReconnect, maxReconnectAttempts, clearReconnectTimeout],
+    [
+      wsUrl,
+      cwd,
+      sessionId,
+      sessionLabel,
+      sessionContext,
+      autoReconnect,
+      maxReconnectAttempts,
+      clearReconnectTimeout,
+    ],
   );
 
   useEffect(() => {
@@ -231,6 +293,20 @@ export function useTerminal({
     }
   }, []);
 
+  const listSessions = useCallback(() => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'list_sessions' }));
+    }
+  }, []);
+
+  const closeSession = useCallback((targetSessionId: string) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(
+        JSON.stringify({ type: 'close_session', sessionId: targetSessionId }),
+      );
+    }
+  }, []);
+
   useEffect(() => {
     return () => {
       clearReconnectTimeout();
@@ -246,9 +322,13 @@ export function useTerminal({
     pid,
     exitCode,
     reconnectAttempt,
+    currentSessionId,
+    sessions,
     connect,
     disconnect,
     sendInput,
     resize,
+    listSessions,
+    closeSession,
   };
 }

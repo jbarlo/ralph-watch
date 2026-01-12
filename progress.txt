@@ -1125,3 +1125,19 @@
 - WebSocket disconnect no longer kills PTY - sessions persist for reattachment
 - Files modified: src/server/services/terminal-server.ts
 - Verified: pnpm check passes (all 228 tests pass)
+
+## Ticket #80: Update useTerminal hook for session support
+- Added SessionInfo interface export with id, label, pid, createdAt fields
+- Extended TerminalMessage type to include 'sessions' type and sessionId/reattached/sessions fields
+- Added session props to UseTerminalOptions: sessionId, sessionLabel, sessionContext
+- Added session callbacks: onSessionCreated, onReattached
+- Added currentSessionId and sessions state variables
+- Updated WebSocket URL construction to pass session params (session, label, context)
+- Updated ready message handler to extract sessionId and call appropriate callback (onSessionCreated vs onReattached)
+- Added sessions message handler to populate sessions state
+- Added listSessions() method - sends list_sessions message to server
+- Added closeSession(sessionId) method - sends close_session message to server
+- Updated UseTerminalReturn interface with currentSessionId, sessions, listSessions, closeSession
+- Updated doConnect dependency array to include session parameters
+- Files modified: src/hooks/use-terminal.ts
+- Verified: pnpm check passes (all 228 tests pass)
