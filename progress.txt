@@ -496,3 +496,10 @@
 - Consolidated multi-line comment blocks where appropriate
 - Files modified: src/lib/result.ts, src/lib/process-runner.ts, src/lib/projects.ts, src/hooks/use-projects.ts, src/hooks/use-notifications.ts, src/hooks/use-file-watch.ts, src/hooks/use-process-output.ts, src/app/api/watch/route.ts, src/app/api/process/[id]/stream/route.ts, src/server/services/process-runner.ts, src/components/RalphSidePanel.tsx, src/components/RalphControls.tsx
 - Verified: `pnpm check` passes (all 203 tests pass)
+
+## Ticket #40: Add process output ring buffer
+- Added MAX_OUTPUT_LINES = 5000 constant to prevent unbounded memory growth
+- Created pushOutputLine() helper function that shifts oldest line when limit exceeded
+- Updated all three output push locations (stdout, stderr, error handlers) to use helper
+- Files modified: src/server/services/process-runner.ts
+- Verified: `pnpm check` passes (all 203 tests pass)

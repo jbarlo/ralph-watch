@@ -15,6 +15,8 @@ import {
   ProcessStatusFactory,
 } from '@/lib/process-runner';
 
+const MAX_OUTPUT_LINES = 5000;
+
 interface ProcessRecord {
   child: ChildProcess;
   handle: ProcessHandle;
@@ -22,6 +24,13 @@ interface ProcessRecord {
   exitCode: number | null;
   exited: boolean;
   outputCallbacks: Set<(line: ProcessOutputLine) => void>;
+}
+
+function pushOutputLine(record: ProcessRecord, line: ProcessOutputLine): void {
+  if (record.output.length >= MAX_OUTPUT_LINES) {
+    record.output.shift();
+  }
+  record.output.push(line);
 }
 
 function generateId(): string {
@@ -116,7 +125,7 @@ export function createProcessRunner(): ProcessRunner {
               line,
               timestamp: Date.now(),
             };
-            record.output.push(outputLine);
+            pushOutputLine(record, outputLine);
             record.outputCallbacks.forEach((cb) => cb(outputLine));
           });
         }
@@ -129,7 +138,7 @@ export function createProcessRunner(): ProcessRunner {
               line,
               timestamp: Date.now(),
             };
-            record.output.push(outputLine);
+            pushOutputLine(record, outputLine);
             record.outputCallbacks.forEach((cb) => cb(outputLine));
           });
         }
@@ -149,7 +158,7 @@ export function createProcessRunner(): ProcessRunner {
             line: `Process error: ${error.message}`,
             timestamp: Date.now(),
           };
-          record.output.push(outputLine);
+          pushOutputLine(record, outputLine);
           record.outputCallbacks.forEach((cb) => cb(outputLine));
         });
 

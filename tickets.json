@@ -277,7 +277,7 @@
       "id": 40,
       "title": "Add process output ring buffer",
       "description": "ProcessRunner buffers ALL output lines forever - memory leak for long processes. Fix: Add MAX_OUTPUT_LINES = 5000 constant. When pushing to output array, if length exceeds max, shift oldest. Run pnpm check after.",
-      "status": "pending",
+      "status": "completed",
       "priority": 5
     },
     {
