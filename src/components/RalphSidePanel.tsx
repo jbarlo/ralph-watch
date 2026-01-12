@@ -1,6 +1,17 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import {
+  Play,
+  Zap,
+  Hammer,
+  Terminal,
+  Square,
+  Trash2,
+  RefreshCw,
+  Settings,
+  type LucideIcon,
+} from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -8,13 +19,38 @@ import { ProcessOutputViewer } from '@/components/ProcessOutputViewer';
 import { useEventStream } from '@/hooks/use-event-stream';
 import { useProjectPath } from '@/components/providers/TRPCProvider';
 import type { ProcessOutputLine } from '@/lib/process-runner';
+import type { CommandConfig } from '@/lib/project-config';
 import { cn } from '@/lib/utils';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
-type CommandType = 'runOnce' | 'runAll';
+const iconMap: Record<string, LucideIcon> = {
+  play: Play,
+  zap: Zap,
+  hammer: Hammer,
+  terminal: Terminal,
+  square: Square,
+  trash: Trash2,
+  refresh: RefreshCw,
+  settings: Settings,
+};
+
+function getIcon(iconName?: string): LucideIcon {
+  if (!iconName) return Terminal;
+  return iconMap[iconName.toLowerCase()] ?? Terminal;
+}
 
 interface RunningProcess {
   id: string;
-  commandType: CommandType;
+  label: string;
 }
 
 export function RalphSidePanel() {
@@ -27,6 +63,12 @@ export function RalphSidePanel() {
   const [lastExitCode, setLastExitCode] = useState<number | null>(null);
   const [lines, setLines] = useState<ProcessOutputLine[]>([]);
   const [processExitCode, setProcessExitCode] = useState<number | null>(null);
+  const [confirmCommand, setConfirmCommand] = useState<CommandConfig | null>(
+    null,
+  );
+
+  const configQuery = trpc.config.get.useQuery();
+  const commands = configQuery.data?.commands ?? [];
 
   const topics = useMemo(() => {
     const t: string[] = [];
@@ -63,21 +105,17 @@ export function RalphSidePanel() {
 
   const startMutation = trpc.process.start.useMutation({
     onSuccess: (handle, variables) => {
-      const commandType: CommandType = variables.command.includes('ralph-once')
-        ? 'runOnce'
-        : 'runAll';
+      const label =
+        commands.find((c) => c.cmd === variables.command)?.label ?? 'Command';
 
-      setRunningProcess({ id: handle.id, commandType });
+      setRunningProcess({ id: handle.id, label });
       setLastExitCode(null);
       setLines([]);
       setProcessExitCode(null);
       setIsCollapsed(false);
 
       toast({
-        title:
-          commandType === 'runOnce'
-            ? 'Running next ticket'
-            : 'Running all tickets',
+        title: `Running: ${label}`,
         description: `Process started (PID: ${handle.pid})`,
       });
     },
@@ -144,14 +182,20 @@ export function RalphSidePanel() {
   const isStarting = startMutation.isPending;
   const isStopping = killMutation.isPending;
 
-  const handleRunOnce = () => {
+  const handleRunCommand = (command: CommandConfig) => {
     if (isRunning || isStarting) return;
-    startMutation.mutate({ command: 'ralph-once' });
+    if (command.destructive) {
+      setConfirmCommand(command);
+    } else {
+      startMutation.mutate({ command: command.cmd });
+    }
   };
 
-  const handleRunAll = () => {
-    if (isRunning || isStarting) return;
-    startMutation.mutate({ command: 'ralph' });
+  const handleConfirmRun = () => {
+    if (confirmCommand) {
+      startMutation.mutate({ command: confirmCommand.cmd });
+      setConfirmCommand(null);
+    }
   };
 
   const handleStop = () => {
@@ -164,16 +208,13 @@ export function RalphSidePanel() {
     setLines([]);
   };
 
-  const runOnceDisabled = isRunning || isStarting;
-  const runAllDisabled = isRunning || isStarting;
+  const buttonsDisabled = isRunning || isStarting;
   const stopDisabled = !isRunning || isStopping;
 
   const getStatusText = () => {
     if (isStarting) return 'Starting...';
     if (isRunning) {
-      return runningProcess.commandType === 'runOnce'
-        ? 'Running next ticket...'
-        : 'Running all tickets...';
+      return `Running: ${runningProcess.label}...`;
     }
     if (lastExitCode !== null) {
       return lastExitCode === 0 ? 'Completed' : `Failed (code ${lastExitCode})`;
@@ -185,144 +226,165 @@ export function RalphSidePanel() {
   const hasOutput = lines.length > 0 || lastExitCode !== null;
 
   return (
-    <aside
-      className={cn(
-        'flex flex-col border-l bg-background transition-all duration-200',
-        isCollapsed ? 'w-12' : 'w-[350px]',
-      )}
-    >
-      <div className="flex items-center justify-between border-b p-2">
-        {!isCollapsed && (
-          <span className="text-sm font-medium">Ralph Controls</span>
+    <>
+      <aside
+        className={cn(
+          'flex flex-col border-l bg-background transition-all duration-200',
+          isCollapsed ? 'w-12' : 'w-[350px]',
         )}
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn('h-8 w-8 p-0', isCollapsed && 'mx-auto')}
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          title={isCollapsed ? 'Expand panel' : 'Collapse panel'}
-        >
-          {isCollapsed ? '«' : '»'}
-        </Button>
-      </div>
-
-      {isCollapsed && (
-        <div className="flex flex-1 flex-col items-center gap-2 p-2">
-          {isRunning && (
-            <div
-              className="h-3 w-3 animate-pulse rounded-full bg-blue-500"
-              title="Process running"
-            />
+      >
+        <div className="flex items-center justify-between border-b p-2">
+          {!isCollapsed && (
+            <span className="text-sm font-medium">Ralph Controls</span>
           )}
-          {lastExitCode === 0 && (
-            <div
-              className="h-3 w-3 rounded-full bg-green-500"
-              title="Completed"
-            />
-          )}
-          {lastExitCode !== null && lastExitCode !== 0 && (
-            <div className="h-3 w-3 rounded-full bg-red-500" title="Failed" />
-          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn('h-8 w-8 p-0', isCollapsed && 'mx-auto')}
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            title={isCollapsed ? 'Expand panel' : 'Collapse panel'}
+          >
+            {isCollapsed ? '«' : '»'}
+          </Button>
         </div>
-      )}
 
-      {!isCollapsed && (
-        <div className="flex flex-1 flex-col overflow-hidden">
-          <div className="space-y-3 border-b p-3">
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                className="flex-1"
-                onClick={handleRunOnce}
-                disabled={runOnceDisabled}
-                data-testid="run-once-button"
-              >
-                {isStarting ? 'Starting...' : 'Run Next Ticket'}
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                className="flex-1"
-                onClick={handleRunAll}
-                disabled={runAllDisabled}
-                data-testid="run-all-button"
-              >
-                {isStarting ? 'Starting...' : 'Run All'}
-              </Button>
+        {isCollapsed && (
+          <div className="flex flex-1 flex-col items-center gap-2 p-2">
+            {isRunning && (
+              <div
+                className="h-3 w-3 animate-pulse rounded-full bg-blue-500"
+                title="Process running"
+              />
+            )}
+            {lastExitCode === 0 && (
+              <div
+                className="h-3 w-3 rounded-full bg-green-500"
+                title="Completed"
+              />
+            )}
+            {lastExitCode !== null && lastExitCode !== 0 && (
+              <div className="h-3 w-3 rounded-full bg-red-500" title="Failed" />
+            )}
+          </div>
+        )}
+
+        {!isCollapsed && (
+          <div className="flex flex-1 flex-col overflow-hidden">
+            <div className="space-y-3 border-b p-3">
+              <div className="flex flex-wrap gap-2">
+                {commands.map((command, index) => {
+                  const Icon = getIcon(command.icon);
+                  return (
+                    <Button
+                      key={index}
+                      size="sm"
+                      variant={command.destructive ? 'destructive' : 'default'}
+                      className="flex-1 min-w-[100px]"
+                      onClick={() => handleRunCommand(command)}
+                      disabled={buttonsDisabled}
+                      data-testid={`command-button-${index}`}
+                    >
+                      <Icon className="mr-1 h-4 w-4" />
+                      {isStarting ? 'Starting...' : command.label}
+                    </Button>
+                  );
+                })}
+              </div>
+
+              {isRunning && (
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="w-full"
+                  onClick={handleStop}
+                  disabled={stopDisabled}
+                  data-testid="stop-button"
+                >
+                  {isStopping ? 'Stopping...' : 'Stop'}
+                </Button>
+              )}
+
+              {statusText && (
+                <div className="flex items-center justify-between">
+                  <span
+                    className={cn(
+                      'text-sm',
+                      isRunning && 'text-blue-600 animate-pulse',
+                      lastExitCode === 0 && 'text-green-600',
+                      lastExitCode !== null &&
+                        lastExitCode !== 0 &&
+                        'text-destructive',
+                    )}
+                    data-testid="status-text"
+                  >
+                    {statusText}
+                  </span>
+                  {isRunning && (
+                    <span className="text-xs text-muted-foreground">
+                      {connectionStatus === 'connected'
+                        ? 'Connected'
+                        : connectionStatus === 'connecting'
+                          ? 'Connecting...'
+                          : 'Disconnected'}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {!isRunning && lastExitCode !== null && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearOutput}
+                  className="w-full"
+                  data-testid="clear-output"
+                >
+                  Clear
+                </Button>
+              )}
             </div>
 
-            {isRunning && (
-              <Button
-                size="sm"
-                variant="destructive"
-                className="w-full"
-                onClick={handleStop}
-                disabled={stopDisabled}
-                data-testid="stop-button"
-              >
-                {isStopping ? 'Stopping...' : 'Stop'}
-              </Button>
-            )}
-
-            {statusText && (
-              <div className="flex items-center justify-between">
-                <span
-                  className={cn(
-                    'text-sm',
-                    isRunning && 'text-blue-600 animate-pulse',
-                    lastExitCode === 0 && 'text-green-600',
-                    lastExitCode !== null &&
-                      lastExitCode !== 0 &&
-                      'text-destructive',
-                  )}
-                  data-testid="status-text"
-                >
-                  {statusText}
-                </span>
-                {isRunning && (
-                  <span className="text-xs text-muted-foreground">
-                    {connectionStatus === 'connected'
-                      ? 'Connected'
-                      : connectionStatus === 'connecting'
-                        ? 'Connecting...'
-                        : 'Disconnected'}
-                  </span>
-                )}
-              </div>
-            )}
-
-            {!isRunning && lastExitCode !== null && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClearOutput}
-                className="w-full"
-                data-testid="clear-output"
-              >
-                Clear
-              </Button>
-            )}
+            <div className="flex-1 overflow-hidden p-3">
+              {hasOutput || isRunning ? (
+                <ProcessOutputViewer
+                  lines={lines}
+                  exitCode={processExitCode}
+                  connectionStatus={connectionStatus}
+                  processId={runningProcess?.id ?? null}
+                  height="100%"
+                  title="Output"
+                  showCard={false}
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                  No output yet. Run a command to see output.
+                </div>
+              )}
+            </div>
           </div>
+        )}
+      </aside>
 
-          <div className="flex-1 overflow-hidden p-3">
-            {hasOutput || isRunning ? (
-              <ProcessOutputViewer
-                lines={lines}
-                exitCode={processExitCode}
-                connectionStatus={connectionStatus}
-                processId={runningProcess?.id ?? null}
-                height="100%"
-                title="Output"
-                showCard={false}
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                No output yet. Run a command to see output.
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </aside>
+      <AlertDialog
+        open={confirmCommand !== null}
+        onOpenChange={(open) => !open && setConfirmCommand(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Run {confirmCommand?.label}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This command is marked as destructive. Are you sure you want to
+              run: <code className="font-mono">{confirmCommand?.cmd}</code>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmRun}>
+              Run
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

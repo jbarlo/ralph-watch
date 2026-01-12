@@ -34,8 +34,24 @@ let killMutationOptions: {
   onError?: (error: Error) => void;
 } = {};
 
+const mockConfig = {
+  commands: [
+    { label: 'Run Next', cmd: 'ralph-once', icon: 'play' },
+    { label: 'Run All', cmd: 'ralph', icon: 'zap' },
+  ],
+};
+
 vi.mock('@/lib/trpc', () => ({
   trpc: {
+    config: {
+      get: {
+        useQuery: vi.fn(() => ({
+          data: mockConfig,
+          isLoading: false,
+          error: null,
+        })),
+      },
+    },
     process: {
       start: {
         useMutation: vi.fn(
@@ -96,17 +112,17 @@ describe('RalphSidePanel', () => {
   });
 
   describe('initial rendering', () => {
-    it('should render Run Next Ticket button', () => {
+    it('should render Run Next button', () => {
       render(<RalphSidePanel />);
       expect(
-        screen.getByRole('button', { name: 'Run Next Ticket' }),
+        screen.getByRole('button', { name: /Run Next/i }),
       ).toBeInTheDocument();
     });
 
     it('should render Run All button', () => {
       render(<RalphSidePanel />);
       expect(
-        screen.getByRole('button', { name: 'Run All' }),
+        screen.getByRole('button', { name: /Run All/i }),
       ).toBeInTheDocument();
     });
 
@@ -126,10 +142,10 @@ describe('RalphSidePanel', () => {
   });
 
   describe('starting processes', () => {
-    it('should call start mutation with ralph-once on Run Next Ticket click', () => {
+    it('should call start mutation with ralph-once on Run Next click', () => {
       render(<RalphSidePanel />);
 
-      const button = screen.getByRole('button', { name: 'Run Next Ticket' });
+      const button = screen.getByRole('button', { name: /Run Next/i });
       fireEvent.click(button);
 
       expect(mockStartMutate).toHaveBeenCalledWith({ command: 'ralph-once' });
@@ -138,7 +154,7 @@ describe('RalphSidePanel', () => {
     it('should call start mutation with ralph on Run All click', () => {
       render(<RalphSidePanel />);
 
-      const button = screen.getByRole('button', { name: 'Run All' });
+      const button = screen.getByRole('button', { name: /Run All/i });
       fireEvent.click(button);
 
       expect(mockStartMutate).toHaveBeenCalledWith({ command: 'ralph' });
@@ -150,7 +166,7 @@ describe('RalphSidePanel', () => {
       render(<RalphSidePanel />);
 
       // Click to start
-      const button = screen.getByRole('button', { name: 'Run Next Ticket' });
+      const button = screen.getByRole('button', { name: /Run Next/i });
       fireEvent.click(button);
 
       // Simulate successful start
@@ -161,16 +177,16 @@ describe('RalphSidePanel', () => {
         );
       });
 
-      // Should show running status
+      // Should show running status with label from config
       expect(screen.getByTestId('status-text')).toHaveTextContent(
-        'Running next ticket...',
+        'Running: Run Next...',
       );
     });
 
     it('should show output panel when process is started', () => {
       render(<RalphSidePanel />);
 
-      const button = screen.getByRole('button', { name: 'Run Next Ticket' });
+      const button = screen.getByRole('button', { name: /Run Next/i });
       fireEvent.click(button);
 
       act(() => {
@@ -187,7 +203,7 @@ describe('RalphSidePanel', () => {
     it('should show Stop button when process is running', () => {
       render(<RalphSidePanel />);
 
-      const button = screen.getByRole('button', { name: 'Run Next Ticket' });
+      const button = screen.getByRole('button', { name: /Run Next/i });
       fireEvent.click(button);
 
       act(() => {
@@ -206,7 +222,7 @@ describe('RalphSidePanel', () => {
       render(<RalphSidePanel />);
 
       // Start a process
-      const runButton = screen.getByRole('button', { name: 'Run Next Ticket' });
+      const runButton = screen.getByRole('button', { name: /Run Next/i });
       fireEvent.click(runButton);
 
       act(() => {
@@ -252,7 +268,7 @@ describe('RalphSidePanel', () => {
       render(<RalphSidePanel />);
 
       // Start a process
-      const button = screen.getByRole('button', { name: 'Run Next Ticket' });
+      const button = screen.getByRole('button', { name: /Run Next/i });
       fireEvent.click(button);
 
       act(() => {
@@ -263,8 +279,8 @@ describe('RalphSidePanel', () => {
       });
 
       // Both buttons should be disabled when a process is running
-      expect(screen.getByTestId('run-once-button')).toBeDisabled();
-      expect(screen.getByTestId('run-all-button')).toBeDisabled();
+      expect(screen.getByTestId('command-button-0')).toBeDisabled();
+      expect(screen.getByTestId('command-button-1')).toBeDisabled();
     });
   });
 
@@ -279,7 +295,7 @@ describe('RalphSidePanel', () => {
       render(<RalphSidePanel />);
 
       // Start a process
-      const button = screen.getByRole('button', { name: 'Run Next Ticket' });
+      const button = screen.getByRole('button', { name: /Run Next/i });
       fireEvent.click(button);
 
       act(() => {
@@ -304,7 +320,7 @@ describe('RalphSidePanel', () => {
       render(<RalphSidePanel />);
 
       // Start a process
-      const button = screen.getByRole('button', { name: 'Run Next Ticket' });
+      const button = screen.getByRole('button', { name: /Run Next/i });
       fireEvent.click(button);
 
       act(() => {
@@ -334,7 +350,7 @@ describe('RalphSidePanel', () => {
       render(<RalphSidePanel />);
 
       // Start a process
-      const button = screen.getByRole('button', { name: 'Run Next Ticket' });
+      const button = screen.getByRole('button', { name: /Run Next/i });
       fireEvent.click(button);
 
       act(() => {

@@ -312,7 +312,7 @@
       "id": 45,
       "title": "Configurable command buttons",
       "description": "Replace hardcoded ralph commands with config-driven buttons.\n\n## Config File\nRead `.ralph-watch.json` from project root (ralphDir). Schema:\n```json\n{\n  \"commands\": [\n    { \"label\": \"Run Next\", \"cmd\": \"ralph-once\", \"icon\": \"play\" },\n    { \"label\": \"Run All\", \"cmd\": \"ralph\", \"icon\": \"zap\" },\n    { \"label\": \"Build\", \"cmd\": \"pnpm build\", \"icon\": \"hammer\" }\n  ]\n}\n```\n\n## Implementation Steps\n\n### 1. Config schema and loader\n- Create src/lib/project-config.ts with Zod schema\n- CommandConfig: { label: string, cmd: string, icon?: string, destructive?: boolean }\n- ProjectConfig: { commands: CommandConfig[] }\n- Default config if file missing: ralph-once + ralph commands\n\n### 2. tRPC endpoint\n- Add config.get procedure in src/server/routers/config.ts\n- Reads .ralph-watch.json from ctx.ralphDir\n- Returns parsed config or defaults\n\n### 3. Update RalphSidePanel\n- Fetch config via tRPC\n- Render command buttons dynamically from config.commands\n- Map icon names to lucide-react icons\n- If destructive: true, show confirmation dialog before running\n\n### 4. Icon mapping\n- Create icon map: { play: PlayIcon, zap: ZapIcon, hammer: HammerIcon, ... }\n- Fallback to TerminalIcon for unknown icons\n\nRun pnpm check after.",
-      "status": "pending",
+      "status": "completed",
       "priority": 2
     },
     {

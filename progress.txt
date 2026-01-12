@@ -579,3 +579,21 @@
 - Files added: src/components/QuickAddBar.tsx
 - Files modified: src/lib/schemas.ts, src/lib/ticket-ui.ts, src/server/routers/tickets.ts, src/components/TicketFilter.tsx, src/components/AddTicketForm.tsx, src/components/TicketList.tsx, src/app/project/[path]/page.tsx
 - Verified: `pnpm check` passes (all 186 tests pass)
+
+## Ticket #45: Configurable command buttons
+- Created src/lib/project-config.ts with Zod schema for command configuration
+  - CommandConfigSchema: { label: string, cmd: string, icon?: string, destructive?: boolean }
+  - ProjectConfigSchema: { commands: CommandConfig[] }
+  - Default config: ralph-once ("Run Next") + ralph ("Run All") commands
+- Updated src/server/routers/config.ts with config.get procedure
+  - Reads .ralph-watch.json from project root (ralphDir)
+  - Returns parsed config or defaults if file missing/invalid
+- Updated RalphSidePanel to use dynamic command buttons from config
+  - Fetches config via tRPC config.get query
+  - Renders buttons dynamically from config.commands
+  - Icon mapping for lucide-react icons (play, zap, hammer, terminal, etc.)
+  - Confirmation dialog for destructive commands
+- Updated RalphSidePanel.test.tsx to mock config.get query
+- Files added: src/lib/project-config.ts
+- Files modified: src/server/routers/config.ts, src/components/RalphSidePanel.tsx, src/components/RalphSidePanel.test.tsx
+- Verified: `pnpm check` passes (all 186 tests pass)
