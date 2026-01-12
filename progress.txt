@@ -786,3 +786,16 @@
 - Files modified: src/components/TicketList.tsx
 - Verified: `pnpm check` passes (all 225 tests pass)
 
+
+## Ticket #57: add a ralph control button to follow an existing ralph instance
+- Added ATTACH action to process state machine in src/lib/process-state.ts
+- ATTACH transitions from idle or completed to running state with provided process id/pid
+- Added trpc.process.list.useQuery to RalphSidePanel to poll for running processes (5s interval)
+- Added Follow dropdown button that lists running processes by PID
+- When user selects a process, UI attaches to its output stream via useEventStream
+- Added Radio icon import from lucide-react for Follow button
+- Added DropdownMenu components import for process selection
+- Added unit tests for ATTACH action in both idle and completed states
+- Updated RalphSidePanel.test.tsx to mock process.list.useQuery
+- Files modified: src/lib/process-state.ts, src/lib/process-state.test.ts, src/components/RalphSidePanel.tsx, src/components/RalphSidePanel.test.tsx
+- Verified: `pnpm check` passes (all 227 tests pass)
