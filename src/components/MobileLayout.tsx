@@ -156,7 +156,7 @@ export function MobileLayout() {
   const { toast } = useToast();
   const projectPath = useProjectPath();
   const [activeTab, setActiveTab] = useState<MobileTab>('tickets');
-  const [statusFilter, setStatusFilter] = useState<TicketStatus>('all');
+  const [statusFilter, setStatusFilter] = useState<TicketStatus>('incomplete');
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
   const [showTicketDetail, setShowTicketDetail] = useState(false);
 

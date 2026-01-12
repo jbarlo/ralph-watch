@@ -219,7 +219,7 @@ function DesktopProjectContent() {
   const [desktopTab, setDesktopTab] = useState<'tickets' | 'details'>(
     'tickets',
   );
-  const [statusFilter, setStatusFilter] = useState<TicketStatus>('all');
+  const [statusFilter, setStatusFilter] = useState<TicketStatus>('incomplete');
 
   const { data: tickets } = trpc.tickets.list.useQuery();
 
