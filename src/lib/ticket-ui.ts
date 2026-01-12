@@ -3,22 +3,23 @@
  */
 
 /**
- * Get badge styling classes based on ticket status
+ * Get badge styling classes based on ticket status.
+ * Uses semantic CSS variables defined in globals.css (Catppuccin theme).
  */
 export function getStatusBadgeClass(status: string): string {
   switch (status) {
     case 'draft':
-      return 'bg-gray-500/20 text-gray-500 border-gray-500/30';
+      return 'bg-[hsl(var(--status-draft)/0.2)] text-[hsl(var(--status-draft-foreground))] border-[hsl(var(--status-draft)/0.3)]';
     case 'pending':
-      return 'bg-yellow-500/20 text-yellow-700 border-yellow-500/30';
+      return 'bg-[hsl(var(--status-pending)/0.2)] text-[hsl(var(--status-pending-foreground))] border-[hsl(var(--status-pending)/0.3)]';
     case 'in_progress':
-      return 'bg-blue-500/20 text-blue-700 border-blue-500/30';
+      return 'bg-[hsl(var(--status-in-progress)/0.2)] text-[hsl(var(--status-in-progress-foreground))] border-[hsl(var(--status-in-progress)/0.3)]';
     case 'completed':
-      return 'bg-green-500/20 text-green-700 border-green-500/30';
+      return 'bg-[hsl(var(--status-completed)/0.2)] text-[hsl(var(--status-completed-foreground))] border-[hsl(var(--status-completed)/0.3)]';
     case 'failed':
-      return 'bg-red-500/20 text-red-700 border-red-500/30';
+      return 'bg-[hsl(var(--status-failed)/0.2)] text-[hsl(var(--status-failed-foreground))] border-[hsl(var(--status-failed)/0.3)]';
     default:
-      return 'bg-gray-500/20 text-gray-700 border-gray-500/30';
+      return 'bg-[hsl(var(--status-draft)/0.2)] text-[hsl(var(--status-draft-foreground))] border-[hsl(var(--status-draft)/0.3)]';
   }
 }
 

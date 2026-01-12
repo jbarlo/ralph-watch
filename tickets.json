@@ -462,7 +462,7 @@
     {
       "id": 68,
       "title": "give ticket status badge semantic colours. ensure badge colour logic is centralized and used both in sidebar and ticket description",
-      "status": "pending",
+      "status": "completed",
       "priority": 111
     }
   ]
