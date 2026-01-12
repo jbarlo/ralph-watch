@@ -375,7 +375,7 @@
     {
       "id": 55,
       "title": "use streamdown on the progress log display",
-      "status": "pending",
+      "status": "in_progress",
       "priority": 12
     },
     {
@@ -390,6 +390,12 @@
       "title": "add a ralph control button to follow an existing ralph instance",
       "status": "pending",
       "priority": 14
+    },
+    {
+      "id": 58,
+      "title": "move progress log to dedicated page/tab, with scroll-to-bottom and scroll-to-top buttons floating in the bottom right",
+      "status": "pending",
+      "priority": 133
     }
   ]
 }

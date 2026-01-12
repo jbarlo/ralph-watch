@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { Streamdown } from 'streamdown';
 import { trpc } from '@/lib/trpc';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,9 +29,6 @@ export interface ProgressViewerProps {
   showCard?: boolean;
 }
 
-/**
- * Component to display progress.txt content with auto-scroll functionality
- */
 export function ProgressViewer({
   autoScroll = true,
   height = '300px',
@@ -38,13 +36,11 @@ export function ProgressViewer({
   showCard = true,
 }: ProgressViewerProps) {
   const { data: content, isLoading, error } = trpc.progress.read.useQuery();
-  const contentRef = useRef<HTMLPreElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when content changes
   useEffect(() => {
     if (autoScroll && contentRef.current && content) {
-      // Find the viewport element within the scroll area
       const viewport = scrollAreaRef.current?.querySelector(
         '[data-radix-scroll-area-viewport]',
       );
@@ -69,13 +65,19 @@ export function ProgressViewer({
       );
     }
 
+    if (!content) {
+      return (
+        <p className="text-sm text-muted-foreground">No progress logged yet</p>
+      );
+    }
+
     return (
-      <pre
+      <div
         ref={contentRef}
-        className="whitespace-pre-wrap text-xs font-mono text-muted-foreground"
+        className="prose prose-sm dark:prose-invert max-w-none"
       >
-        {content || 'No progress logged yet'}
-      </pre>
+        <Streamdown>{content}</Streamdown>
+      </div>
     );
   };
 
