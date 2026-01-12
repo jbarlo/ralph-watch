@@ -212,9 +212,8 @@ describe('RalphSidePanel', () => {
         );
       });
 
-      // Output tab and Terminal tab should be visible
-      expect(screen.getAllByText('Output')).toHaveLength(2); // Tab and title
-      expect(screen.getByText('Terminal')).toBeInTheDocument();
+      // Output title should be visible (no tabs anymore - terminal moved to bottom pane)
+      expect(screen.getByText('Output')).toBeInTheDocument();
     });
 
     it('should show Stop button when process is running', () => {

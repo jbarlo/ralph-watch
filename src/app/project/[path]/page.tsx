@@ -25,6 +25,10 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { FileText } from 'lucide-react';
 import Link from 'next/link';
+import {
+  BottomTerminalPane,
+  TerminalToggleButton,
+} from '@/components/BottomTerminalPane';
 
 /**
  * Header component showing project name and controls
@@ -53,6 +57,7 @@ function Header() {
             <span className="hidden sm:inline">Progress Log</span>
           </Button>
         </Link>
+        <TerminalToggleButton />
         <ThemeToggle />
         <ConnectionStatusIndicator />
       </div>
@@ -285,6 +290,7 @@ function DesktopProjectContent() {
  */
 function HomeContent() {
   const isMobile = useIsMobile();
+  const projectPath = useProjectPath();
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -292,11 +298,14 @@ function HomeContent() {
       {isMobile ? (
         <MobileLayout />
       ) : (
-        <div className="flex flex-1 overflow-hidden">
-          <div className="flex flex-1 flex-col overflow-hidden">
-            <DesktopProjectContent />
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-1 flex-col overflow-hidden">
+              <DesktopProjectContent />
+            </div>
+            <RalphSidePanel />
           </div>
-          <RalphSidePanel />
+          <BottomTerminalPane projectPath={projectPath} />
         </div>
       )}
     </div>

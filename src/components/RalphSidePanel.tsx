@@ -11,14 +11,12 @@ import {
   RefreshCw,
   Settings,
   Radio,
-  FileOutput,
   type LucideIcon,
 } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { ProcessOutputViewer } from '@/components/ProcessOutputViewer';
-import { Terminal } from '@/components/Terminal';
 import { useEventStream } from '@/hooks/use-event-stream';
 import { useProjectPath } from '@/components/providers/TRPCProvider';
 import {
@@ -51,8 +49,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
 
-type SidePanelTab = 'output' | 'terminal';
-
 const iconMap: Record<string, LucideIcon> = {
   play: Play,
   zap: Zap,
@@ -73,7 +69,6 @@ export function RalphSidePanel() {
   const { toast } = useToast();
   const projectPath = useProjectPath();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState<SidePanelTab>('output');
   const [state, dispatch] = useReducer(processReducer, initialProcessState);
   const [confirmCommand, setConfirmCommand] = useState<CommandConfig | null>(
     null,
@@ -474,55 +469,21 @@ export function RalphSidePanel() {
               )}
             </div>
 
-            <div className="flex border-b">
-              <button
-                className={cn(
-                  'flex-1 px-3 py-2 text-sm font-medium transition-colors',
-                  activeTab === 'output'
-                    ? 'border-b-2 border-primary text-foreground'
-                    : 'text-muted-foreground hover:text-foreground',
-                )}
-                onClick={() => setActiveTab('output')}
-              >
-                <FileOutput className="mr-1 inline-block h-4 w-4" />
-                Output
-              </button>
-              <button
-                className={cn(
-                  'flex-1 px-3 py-2 text-sm font-medium transition-colors',
-                  activeTab === 'terminal'
-                    ? 'border-b-2 border-primary text-foreground'
-                    : 'text-muted-foreground hover:text-foreground',
-                )}
-                onClick={() => setActiveTab('terminal')}
-              >
-                <TerminalIcon className="mr-1 inline-block h-4 w-4" />
-                Terminal
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-hidden">
-              {activeTab === 'output' && (
-                <div className="h-full p-3">
-                  {hasOutput || isRunning ? (
-                    <ProcessOutputViewer
-                      lines={lines}
-                      exitCode={exitCode}
-                      connectionStatus={connectionStatus}
-                      processId={processId}
-                      height="100%"
-                      title="Output"
-                      showCard={false}
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                      No output yet. Run a command to see output.
-                    </div>
-                  )}
+            <div className="flex-1 overflow-hidden p-3">
+              {hasOutput || isRunning ? (
+                <ProcessOutputViewer
+                  lines={lines}
+                  exitCode={exitCode}
+                  connectionStatus={connectionStatus}
+                  processId={processId}
+                  height="100%"
+                  title="Output"
+                  showCard={false}
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                  No output yet. Run a command to see output.
                 </div>
-              )}
-              {activeTab === 'terminal' && (
-                <Terminal projectPath={projectPath} className="h-full" />
               )}
             </div>
           </div>
