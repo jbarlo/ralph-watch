@@ -37,7 +37,7 @@ function TicketCard({
       className={cn(
         'cursor-pointer transition-colors hover:bg-accent/50 active:bg-accent/70',
         'min-h-[56px]',
-        isSelected && 'ring-2 ring-primary',
+        isSelected && 'ring-2 ring-inset ring-primary',
         isDraft && 'opacity-60',
       )}
       onClick={() => onSelect(ticket)}

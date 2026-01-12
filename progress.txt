@@ -779,3 +779,10 @@
 - Files modified: src/components/ProgressViewer.tsx
 - Verified: `pnpm check` passes (all 225 tests pass)
 
+## Ticket #56: fix selected tab styling
+- Fixed ticket card selection border being clipped by ScrollArea overflow-hidden
+- Changed ring-2 ring-primary to ring-2 ring-inset ring-primary in TicketList.tsx
+- ring-inset renders the ring inside the element instead of outside, avoiding clipping
+- Files modified: src/components/TicketList.tsx
+- Verified: `pnpm check` passes (all 225 tests pass)
+
