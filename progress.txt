@@ -1141,3 +1141,24 @@
 - Updated doConnect dependency array to include session parameters
 - Files modified: src/hooks/use-terminal.ts
 - Verified: pnpm check passes (all 228 tests pass)
+
+## Ticket #81: Create SessionTabs component
+- Created src/components/SessionTabs.tsx for switching between terminal sessions
+- Props interface: sessions, activeSessionId, onSelectSession, onCloseSession, onNewSession
+- Features:
+  - Horizontal tab bar with session labels
+  - Active tab highlighted with bottom border indicator
+  - Close button (X) on hover, only shown when multiple sessions
+  - New session button (+) at end
+  - Horizontal scroll for overflow sessions
+  - Keyboard navigation: ArrowLeft/Right, Home, End
+  - ARIA roles: tablist, tab with proper aria-selected and tabIndex
+  - Empty state shows "New Session" button
+- Styling: compact 32px height, catppuccin theme compatible
+- Created src/components/SessionTabs.test.tsx with 20 tests
+  - Tests for empty state, rendering, selection, close, new session
+  - Keyboard navigation tests (arrows, Home, End, wrapping)
+  - Accessibility tests (roles, aria-selected, tabindex)
+  - Session without label fallback test
+- Files added: src/components/SessionTabs.tsx, src/components/SessionTabs.test.tsx
+- Verified: pnpm check passes (all 248 tests pass)

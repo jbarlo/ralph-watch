@@ -549,7 +549,7 @@
       "id": 81,
       "title": "Create SessionTabs component",
       "description": "New UI component for switching between terminal sessions.\n\n## Component: src/components/SessionTabs.tsx\n\n### Props\n```typescript\ninterface SessionTabsProps {\n  sessions: SessionInfo[];\n  activeSessionId: string | null;\n  onSelectSession: (sessionId: string) => void;\n  onCloseSession: (sessionId: string) => void;\n  onNewSession: () => void;\n}\n\ninterface SessionInfo {\n  id: string;\n  label: string;\n  pid: number;\n  createdAt: number;\n}\n```\n\n### Layout\nHorizontal tab bar above terminal:\n```\n[ Main ] [ Ticket #42 ] [ Debug ] [+]\n```\n\n- Each tab shows session label\n- Active tab highlighted\n- X button on hover to close (except if only one session)\n- + button at end to create new session\n- Overflow: horizontal scroll or dropdown for many sessions\n\n### Styling\n- Match existing UI patterns (catppuccin theme)\n- Compact height (~32px) to not waste terminal space\n- Subtle border-bottom on active tab\n- Close button appears on hover (small X icon)\n\n### Behavior\n- Click tab → onSelectSession(id)\n- Click X → onCloseSession(id) with confirmation if process running\n- Click + → onNewSession()\n- Double-click tab label → edit session name (stretch goal)\n\n### Empty state\nIf no sessions, show single \"New Session\" button or auto-create default.\n\n### Implementation notes\n- Use Radix Tabs primitive or custom div buttons\n- Keep state external (lifted to parent)\n- Support keyboard nav (arrow keys between tabs)\n\nRun pnpm check after.",
-      "status": "pending",
+      "status": "completed",
       "priority": 3
     },
     {
