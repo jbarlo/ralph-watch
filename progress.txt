@@ -657,3 +657,15 @@
 - Removed border-t styling since it's no longer a bottom section divider
 - Files modified: src/app/project/[path]/page.tsx
 - Verified: `pnpm check` passes (all 190 tests pass)
+## Ticket #50: Fix quick add text not passed to detailed form
+- Bug: when typing in quick add field and clicking expand, the text wasn't passed to AddTicketForm
+- Root cause: AddTicketForm had its own internal title state initialized to empty string
+- Fix: Added defaultTitle prop to AddTicketForm, initializes title state with it
+- Added expandedTitle state to QuickAddBar to capture title before expand
+- handleExpand callback: saves title to expandedTitle, clears quick add input, expands form
+- Passes expandedTitle to AddTicketForm when rendering expanded view
+- Created src/components/QuickAddBar.test.tsx with 7 tests
+- Tests verify: input rendering, draft/pending creation, form expansion, title prefilling
+- Files modified: src/components/AddTicketForm.tsx, src/components/QuickAddBar.tsx
+- Files added: src/components/QuickAddBar.test.tsx
+- Verified: `pnpm check` passes (all 197 tests pass)

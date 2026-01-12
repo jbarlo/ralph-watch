@@ -334,6 +334,18 @@
       "title": "move the quick add input above the ticket list in desktop mode",
       "status": "completed",
       "priority": 1
+    },
+    {
+      "id": 49,
+      "title": "add darkmode configuration with system-default setting",
+      "status": "pending",
+      "priority": 1
+    },
+    {
+      "id": 50,
+      "title": "bugfix: when quick add field is submitted, the entry text is not passed to the detailed form entry",
+      "status": "completed",
+      "priority": 1
     }
   ]
 }
