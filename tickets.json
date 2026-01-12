@@ -384,6 +384,12 @@
       "description": "remember that border highlights can be cut off by the parent container if the element is already full width/height. a selection border is useful, but need to not look broken and cutoff",
       "status": "pending",
       "priority": 13
+    },
+    {
+      "id": 57,
+      "title": "add a ralph control button to follow an existing ralph instance",
+      "status": "pending",
+      "priority": 14
     }
   ]
 }
