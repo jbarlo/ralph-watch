@@ -12,6 +12,7 @@ import { DeleteTicketButton } from '@/components/DeleteTicketButton';
 import { ConnectionStatusIndicator } from '@/components/ConnectionStatus';
 import { RalphSidePanel } from '@/components/RalphSidePanel';
 import { MobileLayout } from '@/components/MobileLayout';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useProjectPath } from '@/components/providers/TRPCProvider';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { deriveProjectName } from '@/lib/recent-projects';
@@ -44,6 +45,7 @@ function Header() {
             </span>
           </div>
         </div>
+        <ThemeToggle />
         <ConnectionStatusIndicator />
       </div>
     </header>

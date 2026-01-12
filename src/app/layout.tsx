@@ -17,13 +17,25 @@ export const metadata: Metadata = {
   description: 'Monitor and manage Ralph agent tasks',
 };
 
+const themeScript = `
+(function() {
+  const stored = localStorage.getItem('ralph-watch-theme');
+  const theme = stored === 'light' || stored === 'dark' ? stored : 'system';
+  const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  if (isDark) document.documentElement.classList.add('dark');
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

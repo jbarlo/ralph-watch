@@ -13,6 +13,7 @@ import { buildProjectUrl } from '@/lib/project-path';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 /**
  * Icon components
@@ -204,7 +205,8 @@ export default function HomePage() {
       <div className="flex min-h-screen flex-col bg-background">
         <header className="border-b">
           <div className="flex h-14 items-center px-4 lg:px-6">
-            <h1 className="text-lg font-semibold">Ralph Watch</h1>
+            <h1 className="flex-1 text-lg font-semibold">Ralph Watch</h1>
+            <ThemeToggle />
           </div>
         </header>
         <main className="flex flex-1 items-center justify-center">
@@ -218,7 +220,8 @@ export default function HomePage() {
     <div className="flex min-h-screen flex-col bg-background">
       <header className="border-b">
         <div className="flex h-14 items-center px-4 lg:px-6">
-          <h1 className="text-lg font-semibold">Ralph Watch</h1>
+          <h1 className="flex-1 text-lg font-semibold">Ralph Watch</h1>
+          <ThemeToggle />
         </div>
       </header>
 
