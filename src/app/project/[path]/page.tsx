@@ -16,6 +16,8 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { useProjectPath } from '@/components/providers/TRPCProvider';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { useSelectedTicket } from '@/hooks/use-selected-ticket';
+import { useResizablePanel } from '@/hooks/use-resizable-panel';
+import { ResizableHandle } from '@/components/ResizableHandle';
 import { deriveProjectName } from '@/lib/recent-projects';
 import { getStatusBadgeClass, formatStatus } from '@/lib/ticket-ui';
 import { encodeProjectPath } from '@/lib/project-path';
@@ -31,6 +33,13 @@ import {
   TerminalToggleButton,
   useTerminalWidth,
 } from '@/components/RightTerminalPane';
+
+const TICKET_SIDEBAR_CONFIG = {
+  storageKey: 'ralph-ticket-sidebar-width',
+  defaultWidth: 400,
+  minWidth: 250,
+  maxWidth: 600,
+};
 
 /**
  * Header component showing project name and controls
@@ -228,6 +237,8 @@ function DesktopProjectContent() {
   );
   const [statusFilter, setStatusFilter] = useState<TicketStatus>('incomplete');
 
+  const ticketSidebar = useResizablePanel(TICKET_SIDEBAR_CONFIG);
+
   const { data: tickets } = trpc.tickets.list.useQuery();
 
   const selectedTicket =
@@ -251,9 +262,10 @@ function DesktopProjectContent() {
       <main className="flex flex-1 overflow-hidden">
         <div
           className={cn(
-            'hidden md:flex w-full flex-col border-r p-4 lg:w-[400px]',
+            'hidden md:flex flex-col border-r p-4 flex-shrink-0',
             desktopTab === 'tickets' ? 'md:flex' : 'md:hidden lg:flex',
           )}
+          style={{ width: ticketSidebar.width }}
         >
           <div className="mb-4">
             <QuickAddBar />
@@ -269,9 +281,14 @@ function DesktopProjectContent() {
             />
           </ScrollArea>
         </div>
+        <ResizableHandle
+          panel={ticketSidebar}
+          edge="right"
+          className="hidden lg:block"
+        />
         <div
           className={cn(
-            'hidden flex-1 p-4 lg:block',
+            'hidden flex-1 p-4 lg:block min-w-0',
             desktopTab === 'details' ? 'md:block' : 'md:hidden lg:block',
           )}
         >

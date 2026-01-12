@@ -19,6 +19,8 @@ import { useToast } from '@/hooks/use-toast';
 import { ProcessOutputViewer } from '@/components/ProcessOutputViewer';
 import { useEventStream } from '@/hooks/use-event-stream';
 import { useProjectPath } from '@/components/providers/TRPCProvider';
+import { useResizablePanel } from '@/hooks/use-resizable-panel';
+import { ResizableHandle } from '@/components/ResizableHandle';
 import {
   processReducer,
   initialProcessState,
@@ -49,6 +51,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
 
+const RALPH_PANEL_CONFIG = {
+  storageKey: 'ralph-control-panel-width',
+  defaultWidth: 350,
+  minWidth: 200,
+  maxWidth: 500,
+  collapsedWidth: 48,
+};
+
 const iconMap: Record<string, LucideIcon> = {
   play: Play,
   zap: Zap,
@@ -68,7 +78,7 @@ function getIcon(iconName?: string): LucideIcon {
 export function RalphSidePanel() {
   const { toast } = useToast();
   const projectPath = useProjectPath();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const panel = useResizablePanel(RALPH_PANEL_CONFIG);
   const [state, dispatch] = useReducer(processReducer, initialProcessState);
   const [confirmCommand, setConfirmCommand] = useState<CommandConfig | null>(
     null,
@@ -206,7 +216,7 @@ export function RalphSidePanel() {
 
       restoreAttemptedRef.current = handle.id;
       dispatch({ type: 'STARTED', id: handle.id, pid: handle.pid });
-      setIsCollapsed(false);
+      panel.setIsCollapsed(false);
 
       toast({
         title: `Running: ${label}`,
@@ -300,7 +310,7 @@ export function RalphSidePanel() {
     if (isRunning || starting) return;
     setCommandLabel('Attached Process');
     dispatch({ type: 'ATTACH', id, pid });
-    setIsCollapsed(false);
+    panel.setIsCollapsed(false);
     toast({
       title: 'Following process',
       description: `Attached to process PID: ${pid}`,
@@ -329,165 +339,173 @@ export function RalphSidePanel() {
   return (
     <>
       <aside
-        className={cn(
-          'flex flex-col border-l bg-background transition-all duration-200',
-          isCollapsed ? 'w-12' : 'w-[350px]',
-        )}
+        className="flex flex-row border-l bg-background flex-shrink-0"
+        style={{ width: panel.width }}
       >
-        <div className="flex items-center justify-between border-b p-2">
-          {!isCollapsed && (
-            <span className="text-sm font-medium">Ralph Controls</span>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn('h-8 w-8 p-0', isCollapsed && 'mx-auto')}
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            title={isCollapsed ? 'Expand panel' : 'Collapse panel'}
-          >
-            {isCollapsed ? '«' : '»'}
-          </Button>
-        </div>
-
-        {isCollapsed && (
-          <div className="flex flex-1 flex-col items-center gap-2 p-2">
-            {isRunning && (
-              <div
-                className="h-3 w-3 animate-pulse rounded-full bg-blue-500"
-                title="Process running"
-              />
+        <ResizableHandle panel={panel} edge="left" />
+        <div className="flex flex-col flex-1 min-w-0">
+          <div className="flex items-center justify-between border-b p-2">
+            {!panel.isCollapsed && (
+              <span className="text-sm font-medium">Ralph Controls</span>
             )}
-            {exitCode === 0 && (
-              <div
-                className="h-3 w-3 rounded-full bg-green-500"
-                title="Completed"
-              />
-            )}
-            {exitCode !== null && exitCode !== 0 && (
-              <div className="h-3 w-3 rounded-full bg-red-500" title="Failed" />
-            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn('h-8 w-8 p-0', panel.isCollapsed && 'mx-auto')}
+              onClick={panel.toggleCollapsed}
+              title={panel.isCollapsed ? 'Expand panel' : 'Collapse panel'}
+            >
+              {panel.isCollapsed ? '«' : '»'}
+            </Button>
           </div>
-        )}
 
-        {!isCollapsed && (
-          <div className="flex flex-1 flex-col overflow-hidden">
-            <div className="space-y-3 border-b p-3">
-              <div className="flex flex-wrap gap-2">
-                {commands.map((command, index) => {
-                  const Icon = getIcon(command.icon);
-                  return (
-                    <Button
-                      key={index}
-                      size="sm"
-                      variant={command.destructive ? 'destructive' : 'default'}
-                      className="flex-1 min-w-[100px]"
-                      onClick={() => handleRunCommand(command)}
-                      disabled={buttonsDisabled}
-                      data-testid={`command-button-${index}`}
-                    >
-                      <Icon className="mr-1 h-4 w-4" />
-                      {starting ? 'Starting...' : command.label}
-                    </Button>
-                  );
-                })}
-                {runningProcesses.length > 0 && !buttonsDisabled && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+          {panel.isCollapsed && (
+            <div className="flex flex-1 flex-col items-center gap-2 p-2">
+              {isRunning && (
+                <div
+                  className="h-3 w-3 animate-pulse rounded-full bg-blue-500"
+                  title="Process running"
+                />
+              )}
+              {exitCode === 0 && (
+                <div
+                  className="h-3 w-3 rounded-full bg-green-500"
+                  title="Completed"
+                />
+              )}
+              {exitCode !== null && exitCode !== 0 && (
+                <div
+                  className="h-3 w-3 rounded-full bg-red-500"
+                  title="Failed"
+                />
+              )}
+            </div>
+          )}
+
+          {!panel.isCollapsed && (
+            <div className="flex flex-1 flex-col overflow-hidden">
+              <div className="space-y-3 border-b p-3">
+                <div className="flex flex-wrap gap-2">
+                  {commands.map((command, index) => {
+                    const Icon = getIcon(command.icon);
+                    return (
                       <Button
+                        key={index}
                         size="sm"
-                        variant="outline"
+                        variant={
+                          command.destructive ? 'destructive' : 'default'
+                        }
                         className="flex-1 min-w-[100px]"
-                        data-testid="follow-button"
+                        onClick={() => handleRunCommand(command)}
+                        disabled={buttonsDisabled}
+                        data-testid={`command-button-${index}`}
                       >
-                        <Radio className="mr-1 h-4 w-4" />
-                        Follow ({runningProcesses.length})
+                        <Icon className="mr-1 h-4 w-4" />
+                        {starting ? 'Starting...' : command.label}
                       </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start">
-                      {runningProcesses.map((proc) => (
-                        <DropdownMenuItem
-                          key={proc.id}
-                          onClick={() => handleAttach(proc.id, proc.pid)}
+                    );
+                  })}
+                  {runningProcesses.length > 0 && !buttonsDisabled && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 min-w-[100px]"
+                          data-testid="follow-button"
                         >
-                          <span className="mr-2 h-2 w-2 animate-pulse rounded-full bg-blue-500" />
-                          PID {proc.pid}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                          <Radio className="mr-1 h-4 w-4" />
+                          Follow ({runningProcesses.length})
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start">
+                        {runningProcesses.map((proc) => (
+                          <DropdownMenuItem
+                            key={proc.id}
+                            onClick={() => handleAttach(proc.id, proc.pid)}
+                          >
+                            <span className="mr-2 h-2 w-2 animate-pulse rounded-full bg-blue-500" />
+                            PID {proc.pid}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </div>
+
+                {isRunning && (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="w-full"
+                    onClick={handleStop}
+                    disabled={stopDisabled}
+                    data-testid="stop-button"
+                  >
+                    {isStopping ? 'Stopping...' : 'Stop'}
+                  </Button>
+                )}
+
+                {statusText && (
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={cn(
+                        'text-sm',
+                        isRunning && 'text-blue-600 animate-pulse',
+                        exitCode === 0 && 'text-green-600',
+                        exitCode !== null &&
+                          exitCode !== 0 &&
+                          'text-destructive',
+                      )}
+                      data-testid="status-text"
+                    >
+                      {statusText}
+                    </span>
+                    {isRunning && (
+                      <span className="text-xs text-muted-foreground">
+                        {connectionStatus === 'connected'
+                          ? 'Connected'
+                          : connectionStatus === 'connecting'
+                            ? 'Connecting...'
+                            : 'Disconnected'}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {completed && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClearOutput}
+                    className="w-full"
+                    data-testid="clear-output"
+                  >
+                    Clear
+                  </Button>
                 )}
               </div>
 
-              {isRunning && (
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  className="w-full"
-                  onClick={handleStop}
-                  disabled={stopDisabled}
-                  data-testid="stop-button"
-                >
-                  {isStopping ? 'Stopping...' : 'Stop'}
-                </Button>
-              )}
-
-              {statusText && (
-                <div className="flex items-center justify-between">
-                  <span
-                    className={cn(
-                      'text-sm',
-                      isRunning && 'text-blue-600 animate-pulse',
-                      exitCode === 0 && 'text-green-600',
-                      exitCode !== null && exitCode !== 0 && 'text-destructive',
-                    )}
-                    data-testid="status-text"
-                  >
-                    {statusText}
-                  </span>
-                  {isRunning && (
-                    <span className="text-xs text-muted-foreground">
-                      {connectionStatus === 'connected'
-                        ? 'Connected'
-                        : connectionStatus === 'connecting'
-                          ? 'Connecting...'
-                          : 'Disconnected'}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {completed && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleClearOutput}
-                  className="w-full"
-                  data-testid="clear-output"
-                >
-                  Clear
-                </Button>
-              )}
+              <div className="flex-1 overflow-hidden p-3">
+                {hasOutput || isRunning ? (
+                  <ProcessOutputViewer
+                    lines={lines}
+                    exitCode={exitCode}
+                    connectionStatus={connectionStatus}
+                    processId={processId}
+                    height="100%"
+                    title="Output"
+                    showCard={false}
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                    No output yet. Run a command to see output.
+                  </div>
+                )}
+              </div>
             </div>
-
-            <div className="flex-1 overflow-hidden p-3">
-              {hasOutput || isRunning ? (
-                <ProcessOutputViewer
-                  lines={lines}
-                  exitCode={exitCode}
-                  connectionStatus={connectionStatus}
-                  processId={processId}
-                  height="100%"
-                  title="Output"
-                  showCard={false}
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                  No output yet. Run a command to see output.
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </aside>
 
       <AlertDialog

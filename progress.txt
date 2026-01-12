@@ -969,3 +969,25 @@
 - Files modified: src/components/Terminal.tsx
 - Verified: pnpm check passes (all 227 tests pass)
 
+## Ticket #69: Make the ralph control pane and the ticket sidebars resizable
+- Created src/hooks/use-resizable-panel.ts with reusable hook for panel resizing
+  - Uses useSyncExternalStore for SSR-safe state management
+  - Persists panel width and collapsed state to localStorage
+  - Module-level store pattern for shared state across components
+  - Supports min/max width constraints and collapsed state
+- Created src/components/ResizableHandle.tsx as reusable drag handle component
+  - Works with left or right edge dragging
+  - Visual feedback on hover/drag
+  - Handles mouse events for resize interaction
+- Updated src/app/project/[path]/page.tsx (ticket sidebar)
+  - Ticket sidebar now resizable from right edge (250-600px, default 400px)
+  - Width persisted in localStorage under 'ralph-ticket-sidebar-width'
+  - Handle only visible on lg+ breakpoint (desktop)
+- Updated src/components/RalphSidePanel.tsx (ralph control pane)
+  - Ralph control pane resizable from left edge (200-500px, default 350px)
+  - Width persisted in localStorage under 'ralph-control-panel-width'
+  - Collapsed state also persisted (48px collapsed width)
+- Files added: src/hooks/use-resizable-panel.ts, src/components/ResizableHandle.tsx
+- Files modified: src/app/project/[path]/page.tsx, src/components/RalphSidePanel.tsx
+- Verified: pnpm check passes (all 227 tests pass)
+
