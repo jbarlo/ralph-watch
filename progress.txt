@@ -1071,3 +1071,9 @@
 - Added test to verify expanded form has scrollable overflow classes
 - Files changed: src/components/QuickAddBar.tsx, src/components/MobileLayout.tsx, src/components/QuickAddBar.test.tsx
 - Verified: pnpm check passes (all 228 tests pass)
+
+## Ticket #73: Add scroll to top and bottom buttons to mobile progress tab
+- ProgressViewer already had showScrollButtons prop implemented (from ticket #58)
+- Enabled scroll buttons in mobile progress tab by adding showScrollButtons prop to ProgressViewer in MobileLayout.tsx
+- Files modified: src/components/MobileLayout.tsx
+- Verified: pnpm check passes (all 228 tests pass)

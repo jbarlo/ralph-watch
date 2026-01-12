@@ -364,7 +364,7 @@ export function MobileLayout() {
 
       {activeTab === 'progress' && (
         <div className="flex flex-1 flex-col overflow-hidden p-4">
-          <ProgressViewer height="100%" showCard={false} />
+          <ProgressViewer height="100%" showCard={false} showScrollButtons />
         </div>
       )}
 
