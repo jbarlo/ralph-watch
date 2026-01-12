@@ -770,3 +770,12 @@
 - Files modified: src/components/TicketFilter.tsx, src/components/TicketList.tsx, src/hooks/use-ticket-filter.ts
 - Verified: `pnpm check` passes (all 225 tests pass)
 
+## Ticket #55: use streamdown on the progress log display
+- Updated ProgressViewer to use Streamdown component for markdown rendering
+- Replaced pre element with div containing Streamdown, wrapping progress.txt content
+- Added prose/prose-sm/dark:prose-invert classes for proper markdown styling
+- Changed contentRef from HTMLPreElement to HTMLDivElement
+- Separated empty content case from loading/error handling for cleaner code
+- Files modified: src/components/ProgressViewer.tsx
+- Verified: `pnpm check` passes (all 225 tests pass)
+
