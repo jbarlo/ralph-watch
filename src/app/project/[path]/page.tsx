@@ -15,6 +15,7 @@ import { MobileLayout } from '@/components/MobileLayout';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useProjectPath } from '@/components/providers/TRPCProvider';
 import { useIsMobile } from '@/hooks/use-media-query';
+import { useSelectedTicket } from '@/hooks/use-selected-ticket';
 import { deriveProjectName } from '@/lib/recent-projects';
 import { getStatusBadgeClass, formatStatus } from '@/lib/ticket-ui';
 import { encodeProjectPath } from '@/lib/project-path';
@@ -220,7 +221,7 @@ function DesktopTabs({ activeTab, onTabChange }: DesktopTabsProps) {
  * Desktop project content (for md+ screens)
  */
 function DesktopProjectContent() {
-  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
+  const { selectedTicketId, setSelectedTicketId } = useSelectedTicket();
   const [desktopTab, setDesktopTab] = useState<'tickets' | 'details'>(
     'tickets',
   );

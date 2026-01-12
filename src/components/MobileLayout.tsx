@@ -14,6 +14,7 @@ import { DeleteTicketButton } from '@/components/DeleteTicketButton';
 import { BottomTabBar, type MobileTab } from '@/components/BottomTabBar';
 import { useEventStream } from '@/hooks/use-event-stream';
 import { useProjectPath } from '@/components/providers/TRPCProvider';
+import { useSelectedTicket } from '@/hooks/use-selected-ticket';
 import { useToast } from '@/hooks/use-toast';
 import { getStatusBadgeClass, formatStatus } from '@/lib/ticket-ui';
 import type { ProcessOutputLine } from '@/lib/process-runner';
@@ -157,8 +158,8 @@ export function MobileLayout() {
   const projectPath = useProjectPath();
   const [activeTab, setActiveTab] = useState<MobileTab>('tickets');
   const [statusFilter, setStatusFilter] = useState<TicketStatus>('incomplete');
-  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
-  const [showTicketDetail, setShowTicketDetail] = useState(false);
+  const { selectedTicketId, setSelectedTicketId } = useSelectedTicket();
+  const showTicketDetail = selectedTicketId !== null;
 
   // Run tab state
   const [runningProcess, setRunningProcess] = useState<RunningProcess | null>(
@@ -301,19 +302,15 @@ export function MobileLayout() {
   };
 
   const handleTicketSelect = (ticket: Ticket | null) => {
-    if (ticket) {
-      setSelectedTicketId(ticket.id);
-      setShowTicketDetail(true);
-    }
+    setSelectedTicketId(ticket?.id ?? null);
   };
 
   const handleTicketDeleted = () => {
     setSelectedTicketId(null);
-    setShowTicketDetail(false);
   };
 
   const handleBackToList = () => {
-    setShowTicketDetail(false);
+    setSelectedTicketId(null);
   };
 
   const getStatusText = () => {
