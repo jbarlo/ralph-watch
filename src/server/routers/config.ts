@@ -3,7 +3,8 @@ import path from 'path';
 import { router, publicProcedure } from '../trpc';
 import {
   ProjectConfigSchema,
-  defaultConfig,
+  defaultCommands,
+  defaultTerminalButtons,
   type ProjectConfig,
 } from '@/lib/project-config';
 import { tryCatchAsync, isErr } from '@/lib/result';
@@ -18,15 +19,24 @@ async function loadProjectConfig(ralphDir: string): Promise<ProjectConfig> {
   );
 
   if (isErr(result)) {
-    return defaultConfig;
+    return {
+      commands: defaultCommands,
+      terminalButtons: defaultTerminalButtons,
+    };
   }
 
   const parsed = ProjectConfigSchema.safeParse(result.value);
   if (!parsed.success) {
-    return defaultConfig;
+    return {
+      commands: defaultCommands,
+      terminalButtons: defaultTerminalButtons,
+    };
   }
 
-  return parsed.data;
+  return {
+    commands: parsed.data.commands ?? defaultCommands,
+    terminalButtons: parsed.data.terminalButtons ?? defaultTerminalButtons,
+  };
 }
 
 export const configRouter = router({

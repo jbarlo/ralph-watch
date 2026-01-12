@@ -517,8 +517,19 @@
       "id": 76,
       "title": "Make terminal control buttons configurable via JSON",
       "description": "Terminal control buttons (^C, Tab, Esc, etc.) are hardcoded. Allow customization via .ralph-watch.json:\n\n```json\n{\n  \"terminalButtons\": [\n    { \"label\": \"^C\", \"sequence\": \"\\u0003\" },\n    { \"label\": \"Tab\", \"sequence\": \"\\t\" },\n    { \"label\": \"S-Tab\", \"sequence\": \"\\u001b[Z\" },\n    { \"label\": \"Esc\", \"sequence\": \"\\u001b\" }\n  ]\n}\n```\n\nFallback to current defaults if not specified. Update project-config schema and TerminalControls component.",
-      "status": "pending",
+      "status": "completed",
       "priority": 3
+    },
+    {
+      "id": 77,
+      "title": "update project Dir selector to suggest existing folders",
+      "status": "draft"
+    },
+    {
+      "id": 78,
+      "title": "display tickets from latest to oldest in all tabs",
+      "status": "pending",
+      "priority": 1
     }
   ]
 }

@@ -9,8 +9,17 @@ export const CommandConfigSchema = z.object({
 
 export type CommandConfig = z.infer<typeof CommandConfigSchema>;
 
+export const TerminalButtonSchema = z.object({
+  label: z.string().min(1),
+  sequence: z.string().min(1),
+  title: z.string().optional(),
+});
+
+export type TerminalButton = z.infer<typeof TerminalButtonSchema>;
+
 export const ProjectConfigSchema = z.object({
-  commands: z.array(CommandConfigSchema),
+  commands: z.array(CommandConfigSchema).optional(),
+  terminalButtons: z.array(TerminalButtonSchema).optional(),
 });
 
 export type ProjectConfig = z.infer<typeof ProjectConfigSchema>;
@@ -21,6 +30,16 @@ export const defaultCommands: CommandConfig[] = [
   { label: 'Stop', cmd: 'ralph-stop', icon: 'square', destructive: true },
 ];
 
+export const defaultTerminalButtons: TerminalButton[] = [
+  { label: '^C', sequence: '\x03', title: 'Send SIGINT (Ctrl+C)' },
+  { label: 'Tab', sequence: '\t', title: 'Send Tab' },
+  { label: 'S-Tab', sequence: '\x1b[Z', title: 'Send Shift+Tab (reverse tab)' },
+  { label: 'Esc', sequence: '\x1b', title: 'Send Escape' },
+  { label: '↑', sequence: '\x1b[A', title: 'Up arrow' },
+  { label: '↓', sequence: '\x1b[B', title: 'Down arrow' },
+];
+
 export const defaultConfig: ProjectConfig = {
   commands: defaultCommands,
+  terminalButtons: defaultTerminalButtons,
 };

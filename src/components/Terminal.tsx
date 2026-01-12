@@ -9,6 +9,7 @@ import { TerminalControls } from '@/components/TerminalControls';
 import { Button } from '@/components/ui/button';
 import { RotateCcw, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { trpc } from '@/lib/trpc';
 
 interface TerminalProps {
   projectPath?: string;
@@ -28,6 +29,9 @@ export function Terminal({
   const terminalRef = useRef<HTMLDivElement>(null);
   const xtermRef = useRef<XTerm | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
+
+  const { data: config } = trpc.config.get.useQuery();
+  const terminalButtons = config?.terminalButtons;
 
   const wsUrl =
     typeof window !== 'undefined'
@@ -242,7 +246,11 @@ export function Terminal({
       </div>
       <div ref={terminalRef} className="flex-1 min-h-0" />
       {showControls && (
-        <TerminalControls onSendInput={sendInput} disabled={!isConnected} />
+        <TerminalControls
+          onSendInput={sendInput}
+          disabled={!isConnected}
+          buttons={terminalButtons}
+        />
       )}
     </div>
   );

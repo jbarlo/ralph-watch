@@ -1085,3 +1085,20 @@
 - Label "S-Tab" with tooltip "Send Shift+Tab (reverse tab)"
 - Files modified: src/components/TerminalControls.tsx
 - Verified: pnpm check passes (all 228 tests pass)
+
+## Ticket #76: Make terminal control buttons configurable via JSON
+- Added TerminalButtonSchema to src/lib/project-config.ts
+  - Schema: { label: string, sequence: string, title?: string }
+  - Created defaultTerminalButtons array with same buttons as before
+- Updated ProjectConfigSchema to include optional terminalButtons array
+- Updated config router (src/server/routers/config.ts) to:
+  - Return terminalButtons from config file or defaults
+  - Merge user config with defaults (commands and terminalButtons independent)
+- Refactored TerminalControls component:
+  - Now accepts optional buttons prop of type TerminalButton[]
+  - Falls back to DEFAULT_BUTTONS if not provided
+  - Renamed data field to sequence to match schema
+- Updated Terminal.tsx to fetch config via tRPC and pass terminalButtons to TerminalControls
+- Custom config via .ralph-watch.json terminalButtons field overrides defaults
+- Files modified: src/lib/project-config.ts, src/server/routers/config.ts, src/components/TerminalControls.tsx, src/components/Terminal.tsx
+- Verified: pnpm check passes (all 228 tests pass)
