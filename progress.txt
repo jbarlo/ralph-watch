@@ -831,3 +831,33 @@
 - Files modified: src/app/project/[path]/page.tsx, src/components/MobileLayout.tsx
 - Verified: `pnpm check` passes (all 227 tests pass)
 
+## Ticket #60: Embedded Claude Code terminal via xterm.js
+- Added node-pty, ws, @xterm/xterm, @xterm/addon-fit, @xterm/addon-web-links dependencies
+- Created src/server/services/terminal-server.ts - WebSocket server with PTY management
+  - Localhost-only security by default (127.0.0.1, ::1, ::ffff:127.0.0.1)
+  - Remote access requires RALPH_ENABLE_REMOTE_TERMINAL=yes-i-understand-this-is-dangerous
+  - Spawns `claude` via node-pty with xterm-256color support
+  - Handles input, resize, and cleanup on disconnect
+- Created scripts/terminal-server.ts - standalone entry point for WebSocket server
+- Created src/hooks/use-terminal.ts - WebSocket connection hook
+  - Manages connection state, sends input/resize messages
+  - Callbacks for output, ready, exit, error events
+- Created src/components/Terminal.tsx - xterm.js wrapper component
+  - Initializes Terminal with FitAddon and WebLinksAddon
+  - Catppuccin-themed colors matching app theme
+  - Connect/Disconnect buttons and status indicator
+  - Handles resize with ResizeObserver
+- Updated src/components/RalphSidePanel.tsx with tab navigation
+  - Added Output and Terminal tabs below command buttons
+  - Terminal tab shows embedded Claude terminal
+  - Renamed Terminal icon import to TerminalIcon to avoid conflict
+- Updated package.json with `terminal` script to run WebSocket server via tsx
+- Updated README.md with terminal usage and security warning
+- Updated .env.example with TERMINAL_WS_PORT and RALPH_ENABLE_REMOTE_TERMINAL docs
+- Added @xterm/xterm CSS import to globals.css
+- Fixed test flakes in process-state.test.ts (timestamp comparison)
+- Fixed RalphSidePanel.test.tsx for new tab UI
+- Files added: scripts/terminal-server.ts, src/server/services/terminal-server.ts, src/hooks/use-terminal.ts, src/components/Terminal.tsx
+- Files modified: package.json, README.md, .env.example, src/app/globals.css, src/components/RalphSidePanel.tsx, src/components/RalphSidePanel.test.tsx, src/lib/process-state.test.ts
+- Verified: `pnpm check` passes (all 227 tests pass)
+
