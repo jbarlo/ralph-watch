@@ -492,6 +492,33 @@
       "description": "Add PWA manifest so ralph-watch can be installed as a standalone app on mobile.\n\n## Goal\n- Add to Home Screen on iOS/Android\n- Standalone display (no browser chrome)\n- App icon\n\n## NOT needed\n- Offline support (this is a dev tool, needs server)\n- Push notifications (not relevant)\n- Heavy service worker caching (causes dev headaches)\n\n## Implementation\n\n### 1. Add manifest.json\n```json\n// public/manifest.json\n{\n  \"name\": \"Ralph Watch\",\n  \"short_name\": \"Ralph\",\n  \"start_url\": \"/\",\n  \"display\": \"standalone\",\n  \"background_color\": \"#1e1e2e\",\n  \"theme_color\": \"#1e1e2e\",\n  \"icons\": [\n    { \"src\": \"/icon-192.png\", \"sizes\": \"192x192\", \"type\": \"image/png\" },\n    { \"src\": \"/icon-512.png\", \"sizes\": \"512x512\", \"type\": \"image/png\" }\n  ]\n}\n```\n\n### 2. Create app icons\n- Generate 192x192 and 512x512 PNG icons\n- Simple icon: terminal/ticket emoji or letter R\n- Can use realfavicongenerator.net or similar\n\n### 3. Add meta tags to layout\n```tsx\n<link rel=\"manifest\" href=\"/manifest.json\" />\n<meta name=\"theme-color\" content=\"#1e1e2e\" />\n<meta name=\"apple-mobile-web-app-capable\" content=\"yes\" />\n<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black-translucent\" />\n<link rel=\"apple-touch-icon\" href=\"/icon-192.png\" />\n```\n\n### 4. Optional: minimal service worker\nIf needed for install prompt, add minimal SW that does nothing:\n```js\n// public/sw.js\nself.addEventListener('fetch', () => {});\n```\n\nRegister in layout, but keep it minimal to avoid caching issues in dev.\n\n## Skip next-pwa\nThe package is overkill for this use case and adds caching complexity. Manual manifest + meta tags is sufficient for home screen install.\n\nRun pnpm check after.",
       "status": "completed",
       "priority": 15
+    },
+    {
+      "id": 73,
+      "title": "add scroll to top and bottom buttons to mobile progress tab",
+      "status": "pending",
+      "priority": 1
+    },
+    {
+      "id": 74,
+      "title": "Fix extended quick entry form on mobile - bottom cut off",
+      "description": "Bug: Extended quick entry form's bottom is cut off on mobile. Likely overflow or fixed positioning issue. Ensure form is fully scrollable/visible on small screens.",
+      "status": "completed",
+      "priority": 1
+    },
+    {
+      "id": 75,
+      "title": "Add Shift+Tab button to terminal control buttons",
+      "description": "Terminal control buttons (^C, Tab, Esc, arrows) are missing Shift+Tab. Add a Shift+Tab button that sends the appropriate escape sequence for reverse tab navigation.",
+      "status": "pending",
+      "priority": 2
+    },
+    {
+      "id": 76,
+      "title": "Make terminal control buttons configurable via JSON",
+      "description": "Terminal control buttons (^C, Tab, Esc, etc.) are hardcoded. Allow customization via .ralph-watch.json:\n\n```json\n{\n  \"terminalButtons\": [\n    { \"label\": \"^C\", \"sequence\": \"\\u0003\" },\n    { \"label\": \"Tab\", \"sequence\": \"\\t\" },\n    { \"label\": \"S-Tab\", \"sequence\": \"\\u001b[Z\" },\n    { \"label\": \"Esc\", \"sequence\": \"\\u001b\" }\n  ]\n}\n```\n\nFallback to current defaults if not specified. Update project-config schema and TerminalControls component.",
+      "status": "pending",
+      "priority": 3
     }
   ]
 }

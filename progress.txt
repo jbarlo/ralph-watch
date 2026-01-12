@@ -1060,3 +1060,14 @@
 - Files added: public/manifest.json, public/icon.svg, public/icon-192.png, public/icon-512.png, public/sw.js, scripts/generate-icons.mjs
 - Files modified: src/app/layout.tsx
 - Verified: pnpm check passes (all 227 tests pass)
+
+## Ticket #74: Fix extended quick entry form on mobile - bottom cut off
+- Fixed QuickAddBar expanded form being cut off on mobile due to overflow constraints
+- Added `max-h-[50vh] md:max-h-none overflow-y-auto` to expanded form container
+  - Limits form height to 50% viewport on mobile, making it scrollable
+  - Desktop (md+) has no height limit
+- Made header sticky within scroll container for consistent UX
+- Updated MobileLayout.tsx ScrollArea to use `min-h-0` for proper flex shrinking
+- Added test to verify expanded form has scrollable overflow classes
+- Files changed: src/components/QuickAddBar.tsx, src/components/MobileLayout.tsx, src/components/QuickAddBar.test.tsx
+- Verified: pnpm check passes (all 228 tests pass)

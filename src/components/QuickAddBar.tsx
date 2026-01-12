@@ -65,8 +65,13 @@ export function QuickAddBar({ className }: QuickAddBarProps) {
 
   if (isExpanded) {
     return (
-      <div className={cn('rounded-lg border bg-card p-4', className)}>
-        <div className="mb-3 flex items-center justify-between">
+      <div
+        className={cn(
+          'rounded-lg border bg-card p-4 max-h-[50vh] md:max-h-none overflow-y-auto',
+          className,
+        )}
+      >
+        <div className="mb-3 flex items-center justify-between sticky top-0 bg-card pb-2 -mt-1 pt-1 z-10">
           <span className="text-sm font-medium">New Ticket</span>
           <Button
             variant="ghost"

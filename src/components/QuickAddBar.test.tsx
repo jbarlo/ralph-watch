@@ -123,5 +123,18 @@ describe('QuickAddBar', () => {
       ) as HTMLInputElement;
       expect(quickAddInput.value).toBe('');
     });
+
+    it('should have scrollable expanded form for mobile viewports', () => {
+      render(<QuickAddBar />);
+
+      // Click expand button
+      const expandButton = screen.getByTitle('Expand full form');
+      fireEvent.click(expandButton);
+
+      // The expanded form container should have max-height and overflow classes
+      const expandedContainer = screen.getByText('New Ticket').closest('div');
+      expect(expandedContainer?.parentElement).toHaveClass('overflow-y-auto');
+      expect(expandedContainer?.parentElement).toHaveClass('max-h-[50vh]');
+    });
   });
 });

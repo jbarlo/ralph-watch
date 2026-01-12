@@ -345,7 +345,7 @@ export function MobileLayout() {
               <div className="border-b p-3">
                 <TicketFilter value={statusFilter} onChange={setStatusFilter} />
               </div>
-              <ScrollArea className="flex-1">
+              <ScrollArea className="flex-1 min-h-0">
                 <div className="p-3">
                   <TicketList
                     onTicketSelect={handleTicketSelect}
@@ -354,7 +354,7 @@ export function MobileLayout() {
                   />
                 </div>
               </ScrollArea>
-              <div className="border-t p-3">
+              <div className="border-t p-3 shrink-0">
                 <QuickAddBar />
               </div>
             </>
