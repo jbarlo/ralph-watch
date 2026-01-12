@@ -475,3 +475,14 @@
 - Files added: src/components/RalphSidePanel.tsx, src/components/RalphSidePanel.test.tsx
 - Files modified: src/app/page.tsx
 - Verified: `pnpm check` passes (all 203 tests pass)
+
+## Ticket #38: Consolidate status badge utilities
+- Extracted duplicated getStatusBadgeClass() and formatStatus() from page.tsx and TicketList.tsx
+- Created src/lib/ticket-ui.ts with shared UI utilities for ticket display
+- getStatusBadgeClass(status) - returns Tailwind badge color classes for each status
+- formatStatus(status) - replaces underscores with spaces for display
+- Updated src/app/page.tsx to import from @/lib/ticket-ui
+- Updated src/components/TicketList.tsx to import from @/lib/ticket-ui
+- Files added: src/lib/ticket-ui.ts
+- Files modified: src/app/page.tsx, src/components/TicketList.tsx
+- Verified: `pnpm check` passes (all 203 tests pass)

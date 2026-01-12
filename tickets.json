@@ -263,7 +263,7 @@
       "id": 38,
       "title": "Consolidate status badge utilities",
       "description": "Extract duplicated getStatusBadgeClass() and formatStatus() functions from src/app/page.tsx and src/components/TicketList.tsx into src/lib/ticket-ui.ts. Update both files to import from the shared module. Run pnpm check to verify.",
-      "status": "pending",
+      "status": "completed",
       "priority": 3
     },
     {
