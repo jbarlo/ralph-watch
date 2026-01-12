@@ -11,12 +11,28 @@ import { RotateCcw, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc';
 
+export interface TerminalHandle {
+  connect: () => void;
+  disconnect: () => void;
+  listSessions: () => void;
+  closeSession: (sessionId: string) => void;
+}
+
 interface TerminalProps {
   projectPath?: string;
   wsPort?: number;
   className?: string;
   showControls?: boolean;
+  sessionId?: string;
+  sessionLabel?: string;
+  sessionContext?: string;
   onConnectionChange?: (isConnected: boolean) => void;
+  onSessionCreated?: (sessionId: string) => void;
+  onReattached?: (sessionId: string) => void;
+  onSessionsUpdated?: (
+    sessions: import('@/hooks/use-terminal').SessionInfo[],
+  ) => void;
+  handleRef?: React.MutableRefObject<TerminalHandle | null>;
 }
 
 export function Terminal({
@@ -24,9 +40,16 @@ export function Terminal({
   wsPort = 3001,
   className,
   showControls,
+  sessionId,
+  sessionLabel,
+  sessionContext,
   onConnectionChange,
+  onSessionCreated,
+  onReattached,
+  onSessionsUpdated,
+  handleRef,
 }: TerminalProps) {
-  const terminalRef = useRef<HTMLDivElement>(null);
+  const terminalContainerRef = useRef<HTMLDivElement>(null);
   const xtermRef = useRef<XTerm | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
 
@@ -65,13 +88,19 @@ export function Terminal({
     pid,
     exitCode,
     reconnectAttempt,
+    sessions,
     connect,
     disconnect,
     sendInput,
     resize,
+    listSessions,
+    closeSession,
   } = useTerminal({
     wsUrl,
     cwd: projectPath,
+    sessionId,
+    sessionLabel,
+    sessionContext,
     autoReconnect: true,
     maxReconnectAttempts: 10,
     onOutput: handleOutput,
@@ -79,10 +108,34 @@ export function Terminal({
     onExit: handleExit,
     onError: handleError,
     onReconnecting: handleReconnecting,
+    onSessionCreated,
+    onReattached,
   });
 
+  // Expose sessions to parent via callback
   useEffect(() => {
-    if (!terminalRef.current) return;
+    onSessionsUpdated?.(sessions);
+  }, [sessions, onSessionsUpdated]);
+
+  // Expose methods to parent via ref
+  useEffect(() => {
+    if (handleRef) {
+      handleRef.current = {
+        connect,
+        disconnect,
+        listSessions,
+        closeSession,
+      };
+    }
+    return () => {
+      if (handleRef) {
+        handleRef.current = null;
+      }
+    };
+  }, [handleRef, connect, disconnect, listSessions, closeSession]);
+
+  useEffect(() => {
+    if (!terminalContainerRef.current) return;
 
     const term = new XTerm({
       cursorBlink: true,
@@ -121,7 +174,7 @@ export function Terminal({
     term.loadAddon(fitAddon);
     term.loadAddon(webLinksAddon);
 
-    term.open(terminalRef.current);
+    term.open(terminalContainerRef.current);
     fitAddon.fit();
 
     xtermRef.current = term;
@@ -161,7 +214,7 @@ export function Terminal({
     const resizeObserver = new ResizeObserver(() => {
       fitAddonRef.current?.fit();
     });
-    resizeObserver.observe(terminalRef.current);
+    resizeObserver.observe(terminalContainerRef.current);
 
     return () => {
       window.removeEventListener('resize', handleResize);
@@ -244,7 +297,7 @@ export function Terminal({
           )}
         </div>
       </div>
-      <div ref={terminalRef} className="flex-1 min-h-0" />
+      <div ref={terminalContainerRef} className="flex-1 min-h-0" />
       {showControls && (
         <TerminalControls
           onSendInput={sendInput}

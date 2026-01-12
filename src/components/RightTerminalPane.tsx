@@ -1,7 +1,15 @@
 'use client';
 
-import { useEffect, useState, useCallback, useSyncExternalStore } from 'react';
-import { Terminal } from '@/components/Terminal';
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useSyncExternalStore,
+  useRef,
+} from 'react';
+import { Terminal, type TerminalHandle } from '@/components/Terminal';
+import { SessionTabs } from '@/components/SessionTabs';
+import type { SessionInfo } from '@/hooks/use-terminal';
 import { Button } from '@/components/ui/button';
 import {
   ChevronLeft,
@@ -13,6 +21,7 @@ import { cn } from '@/lib/utils';
 
 const STORAGE_KEY_VISIBLE = 'ralph-terminal-visible';
 const STORAGE_KEY_WIDTH = 'ralph-terminal-width';
+const STORAGE_KEY_SESSION = 'ralph-terminal-session';
 const DEFAULT_WIDTH = 600;
 const MIN_WIDTH = 300;
 const MAX_WIDTH_RATIO = 0.7; // 70vw
@@ -136,6 +145,28 @@ export function useTerminalVisible(): boolean {
   );
 }
 
+function getStoredSession(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return localStorage.getItem(STORAGE_KEY_SESSION);
+  } catch {
+    return null;
+  }
+}
+
+function setStoredSession(sessionId: string | null): void {
+  if (typeof window === 'undefined') return;
+  try {
+    if (sessionId) {
+      localStorage.setItem(STORAGE_KEY_SESSION, sessionId);
+    } else {
+      localStorage.removeItem(STORAGE_KEY_SESSION);
+    }
+  } catch {
+    // localStorage unavailable
+  }
+}
+
 interface RightTerminalPaneProps {
   projectPath: string;
 }
@@ -158,9 +189,21 @@ export function RightTerminalPane({ projectPath }: RightTerminalPaneProps) {
   );
   const [isDragging, setIsDragging] = useState(false);
 
+  // Session state
+  const [sessions, setSessions] = useState<SessionInfo[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(() =>
+    getStoredSession(),
+  );
+  const terminalHandleRef = useRef<TerminalHandle | null>(null);
+
   const setWidth = (value: number) => {
     setWidthSnapshot(value);
   };
+
+  // Persist active session to localStorage
+  useEffect(() => {
+    setStoredSession(activeSessionId);
+  }, [activeSessionId]);
 
   // Keyboard shortcut: Cmd/Ctrl + `
   useEffect(() => {
@@ -204,6 +247,43 @@ export function RightTerminalPane({ projectPath }: RightTerminalPaneProps) {
 
   const toggleTerminal = () => setVisibility(!isVisible);
   const closeTerminal = () => setVisibility(false);
+
+  const handleSessionsUpdated = useCallback((newSessions: SessionInfo[]) => {
+    setSessions(newSessions);
+  }, []);
+
+  const handleSessionCreated = useCallback((sessionId: string) => {
+    setActiveSessionId(sessionId);
+    // Request updated session list
+    terminalHandleRef.current?.listSessions();
+  }, []);
+
+  const handleReattached = useCallback((sessionId: string) => {
+    setActiveSessionId(sessionId);
+    // Request updated session list
+    terminalHandleRef.current?.listSessions();
+  }, []);
+
+  const handleSelectSession = useCallback((sessionId: string) => {
+    setActiveSessionId(sessionId);
+  }, []);
+
+  const handleCloseSession = useCallback(
+    (sessionId: string) => {
+      terminalHandleRef.current?.closeSession(sessionId);
+      // If closing active session, switch to another
+      if (activeSessionId === sessionId) {
+        const remaining = sessions.filter((s) => s.id !== sessionId);
+        setActiveSessionId(remaining[0]?.id ?? null);
+      }
+    },
+    [activeSessionId, sessions],
+  );
+
+  const handleNewSession = useCallback(() => {
+    // Clear activeSessionId to trigger new session creation
+    setActiveSessionId(null);
+  }, []);
 
   if (!isVisible) {
     return (
@@ -271,9 +351,26 @@ export function RightTerminalPane({ projectPath }: RightTerminalPaneProps) {
           </div>
         </div>
 
+        {/* Session tabs */}
+        <SessionTabs
+          sessions={sessions}
+          activeSessionId={activeSessionId}
+          onSelectSession={handleSelectSession}
+          onCloseSession={handleCloseSession}
+          onNewSession={handleNewSession}
+        />
+
         {/* Terminal content */}
         <div className="flex-1 min-h-0">
-          <Terminal projectPath={projectPath} className="h-full" />
+          <Terminal
+            projectPath={projectPath}
+            sessionId={activeSessionId ?? undefined}
+            className="h-full"
+            handleRef={terminalHandleRef}
+            onSessionCreated={handleSessionCreated}
+            onReattached={handleReattached}
+            onSessionsUpdated={handleSessionsUpdated}
+          />
         </div>
       </div>
     </div>

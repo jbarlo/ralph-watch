@@ -9,7 +9,12 @@ import { QuickAddBar } from '@/components/QuickAddBar';
 import { ProgressViewer } from '@/components/ProgressViewer';
 import { DescriptionViewer } from '@/components/DescriptionViewer';
 import { ProcessOutputViewer } from '@/components/ProcessOutputViewer';
-import { Terminal as TerminalComponent } from '@/components/Terminal';
+import {
+  Terminal as TerminalComponent,
+  type TerminalHandle,
+} from '@/components/Terminal';
+import { SessionTabs } from '@/components/SessionTabs';
+import type { SessionInfo } from '@/hooks/use-terminal';
 import { EditTicketForm } from '@/components/EditTicketForm';
 import { DeleteTicketButton } from '@/components/DeleteTicketButton';
 import { BottomTabBar, type MobileTab } from '@/components/BottomTabBar';
@@ -51,6 +56,30 @@ const iconMap: Record<string, LucideIcon> = {
 function getIcon(iconName?: string): LucideIcon {
   if (!iconName) return Terminal;
   return iconMap[iconName.toLowerCase()] ?? Terminal;
+}
+
+const STORAGE_KEY_SESSION = 'ralph-terminal-session-mobile';
+
+function getStoredSession(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return localStorage.getItem(STORAGE_KEY_SESSION);
+  } catch {
+    return null;
+  }
+}
+
+function setStoredSession(sessionId: string | null): void {
+  if (typeof window === 'undefined') return;
+  try {
+    if (sessionId) {
+      localStorage.setItem(STORAGE_KEY_SESSION, sessionId);
+    } else {
+      localStorage.removeItem(STORAGE_KEY_SESSION);
+    }
+  } catch {
+    // localStorage unavailable
+  }
 }
 
 interface MobileTicketDetailProps {
@@ -172,6 +201,16 @@ export function MobileLayout() {
 
   // Terminal tab state
   const [isTerminalConnected, setIsTerminalConnected] = useState(false);
+  const [sessions, setSessions] = useState<SessionInfo[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(() =>
+    getStoredSession(),
+  );
+  const terminalHandleRef = useRef<TerminalHandle | null>(null);
+
+  // Persist active session to localStorage
+  useEffect(() => {
+    setStoredSession(activeSessionId);
+  }, [activeSessionId]);
 
   const { data: tickets } = trpc.tickets.list.useQuery();
   const configQuery = trpc.config.get.useQuery();
@@ -316,6 +355,40 @@ export function MobileLayout() {
   const handleBackToList = () => {
     setSelectedTicketId(null);
   };
+
+  // Session handlers for terminal tab
+  const handleSessionsUpdated = useCallback((newSessions: SessionInfo[]) => {
+    setSessions(newSessions);
+  }, []);
+
+  const handleSessionCreated = useCallback((sessionId: string) => {
+    setActiveSessionId(sessionId);
+    terminalHandleRef.current?.listSessions();
+  }, []);
+
+  const handleReattached = useCallback((sessionId: string) => {
+    setActiveSessionId(sessionId);
+    terminalHandleRef.current?.listSessions();
+  }, []);
+
+  const handleSelectSession = useCallback((sessionId: string) => {
+    setActiveSessionId(sessionId);
+  }, []);
+
+  const handleCloseSession = useCallback(
+    (sessionId: string) => {
+      terminalHandleRef.current?.closeSession(sessionId);
+      if (activeSessionId === sessionId) {
+        const remaining = sessions.filter((s) => s.id !== sessionId);
+        setActiveSessionId(remaining[0]?.id ?? null);
+      }
+    },
+    [activeSessionId, sessions],
+  );
+
+  const handleNewSession = useCallback(() => {
+    setActiveSessionId(null);
+  }, []);
 
   const getStatusText = () => {
     if (isStarting) return 'Starting...';
@@ -462,11 +535,23 @@ export function MobileLayout() {
 
       {activeTab === 'terminal' && (
         <div className="flex flex-1 flex-col overflow-hidden">
+          <SessionTabs
+            sessions={sessions}
+            activeSessionId={activeSessionId}
+            onSelectSession={handleSelectSession}
+            onCloseSession={handleCloseSession}
+            onNewSession={handleNewSession}
+          />
           <TerminalComponent
             projectPath={projectPath}
+            sessionId={activeSessionId ?? undefined}
             className="flex-1 min-h-0"
             showControls
             onConnectionChange={setIsTerminalConnected}
+            handleRef={terminalHandleRef}
+            onSessionCreated={handleSessionCreated}
+            onReattached={handleReattached}
+            onSessionsUpdated={handleSessionsUpdated}
           />
         </div>
       )}
