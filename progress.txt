@@ -669,3 +669,21 @@
 - Files modified: src/components/AddTicketForm.tsx, src/components/QuickAddBar.tsx
 - Files added: src/components/QuickAddBar.test.tsx
 - Verified: `pnpm check` passes (all 197 tests pass)
+
+## Ticket #49: Add dark mode configuration with system-default setting
+- Created src/hooks/use-theme.ts with theme management hook
+  - Theme options: 'light', 'dark', 'system' (respects prefers-color-scheme)
+  - Persists to localStorage under 'ralph-watch-theme' key
+  - Uses useSyncExternalStore for SSR-safe state management
+  - Listens to system theme changes when in 'system' mode
+- Created src/components/ThemeToggle.tsx dropdown component
+  - Uses shadcn dropdown-menu for selection UI
+  - Shows sun/moon icon based on resolved theme
+  - Options: Light, Dark, System with icons
+- Added inline script to src/app/layout.tsx for FOUC prevention
+  - Applies .dark class before React hydrates based on stored/system preference
+  - Uses suppressHydrationWarning on html element
+- Added ThemeToggle to both pages (project picker and project view)
+- Files added: src/hooks/use-theme.ts, src/components/ThemeToggle.tsx, src/components/ui/dropdown-menu.tsx
+- Files modified: src/app/layout.tsx, src/app/page.tsx, src/app/project/[path]/page.tsx
+- Verified: `pnpm check` passes (all 197 tests pass)
