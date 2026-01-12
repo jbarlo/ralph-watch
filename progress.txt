@@ -901,3 +901,17 @@
 - Files added: src/hooks/use-selected-ticket.ts
 - Files modified: src/app/project/[path]/page.tsx, src/components/MobileLayout.tsx
 - Verified: `pnpm check` passes (all 227 tests pass)
+
+## Ticket #64: Fix terminal pane layout - use fixed positioning
+- Bug: Terminal pane could be pushed off-screen when content above it was tall
+- Root cause: BottomTerminalPane was in document flow, not fixed to viewport
+- Fix: Changed visible terminal pane to use fixed positioning at viewport bottom
+- Added z-40 for proper stacking above content
+- Exported useTerminalHeight() hook to get current terminal height
+- Updated HomeContent in project page to add dynamic padding-bottom based on terminal height
+- When terminal is visible, content area shrinks by terminal height to prevent overlap
+- When terminal is hidden, content area uses full height
+- Also fixed pre-existing prettier error in scripts/terminal-server.ts
+- Files modified: src/components/BottomTerminalPane.tsx, src/app/project/[path]/page.tsx, scripts/terminal-server.ts
+- Verified: pnpm check passes (all 227 tests pass)
+

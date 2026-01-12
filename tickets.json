@@ -430,6 +430,13 @@
       "description": "move source of truth of selected ticket id to the route",
       "status": "completed",
       "priority": 11
+    },
+    {
+      "id": 64,
+      "title": "Fix terminal pane layout - use fixed positioning",
+      "description": "Bug: Terminal pane can be pushed off-screen when content above it is tall.\n\n## Problem\nBottomTerminalPane is in document flow, not fixed to viewport. When the main content + side panel are tall, the terminal pane renders below the fold and requires scrolling to see.\n\n## Fix\nChange terminal pane to use fixed positioning at viewport bottom:\n\n```tsx\n// When visible, use fixed positioning\nreturn (\n  <div \n    className=\"fixed bottom-0 left-0 right-0 border-t bg-background flex flex-col z-40\"\n    style={{ height }}\n  >\n    ...\n  </div>\n);\n```\n\nAlso need to add padding-bottom to main content area so it doesn't get hidden behind the terminal pane.\n\n## Alternative\nUse a proper panel layout library like react-resizable-panels that handles this correctly.\n\nRun pnpm check after.",
+      "status": "completed",
+      "priority": 5
     }
   ]
 }

@@ -68,6 +68,49 @@ function setVisibility(value: boolean): void {
   visibilityListeners.forEach((cb) => cb());
 }
 
+const heightListeners = new Set<() => void>();
+let heightSnapshot = getStoredHeight();
+
+function subscribeHeight(callback: () => void): () => void {
+  heightListeners.add(callback);
+  return () => heightListeners.delete(callback);
+}
+
+function getHeightSnapshot(): number {
+  return heightSnapshot;
+}
+
+function getHeightServerSnapshot(): number {
+  return DEFAULT_HEIGHT;
+}
+
+function setHeightSnapshot(value: number): void {
+  heightSnapshot = value;
+  try {
+    localStorage.setItem(STORAGE_KEY_HEIGHT, String(value));
+  } catch {
+    // localStorage unavailable
+  }
+  heightListeners.forEach((cb) => cb());
+}
+
+/**
+ * Hook to get current terminal pane height (for adding content padding)
+ */
+export function useTerminalHeight(): number {
+  const isVisible = useSyncExternalStore(
+    subscribeVisibility,
+    getVisibilitySnapshot,
+    getVisibilityServerSnapshot,
+  );
+  const height = useSyncExternalStore(
+    subscribeHeight,
+    getHeightSnapshot,
+    getHeightServerSnapshot,
+  );
+  return isVisible ? height : 0;
+}
+
 interface BottomTerminalPaneProps {
   projectPath: string;
 }
@@ -78,17 +121,16 @@ export function BottomTerminalPane({ projectPath }: BottomTerminalPaneProps) {
     getVisibilitySnapshot,
     getVisibilityServerSnapshot,
   );
-  const [height, setHeight] = useState(getStoredHeight);
+  const height = useSyncExternalStore(
+    subscribeHeight,
+    getHeightSnapshot,
+    getHeightServerSnapshot,
+  );
   const [isDragging, setIsDragging] = useState(false);
 
-  // Persist height
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY_HEIGHT, String(height));
-    } catch {
-      // localStorage unavailable
-    }
-  }, [height]);
+  const setHeight = (value: number) => {
+    setHeightSnapshot(value);
+  };
 
   // Keyboard shortcut: Cmd/Ctrl + `
   useEffect(() => {
@@ -150,7 +192,10 @@ export function BottomTerminalPane({ projectPath }: BottomTerminalPaneProps) {
   }
 
   return (
-    <div className="border-t bg-background flex flex-col" style={{ height }}>
+    <div
+      className="fixed bottom-0 left-0 right-0 border-t bg-background flex flex-col z-40"
+      style={{ height }}
+    >
       {/* Drag handle */}
       <div
         className={cn(

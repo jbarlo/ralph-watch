@@ -1,18 +1,26 @@
 #!/usr/bin/env npx tsx
-import {
-  createTerminalServer,
-  getTerminalPort,
-} from '../src/server/services/terminal-server';
+import { config } from 'dotenv';
+import { resolve } from 'path';
 
-const port = getTerminalPort();
-createTerminalServer(port);
+// Load .env.local like Next.js does (must happen before importing terminal-server)
+config({ path: resolve(process.cwd(), '.env.local') });
+config({ path: resolve(process.cwd(), '.env') });
 
-process.on('SIGINT', () => {
-  console.log('\nShutting down terminal server...');
-  process.exit(0);
-});
+// Dynamic import to ensure env is loaded first
+(async () => {
+  const { createTerminalServer, getTerminalPort } =
+    await import('../src/server/services/terminal-server');
 
-process.on('SIGTERM', () => {
-  console.log('\nShutting down terminal server...');
-  process.exit(0);
-});
+  const port = getTerminalPort();
+  createTerminalServer(port);
+
+  process.on('SIGINT', () => {
+    console.log('\nShutting down terminal server...');
+    process.exit(0);
+  });
+
+  process.on('SIGTERM', () => {
+    console.log('\nShutting down terminal server...');
+    process.exit(0);
+  });
+})();

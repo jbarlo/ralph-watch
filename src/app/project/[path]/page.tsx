@@ -29,6 +29,7 @@ import Link from 'next/link';
 import {
   BottomTerminalPane,
   TerminalToggleButton,
+  useTerminalHeight,
 } from '@/components/BottomTerminalPane';
 
 /**
@@ -292,6 +293,7 @@ function DesktopProjectContent() {
 function HomeContent() {
   const isMobile = useIsMobile();
   const projectPath = useProjectPath();
+  const terminalHeight = useTerminalHeight();
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -299,15 +301,20 @@ function HomeContent() {
       {isMobile ? (
         <MobileLayout />
       ) : (
-        <div className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex flex-1 overflow-hidden">
-            <div className="flex flex-1 flex-col overflow-hidden">
-              <DesktopProjectContent />
+        <>
+          <div
+            className="flex flex-1 flex-col overflow-hidden"
+            style={{ paddingBottom: terminalHeight }}
+          >
+            <div className="flex flex-1 overflow-hidden">
+              <div className="flex flex-1 flex-col overflow-hidden">
+                <DesktopProjectContent />
+              </div>
+              <RalphSidePanel />
             </div>
-            <RalphSidePanel />
           </div>
           <BottomTerminalPane projectPath={projectPath} />
-        </div>
+        </>
       )}
     </div>
   );
