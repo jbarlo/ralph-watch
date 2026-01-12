@@ -759,3 +759,14 @@
 - Files modified: package.json, tailwind.config.ts, src/app/project/[path]/page.tsx, src/components/MobileLayout.tsx, src/components/TicketList.tsx
 - Verified: `pnpm check` passes (all 225 tests pass)
 
+## Ticket #54: add a new "Incomplete" tab that displays draft, pending, and In Progress tickets, and make that the default
+- Added 'incomplete' to TicketStatus type in src/components/TicketFilter.tsx
+- Added Incomplete option to STATUS_OPTIONS (placed first in list for prominence)
+- Updated isValidTicketStatus to recognize 'incomplete' as valid status
+- Updated TicketList filtering logic to handle 'incomplete' filter
+  - Returns tickets where status is 'draft', 'pending', or 'in_progress'
+- Changed default filter from 'all' to 'incomplete' in useTicketFilter hook
+- URL param logic updated: 'incomplete' is omitted from URL (default), others are included
+- Files modified: src/components/TicketFilter.tsx, src/components/TicketList.tsx, src/hooks/use-ticket-filter.ts
+- Verified: `pnpm check` passes (all 225 tests pass)
+

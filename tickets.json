@@ -369,7 +369,7 @@
     {
       "id": 54,
       "title": "add a new \"Incomplete\" tab that displays draft, pending, and In Progress tickets, and make that the default",
-      "status": "pending",
+      "status": "completed",
       "priority": 2
     },
     {
