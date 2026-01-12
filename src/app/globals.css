@@ -43,16 +43,17 @@
     --chart-5: 266 85% 58%;
 
     /* Semantic status colors (Catppuccin Latte) */
-    --status-draft: 233 10% 47%;
-    --status-draft-foreground: 234 16% 35%;
-    --status-pending: 35 77% 49%;
-    --status-pending-foreground: 35 80% 30%;
-    --status-in-progress: 220 91% 54%;
-    --status-in-progress-foreground: 220 91% 40%;
-    --status-completed: 109 58% 40%;
-    --status-completed-foreground: 109 58% 28%;
-    --status-failed: 347 87% 44%;
-    --status-failed-foreground: 347 87% 35%;
+    /* badge-bg: the semantic color, badge-fg: readable foreground */
+    --status-draft-bg: 233 10% 80%;
+    --status-draft-fg: 233 10% 30%;
+    --status-pending-bg: 35 77% 75%;
+    --status-pending-fg: 35 80% 25%;
+    --status-in-progress-bg: 220 91% 75%;
+    --status-in-progress-fg: 220 91% 30%;
+    --status-completed-bg: 109 58% 75%;
+    --status-completed-fg: 109 58% 25%;
+    --status-failed-bg: 347 87% 80%;
+    --status-failed-fg: 347 87% 30%;
 
     --radius: 0.5rem;
   }
@@ -95,16 +96,17 @@
     --chart-5: 267 84% 81%;
 
     /* Semantic status colors (Catppuccin Mocha) */
-    --status-draft: 228 24% 72%;
-    --status-draft-foreground: 228 24% 80%;
-    --status-pending: 41 86% 83%;
-    --status-pending-foreground: 41 86% 90%;
-    --status-in-progress: 217 92% 76%;
-    --status-in-progress-foreground: 217 92% 85%;
-    --status-completed: 115 54% 76%;
-    --status-completed-foreground: 115 54% 85%;
-    --status-failed: 343 81% 75%;
-    --status-failed-foreground: 343 81% 85%;
+    /* badge-bg: the semantic color, badge-fg: readable foreground */
+    --status-draft-bg: 228 24% 30%;
+    --status-draft-fg: 228 24% 85%;
+    --status-pending-bg: 41 86% 35%;
+    --status-pending-fg: 41 86% 90%;
+    --status-in-progress-bg: 217 92% 35%;
+    --status-in-progress-fg: 217 92% 90%;
+    --status-completed-bg: 115 54% 30%;
+    --status-completed-fg: 115 54% 90%;
+    --status-failed-bg: 343 81% 35%;
+    --status-failed-fg: 343 81% 90%;
   }
 }
 

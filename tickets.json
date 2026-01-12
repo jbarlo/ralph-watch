@@ -462,15 +462,29 @@
     {
       "id": 68,
       "title": "give ticket status badge semantic colours. ensure badge colour logic is centralized and used both in sidebar and ticket description",
+      "description": "the badges should use catppuccin theme colours if not already specified in the tailwind config. the background colour should be the semantic colour, while the foreground colour is still readable\n\nthis is a resubmission of a previous ticket since it wasn't resolved",
       "status": "completed",
-      "priority": 111,
-      "description": "the badges should use catppuccin theme colours if not already specified in the tailwind config. the background colour should be the semantic colour, while the foreground colour is still readable"
+      "priority": 111
     },
     {
       "id": 69,
       "title": "make the ralph control pane and the ticket sidebars resizeable",
       "status": "completed",
       "priority": 111
+    },
+    {
+      "id": 70,
+      "title": "bug: the ralph controls sidepane doesn't actually resize",
+      "description": "this is a hard thing to make an integration test for, so can skip making that",
+      "status": "pending",
+      "priority": 11111
+    },
+    {
+      "id": 71,
+      "title": "Mobile terminal support - add Terminal tab to bottom bar",
+      "description": "Terminal is not accessible on mobile. Add as a tab in the bottom navigation bar.\n\n## Current State\n- Desktop: Terminal in right pane, toggle with Ctrl+`\n- Mobile: No access to terminal at all\n\n## Implementation\n\n### 1. Add Terminal tab to BottomTabBar\n- Add 4th tab: Tickets | Progress | Run | Terminal\n- Icon: TerminalIcon from lucide\n\n### 2. Update MobileLayout\n- Add 'terminal' to tab state type\n- Render Terminal component when terminal tab active\n- Terminal should be full-height in mobile view\n\n### 3. Auto-connect behavior\n- On mobile, maybe auto-connect when switching to terminal tab?\n- Or keep manual connect for battery/data savings\n\n### 4. Touch considerations\n- Terminal text might be small - consider larger font on mobile\n- Keyboard handling - iOS/Android virtual keyboards\n- May need viewport adjustments when keyboard appears\n\n## Files\n- src/components/BottomTabBar.tsx - add Terminal tab\n- src/components/MobileLayout.tsx - add terminal view\n- src/components/Terminal.tsx - maybe mobile-specific props\n\nRun pnpm check after.",
+      "status": "pending",
+      "priority": 10
     }
   ]
 }
