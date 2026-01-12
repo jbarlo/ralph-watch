@@ -55,6 +55,14 @@ export function QuickAddBar({ className }: QuickAddBarProps) {
     inputRef.current?.focus();
   }, []);
 
+  const [expandedTitle, setExpandedTitle] = useState('');
+
+  const handleExpand = useCallback(() => {
+    setExpandedTitle(title);
+    setTitle('');
+    setIsExpanded(true);
+  }, [title]);
+
   if (isExpanded) {
     return (
       <div className={cn('rounded-lg border bg-card p-4', className)}>
@@ -69,7 +77,10 @@ export function QuickAddBar({ className }: QuickAddBarProps) {
             <ChevronUp className="h-4 w-4" />
           </Button>
         </div>
-        <AddTicketForm onSuccess={handleExpandedFormSuccess} />
+        <AddTicketForm
+          onSuccess={handleExpandedFormSuccess}
+          defaultTitle={expandedTitle}
+        />
       </div>
     );
   }
@@ -95,7 +106,7 @@ export function QuickAddBar({ className }: QuickAddBarProps) {
       <Button
         variant="outline"
         size="icon"
-        onClick={() => setIsExpanded(true)}
+        onClick={handleExpand}
         title="Expand full form"
         className="h-11 w-11 md:h-9 md:w-9"
       >

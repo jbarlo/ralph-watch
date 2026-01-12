@@ -10,13 +10,15 @@ import { useToast } from '@/hooks/use-toast';
 export interface AddTicketFormProps {
   onSuccess?: () => void;
   defaultStatus?: 'draft' | 'pending';
+  defaultTitle?: string;
 }
 
 export function AddTicketForm({
   onSuccess,
   defaultStatus = 'pending',
+  defaultTitle = '',
 }: AddTicketFormProps) {
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState(defaultTitle);
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<number>(1);
   const [status, setStatus] = useState<'draft' | 'pending'>(defaultStatus);
