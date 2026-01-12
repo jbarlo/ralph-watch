@@ -71,19 +71,11 @@ function TicketCard({
           </div>
         </div>
       </CardHeader>
-      {(ticket.priority !== undefined ||
-        (isSelected && ticket.description)) && (
+      {ticket.priority !== undefined && (
         <CardContent className="pt-0 px-3 md:px-4 pb-3">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            {ticket.priority !== undefined && (
-              <span>Priority: {ticket.priority}</span>
-            )}
+            <span>Priority: {ticket.priority}</span>
           </div>
-          {isSelected && ticket.description && (
-            <p className="mt-2 text-sm text-muted-foreground">
-              {ticket.description}
-            </p>
-          )}
         </CardContent>
       )}
     </Card>

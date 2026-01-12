@@ -7,6 +7,7 @@ import { TicketList } from '@/components/TicketList';
 import { TicketFilter, type TicketStatus } from '@/components/TicketFilter';
 import { QuickAddBar } from '@/components/QuickAddBar';
 import { ProgressViewer } from '@/components/ProgressViewer';
+import { DescriptionViewer } from '@/components/DescriptionViewer';
 import { ProcessOutputViewer } from '@/components/ProcessOutputViewer';
 import { EditTicketForm } from '@/components/EditTicketForm';
 import { DeleteTicketButton } from '@/components/DeleteTicketButton';
@@ -118,11 +119,12 @@ function MobileTicketDetail({
             </div>
           )}
           {ticket.description && (
-            <div className="space-y-1">
+            <div className="space-y-2">
               <span className="text-sm font-medium">Description:</span>
-              <p className="text-sm text-muted-foreground">
-                {ticket.description}
-              </p>
+              <DescriptionViewer
+                content={ticket.description}
+                className="prose prose-sm dark:prose-invert max-w-none"
+              />
             </div>
           )}
           <div className="flex gap-2 pt-2">

@@ -363,8 +363,20 @@
     {
       "id": 53,
       "title": "use streamdown library to display description block in main pane, not in ticket view",
-      "status": "pending",
+      "status": "in_progress",
       "priority": 1
+    },
+    {
+      "id": 54,
+      "title": "add a new \"Incomplete\" tab that displays draft, pending, and In Progress tickets, and make that the default",
+      "status": "pending",
+      "priority": 2
+    },
+    {
+      "id": 55,
+      "title": "use streamdown on the progress log display",
+      "status": "pending",
+      "priority": 12
     }
   ]
 }
