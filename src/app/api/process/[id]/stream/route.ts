@@ -4,8 +4,7 @@
  */
 
 import { getProcessRunner } from '@/server/services/process-runner';
-import { isExited, type ProcessRunner } from '@/lib/process-runner';
-import type { ProcessOutputLine } from '@/lib/process-runner';
+import type { ProcessRunner, ProcessOutputLine } from '@/lib/process-runner';
 
 /**
  * Event types for process output streaming
@@ -48,8 +47,8 @@ export async function GET(
   }
 
   const encoder = new TextEncoder();
-  let unsubscribe: (() => void) | null = null;
-  let checkInterval: ReturnType<typeof setInterval> | null = null;
+  let unsubscribeOutput: (() => void) | null = null;
+  let unsubscribeExit: (() => void) | null = null;
 
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
@@ -62,7 +61,7 @@ export async function GET(
       );
       controller.enqueue(encoder.encode(connectMessage));
 
-      unsubscribe = runner.onOutput(id, (line: ProcessOutputLine) => {
+      unsubscribeOutput = runner.onOutput(id, (line: ProcessOutputLine) => {
         try {
           const outputMessage = formatSSE('output', JSON.stringify(line));
           controller.enqueue(encoder.encode(outputMessage));
@@ -71,57 +70,33 @@ export async function GET(
         }
       });
 
-      checkInterval = setInterval(() => {
-        const currentStatus = runner.getStatus(id);
-        if (isExited(currentStatus)) {
-          try {
-            const exitMessage = formatSSE(
-              'exit',
-              JSON.stringify({ code: currentStatus.code }),
-            );
-            controller.enqueue(encoder.encode(exitMessage));
-            controller.close();
-          } catch {
-            // Already closed
-          }
-
-          if (checkInterval) {
-            clearInterval(checkInterval);
-            checkInterval = null;
-          }
-          if (unsubscribe) {
-            unsubscribe();
-            unsubscribe = null;
-          }
+      unsubscribeExit = runner.onExit(id, (code: number | null) => {
+        try {
+          const exitMessage = formatSSE('exit', JSON.stringify({ code }));
+          controller.enqueue(encoder.encode(exitMessage));
+          controller.close();
+        } catch {
+          // Already closed
         }
-      }, 100);
 
-      if (isExited(status)) {
-        const exitMessage = formatSSE(
-          'exit',
-          JSON.stringify({ code: status.code }),
-        );
-        controller.enqueue(encoder.encode(exitMessage));
-        controller.close();
-
-        if (checkInterval) {
-          clearInterval(checkInterval);
-          checkInterval = null;
+        if (unsubscribeOutput) {
+          unsubscribeOutput();
+          unsubscribeOutput = null;
         }
-        if (unsubscribe) {
-          unsubscribe();
-          unsubscribe = null;
+        if (unsubscribeExit) {
+          unsubscribeExit();
+          unsubscribeExit = null;
         }
-      }
+      });
     },
     cancel() {
-      if (checkInterval) {
-        clearInterval(checkInterval);
-        checkInterval = null;
+      if (unsubscribeOutput) {
+        unsubscribeOutput();
+        unsubscribeOutput = null;
       }
-      if (unsubscribe) {
-        unsubscribe();
-        unsubscribe = null;
+      if (unsubscribeExit) {
+        unsubscribeExit();
+        unsubscribeExit = null;
       }
     },
   });

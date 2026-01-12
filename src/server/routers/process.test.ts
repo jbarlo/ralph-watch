@@ -34,6 +34,7 @@ function createMockRunner(mocks: {
   kill?: (id: string) => ReturnType<ProcessRunner['kill']>;
   listRunning?: () => ProcessHandle[];
   onOutput?: ProcessRunner['onOutput'];
+  onExit?: ProcessRunner['onExit'];
 }): ProcessRunner {
   return {
     start: mocks.start ?? (async () => ok({ id: 'mock-id', pid: 12345 })),
@@ -41,6 +42,7 @@ function createMockRunner(mocks: {
     kill: mocks.kill ?? (async () => ok(undefined)),
     listRunning: mocks.listRunning ?? (() => []),
     onOutput: mocks.onOutput ?? (() => () => {}),
+    onExit: mocks.onExit ?? (() => () => {}),
   };
 }
 

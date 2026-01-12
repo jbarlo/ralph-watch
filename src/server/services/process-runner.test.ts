@@ -294,6 +294,123 @@ describe('ProcessRunner', () => {
     });
   });
 
+  describe('onExit', () => {
+    it('should call callback when process exits', async () => {
+      const result = await runner.start({
+        command: 'echo done',
+        cwd: process.cwd(),
+      });
+
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        const exitCodes: Array<number | null> = [];
+        runner.onExit(result.value.id, (code) => {
+          exitCodes.push(code);
+        });
+
+        // Wait for process to exit
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        expect(exitCodes).toEqual([0]);
+      }
+    });
+
+    it('should pass exit code to callback', async () => {
+      const result = await runner.start({
+        command: 'exit 42',
+        cwd: process.cwd(),
+      });
+
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        const exitCodes: Array<number | null> = [];
+        runner.onExit(result.value.id, (code) => {
+          exitCodes.push(code);
+        });
+
+        // Wait for process to exit
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        expect(exitCodes).toEqual([42]);
+      }
+    });
+
+    it('should call callback immediately if process already exited', async () => {
+      const result = await runner.start({
+        command: 'echo done',
+        cwd: process.cwd(),
+      });
+
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        // Wait for process to exit first
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Now subscribe - should get immediate callback
+        const exitCodes: Array<number | null> = [];
+        runner.onExit(result.value.id, (code) => {
+          exitCodes.push(code);
+        });
+
+        // Should have been called synchronously
+        expect(exitCodes).toEqual([0]);
+      }
+    });
+
+    it('should return unsubscribe function', async () => {
+      const result = await runner.start({
+        command: 'sleep 0.2',
+        cwd: process.cwd(),
+      });
+
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        const exitCodes: Array<number | null> = [];
+        const unsubscribe = runner.onExit(result.value.id, (code) => {
+          exitCodes.push(code);
+        });
+
+        // Unsubscribe immediately
+        unsubscribe();
+
+        // Wait for process to exit
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        // Should not have received the callback
+        expect(exitCodes).toEqual([]);
+      }
+    });
+
+    it('should return noop for unknown process', () => {
+      const unsubscribe = runner.onExit('unknown-id', () => {});
+      expect(typeof unsubscribe).toBe('function');
+      // Should not throw
+      unsubscribe();
+    });
+
+    it('should support multiple exit subscribers', async () => {
+      const result = await runner.start({
+        command: 'echo done',
+        cwd: process.cwd(),
+      });
+
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        const calls1: Array<number | null> = [];
+        const calls2: Array<number | null> = [];
+
+        runner.onExit(result.value.id, (code) => calls1.push(code));
+        runner.onExit(result.value.id, (code) => calls2.push(code));
+
+        // Wait for process to exit
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        expect(calls1).toEqual([0]);
+        expect(calls2).toEqual([0]);
+      }
+    });
+  });
+
   describe('listRunning', () => {
     it('should return empty array when no processes', () => {
       const running = runner.listRunning();

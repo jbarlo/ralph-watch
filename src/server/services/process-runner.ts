@@ -24,6 +24,7 @@ interface ProcessRecord {
   exitCode: number | null;
   exited: boolean;
   outputCallbacks: Set<(line: ProcessOutputLine) => void>;
+  exitCallbacks: Set<(code: number | null) => void>;
 }
 
 function pushOutputLine(record: ProcessRecord, line: ProcessOutputLine): void {
@@ -113,6 +114,7 @@ export function createProcessRunner(): ProcessRunner {
           exitCode: null,
           exited: false,
           outputCallbacks: new Set(),
+          exitCallbacks: new Set(),
         };
 
         processes.set(id, record);
@@ -146,6 +148,7 @@ export function createProcessRunner(): ProcessRunner {
         child.on('exit', (code) => {
           record.exited = true;
           record.exitCode = code;
+          record.exitCallbacks.forEach((cb) => cb(code));
         });
 
         child.on('error', (error) => {
@@ -224,6 +227,24 @@ export function createProcessRunner(): ProcessRunner {
     };
   }
 
+  function onExit(id: string, cb: (code: number | null) => void): () => void {
+    const record = processes.get(id);
+    if (!record) {
+      return () => {};
+    }
+
+    if (record.exited) {
+      cb(record.exitCode);
+      return () => {};
+    }
+
+    record.exitCallbacks.add(cb);
+
+    return () => {
+      record.exitCallbacks.delete(cb);
+    };
+  }
+
   function listRunning(): ProcessHandle[] {
     const running: ProcessHandle[] = [];
     processes.forEach((record) => {
@@ -239,6 +260,7 @@ export function createProcessRunner(): ProcessRunner {
     getStatus,
     kill,
     onOutput,
+    onExit,
     listRunning,
   };
 }

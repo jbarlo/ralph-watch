@@ -67,6 +67,14 @@ export interface ProcessRunner {
   onOutput(id: string, cb: (line: ProcessOutputLine) => void): () => void;
 
   /**
+   * Subscribe to process exit event.
+   * Returns an unsubscribe function.
+   * Callback is called once when process exits, with exit code.
+   * If process already exited, callback is called immediately.
+   */
+  onExit(id: string, cb: (code: number | null) => void): () => void;
+
+  /**
    * List all currently running processes.
    */
   listRunning(): ProcessHandle[];

@@ -503,3 +503,16 @@
 - Updated all three output push locations (stdout, stderr, error handlers) to use helper
 - Files modified: src/server/services/process-runner.ts
 - Verified: `pnpm check` passes (all 203 tests pass)
+
+## Ticket #41: Add onExit callback to ProcessRunner
+- Added onExit(id, callback) to ProcessRunner interface in src/lib/process-runner.ts
+- Callback called once when process exits with exit code, or immediately if already exited
+- Added exitCallbacks Set to ProcessRecord in implementation
+- Implemented onExit() with immediate callback for already-exited processes and unsubscribe support
+- Fire exit callbacks from child.on('exit') event handler
+- Updated SSE endpoint /api/process/[id]/stream to use onExit instead of setInterval polling
+- Removed wasteful 100ms polling loop, replaced with event-driven exit notification
+- Added 6 new tests for onExit functionality (callback timing, exit codes, unsubscribe, multiple subscribers)
+- Updated mock ProcessRunner in process.test.ts to include onExit
+- Files modified: src/lib/process-runner.ts, src/server/services/process-runner.ts, src/app/api/process/[id]/stream/route.ts, src/server/routers/process.test.ts, src/server/services/process-runner.test.ts
+- Verified: `pnpm check` passes (all 209 tests pass)

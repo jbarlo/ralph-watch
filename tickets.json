@@ -284,7 +284,7 @@
       "id": 41,
       "title": "Add onExit callback to ProcessRunner",
       "description": "SSE endpoint polls every 100ms for process exit - wasteful. Fix: Add onExit(id, callback) to ProcessRunner interface. Store exit callbacks in Map, fire from child.on('exit'). Update /api/process/[id]/stream to use onExit instead of setInterval. Run pnpm check after.",
-      "status": "pending",
+      "status": "completed",
       "priority": 5
     },
     {
