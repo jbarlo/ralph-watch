@@ -31,7 +31,7 @@ export function formatStatus(status: string): string {
   return status.replace(/_/g, ' ');
 }
 
-export interface RiffTicketContext {
+export interface TicketContext {
   id: number;
   title: string;
   status: string;
@@ -39,37 +39,14 @@ export interface RiffTicketContext {
   description?: string;
 }
 
-export interface RiffOnTicketEventDetail {
-  ticketId: number;
-  label: string;
-  context: string;
-}
-
 /**
- * Dispatch a riff-on-ticket event to open a Claude terminal session with ticket context.
+ * Format ticket context for display or clipboard.
  */
-export function dispatchRiffOnTicket(ticket: RiffTicketContext): void {
-  const detail: RiffOnTicketEventDetail = {
-    ticketId: ticket.id,
-    label: `Ticket #${ticket.id}`,
-    context: formatTicketContext(ticket),
-  };
-  window.dispatchEvent(new CustomEvent('riff-on-ticket', { detail }));
-}
-
-/**
- * Format ticket context for Claude terminal session.
- * Creates a prompt string that provides Claude with ticket context.
- */
-export function formatTicketContext(ticket: RiffTicketContext): string {
-  return `I want to discuss this ticket with you:
-
-Ticket #${ticket.id}: ${ticket.title}
+export function formatTicketContext(ticket: TicketContext): string {
+  return `Ticket #${ticket.id}: ${ticket.title}
 Status: ${ticket.status}
 Priority: ${ticket.priority ?? 'none'}
 
 Description:
-${ticket.description ?? '(no description)'}
-
-Help me think through this task.`;
+${ticket.description ?? '(no description)'}`;
 }

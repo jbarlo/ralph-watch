@@ -19,18 +19,14 @@ import { useSelectedTicket } from '@/hooks/use-selected-ticket';
 import { useResizablePanel } from '@/hooks/use-resizable-panel';
 import { ResizableHandle } from '@/components/ResizableHandle';
 import { deriveProjectName } from '@/lib/recent-projects';
-import {
-  getStatusBadgeClass,
-  formatStatus,
-  dispatchRiffOnTicket,
-} from '@/lib/ticket-ui';
+import { getStatusBadgeClass, formatStatus } from '@/lib/ticket-ui';
 import { encodeProjectPath } from '@/lib/project-path';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { FileText, MessageSquare } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import Link from 'next/link';
 import {
   RightTerminalPane,
@@ -169,15 +165,6 @@ function DetailPanel({
                 ticketTitle={ticket.title}
                 onSuccess={onTicketDeleted}
               />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => dispatchRiffOnTicket(ticket)}
-                title="Open Claude terminal with ticket context"
-              >
-                <MessageSquare className="h-4 w-4 mr-1" />
-                Riff
-              </Button>
             </div>
           </div>
         </CardHeader>
