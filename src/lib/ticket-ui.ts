@@ -40,9 +40,9 @@ export interface TicketContext {
 }
 
 /**
- * Format ticket context for display or clipboard.
+ * Format ticket for clipboard copy.
  */
-export function formatTicketContext(ticket: TicketContext): string {
+export function formatTicketForClipboard(ticket: TicketContext): string {
   return `Ticket #${ticket.id}: ${ticket.title}
 Status: ${ticket.status}
 Priority: ${ticket.priority ?? 'none'}
@@ -50,3 +50,10 @@ Priority: ${ticket.priority ?? 'none'}
 Description:
 ${ticket.description ?? '(no description)'}`;
 }
+
+export const REFINE_PROMPT = `
+
+Help me refine this ticket:
+- Is the scope clear?
+- Are there edge cases?
+- What acceptance criteria should we add?`;

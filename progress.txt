@@ -1209,3 +1209,15 @@
 - Files deleted: src/components/SessionTabs.tsx, src/components/SessionTabs.test.tsx
 - Files modified: src/components/RightTerminalPane.tsx, src/components/MobileLayout.tsx, src/hooks/use-terminal.ts, src/components/Terminal.tsx, src/lib/ticket-ui.ts, src/app/project/[path]/page.tsx
 - Verified: `pnpm check` passes (228 tests)
+
+## Ticket #84: Add ticket copy buttons to DetailPanel
+- Renamed formatTicketContext → formatTicketForClipboard in src/lib/ticket-ui.ts
+- Added REFINE_PROMPT constant with ticket refinement prompt text
+- Added two copy buttons to DetailPanel header in src/app/project/[path]/page.tsx:
+  - Copy icon button: copies formatted ticket to clipboard
+  - Sparkles icon button: copies ticket + refinement prompt to clipboard
+- Both buttons use clipboard API with toast feedback on copy
+- Imported Copy and Sparkles icons from lucide-react
+- Imported useToast hook for toast notifications
+- Files modified: src/lib/ticket-ui.ts, src/app/project/[path]/page.tsx
+- Verified: `pnpm check` passes (228 tests)

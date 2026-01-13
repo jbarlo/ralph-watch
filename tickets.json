@@ -570,7 +570,7 @@
       "id": 84,
       "title": "Add ticket copy buttons to DetailPanel",
       "description": "Add copy-to-clipboard buttons for ticket info.\n\n## UI\nIn DetailPanel header, add two buttons:\n- Copy icon button: copies formatted ticket\n- Copy + sparkle icon: copies ticket + refinement prompt\n\n## Copy format\n```\nTicket #42: Fix login bug\nStatus: pending\nPriority: 1\n\nDescription:\n[description text]\n```\n\n## Refinement prompt suffix\n```\n\nHelp me refine this ticket:\n- Is the scope clear?\n- Are there edge cases?\n- What acceptance criteria should we add?\n```\n\n## Implementation\n- Rename formatTicketContext → formatTicketForClipboard in ticket-ui.ts\n- Add REFINE_PROMPT constant\n- Add buttons to DetailPanel with clipboard API + toast feedback\n\nRun pnpm check after.",
-      "status": "pending",
+      "status": "completed",
       "priority": 2
     }
   ]

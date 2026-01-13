@@ -19,14 +19,20 @@ import { useSelectedTicket } from '@/hooks/use-selected-ticket';
 import { useResizablePanel } from '@/hooks/use-resizable-panel';
 import { ResizableHandle } from '@/components/ResizableHandle';
 import { deriveProjectName } from '@/lib/recent-projects';
-import { getStatusBadgeClass, formatStatus } from '@/lib/ticket-ui';
+import {
+  getStatusBadgeClass,
+  formatStatus,
+  formatTicketForClipboard,
+  REFINE_PROMPT,
+} from '@/lib/ticket-ui';
+import { useToast } from '@/hooks/use-toast';
 import { encodeProjectPath } from '@/lib/project-path';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { FileText } from 'lucide-react';
+import { FileText, Copy, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import {
   RightTerminalPane,
@@ -91,10 +97,31 @@ function DetailPanel({
   onTicketDeleted,
 }: DetailPanelProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const { toast } = useToast();
 
   const handleEditSuccess = () => {
     setIsEditing(false);
     onTicketUpdated?.();
+  };
+
+  const handleCopyTicket = async () => {
+    if (!ticket) return;
+    const text = formatTicketForClipboard(ticket);
+    await navigator.clipboard.writeText(text);
+    toast({
+      title: 'Copied to clipboard',
+      description: `Ticket #${ticket.id} copied`,
+    });
+  };
+
+  const handleCopyWithRefine = async () => {
+    if (!ticket) return;
+    const text = formatTicketForClipboard(ticket) + REFINE_PROMPT;
+    await navigator.clipboard.writeText(text);
+    toast({
+      title: 'Copied with refinement prompt',
+      description: `Ticket #${ticket.id} + refinement prompt copied`,
+    });
   };
 
   if (!ticket) {
@@ -153,6 +180,24 @@ function DetailPanel({
               >
                 {formatStatus(ticket.status)}
               </Badge>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleCopyTicket}
+                title="Copy ticket to clipboard"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleCopyWithRefine}
+                title="Copy ticket with refinement prompt"
+              >
+                <Sparkles className="h-4 w-4" />
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
