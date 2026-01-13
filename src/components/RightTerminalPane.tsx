@@ -18,6 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { RiffOnTicketEventDetail } from '@/lib/ticket-ui';
 
 const STORAGE_KEY_VISIBLE = 'ralph-terminal-visible';
 const STORAGE_KEY_WIDTH = 'ralph-terminal-width';
@@ -196,6 +197,13 @@ export function RightTerminalPane({ projectPath }: RightTerminalPaneProps) {
   );
   const terminalHandleRef = useRef<TerminalHandle | null>(null);
 
+  // Riff session state - for creating sessions with ticket context
+  const [pendingRiffSession, setPendingRiffSession] = useState<{
+    label: string;
+    context: string;
+    ticketId: number;
+  } | null>(null);
+
   const setWidth = (value: number) => {
     setWidthSnapshot(value);
   };
@@ -216,6 +224,37 @@ export function RightTerminalPane({ projectPath }: RightTerminalPaneProps) {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Listen for riff-on-ticket events
+  useEffect(() => {
+    const handleRiffOnTicket = (e: CustomEvent<RiffOnTicketEventDetail>) => {
+      const { ticketId, label, context } = e.detail;
+
+      // Check if session with same ticket already exists
+      const existingSession = sessions.find((s) => s.label === label);
+      if (existingSession) {
+        // Switch to existing session
+        setActiveSessionId(existingSession.id);
+        setVisibility(true);
+        return;
+      }
+
+      // Open terminal and create new session with context
+      setVisibility(true);
+      setPendingRiffSession({ ticketId, label, context });
+      setActiveSessionId(null); // Clear to create new session
+    };
+
+    window.addEventListener(
+      'riff-on-ticket',
+      handleRiffOnTicket as EventListener,
+    );
+    return () =>
+      window.removeEventListener(
+        'riff-on-ticket',
+        handleRiffOnTicket as EventListener,
+      );
+  }, [sessions]);
 
   // Drag resize handling
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -254,6 +293,8 @@ export function RightTerminalPane({ projectPath }: RightTerminalPaneProps) {
 
   const handleSessionCreated = useCallback((sessionId: string) => {
     setActiveSessionId(sessionId);
+    // Clear pending riff session after it's been used
+    setPendingRiffSession(null);
     // Request updated session list
     terminalHandleRef.current?.listSessions();
   }, []);
@@ -365,6 +406,8 @@ export function RightTerminalPane({ projectPath }: RightTerminalPaneProps) {
           <Terminal
             projectPath={projectPath}
             sessionId={activeSessionId ?? undefined}
+            sessionLabel={pendingRiffSession?.label}
+            sessionContext={pendingRiffSession?.context}
             className="h-full"
             handleRef={terminalHandleRef}
             onSessionCreated={handleSessionCreated}
