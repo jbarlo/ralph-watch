@@ -22,7 +22,12 @@ import { useEventStream } from '@/hooks/use-event-stream';
 import { useProjectPath } from '@/components/providers/TRPCProvider';
 import { useSelectedTicket } from '@/hooks/use-selected-ticket';
 import { useToast } from '@/hooks/use-toast';
-import { getStatusBadgeClass, formatStatus } from '@/lib/ticket-ui';
+import {
+  getStatusBadgeClass,
+  formatStatus,
+  dispatchRiffOnTicket,
+  type RiffOnTicketEventDetail,
+} from '@/lib/ticket-ui';
 import type { ProcessOutputLine } from '@/lib/process-runner';
 import type { CommandConfig } from '@/lib/project-config';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -39,6 +44,7 @@ import {
   Trash2,
   RefreshCw,
   Settings,
+  MessageSquare,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -171,6 +177,15 @@ function MobileTicketDetail({
               ticketTitle={ticket.title}
               onSuccess={onTicketDeleted}
             />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => dispatchRiffOnTicket(ticket)}
+              title="Open Claude terminal with ticket context"
+            >
+              <MessageSquare className="h-4 w-4 mr-1" />
+              Riff
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -207,10 +222,48 @@ export function MobileLayout() {
   );
   const terminalHandleRef = useRef<TerminalHandle | null>(null);
 
+  // Riff session state - for creating sessions with ticket context
+  const [pendingRiffSession, setPendingRiffSession] = useState<{
+    label: string;
+    context: string;
+    ticketId: number;
+  } | null>(null);
+
   // Persist active session to localStorage
   useEffect(() => {
     setStoredSession(activeSessionId);
   }, [activeSessionId]);
+
+  // Listen for riff-on-ticket events
+  useEffect(() => {
+    const handleRiffOnTicket = (e: CustomEvent<RiffOnTicketEventDetail>) => {
+      const { ticketId, label, context } = e.detail;
+
+      // Check if session with same ticket already exists
+      const existingSession = sessions.find((s) => s.label === label);
+      if (existingSession) {
+        // Switch to existing session and go to terminal tab
+        setActiveSessionId(existingSession.id);
+        setActiveTab('terminal');
+        return;
+      }
+
+      // Switch to terminal tab and create new session with context
+      setActiveTab('terminal');
+      setPendingRiffSession({ ticketId, label, context });
+      setActiveSessionId(null); // Clear to create new session
+    };
+
+    window.addEventListener(
+      'riff-on-ticket',
+      handleRiffOnTicket as EventListener,
+    );
+    return () =>
+      window.removeEventListener(
+        'riff-on-ticket',
+        handleRiffOnTicket as EventListener,
+      );
+  }, [sessions]);
 
   const { data: tickets } = trpc.tickets.list.useQuery();
   const configQuery = trpc.config.get.useQuery();
@@ -363,6 +416,8 @@ export function MobileLayout() {
 
   const handleSessionCreated = useCallback((sessionId: string) => {
     setActiveSessionId(sessionId);
+    // Clear pending riff session after it's been used
+    setPendingRiffSession(null);
     terminalHandleRef.current?.listSessions();
   }, []);
 
@@ -545,6 +600,8 @@ export function MobileLayout() {
           <TerminalComponent
             projectPath={projectPath}
             sessionId={activeSessionId ?? undefined}
+            sessionLabel={pendingRiffSession?.label}
+            sessionContext={pendingRiffSession?.context}
             className="flex-1 min-h-0"
             showControls
             onConnectionChange={setIsTerminalConnected}

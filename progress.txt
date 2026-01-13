@@ -1182,3 +1182,18 @@
 - Fixed ESLint issue: renamed terminalRef to handleRef (terminalHandleRef in parent)
 - Files modified: src/components/Terminal.tsx, src/components/RightTerminalPane.tsx, src/components/MobileLayout.tsx
 - Verified: pnpm check passes (all 248 tests pass)
+
+## Ticket #83: Add 'Riff on ticket' button to DetailPanel
+- Added "Riff" button to open Claude terminal session with ticket context pre-loaded
+- Desktop (DetailPanel in page.tsx): Button already existed, calls dispatchRiffOnTicket()
+- Mobile (MobileTicketDetail in MobileLayout.tsx): Added Riff button with MessageSquare icon
+- Created ticket context formatting with ticket id, title, status, priority, description
+- State coordination via custom DOM event ('riff-on-ticket')
+- Desktop: RightTerminalPane listens for event, opens terminal, creates session with context
+- Mobile: Added event listener to MobileLayout, switches to terminal tab, creates session
+- Added pendingRiffSession state for passing label/context to Terminal component
+- handleSessionCreated clears pendingRiffSession after session is created
+- If session with same ticket label exists, switches to it instead of creating duplicate
+- Files modified: src/components/MobileLayout.tsx
+- Files created earlier: src/lib/ticket-ui.ts (dispatchRiffOnTicket, formatTicketContext)
+- Verified: pnpm check passes (all 248 tests pass)
