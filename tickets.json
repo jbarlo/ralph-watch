@@ -522,7 +522,8 @@
     },
     {
       "id": 77,
-      "title": "update project Dir selector to suggest existing folders",
+      "title": "Add path autocomplete to project selector",
+      "description": "Enhance AddProjectForm with path suggestions.\n\n## Current state\nJust a text input - user must type full path manually.\n\n## Enhancement\nAdd autocomplete that suggests directories as user types.\n\n### Backend: tRPC endpoint\nCreate src/server/routers/fs.ts:\n```typescript\nfs.listDirs({ path: string }) => string[]\n```\n- Takes partial path (e.g., '/mnt/data/j')\n- Returns matching directories (e.g., ['/mnt/data/jimmy'])\n- Only list directories, not files\n- Limit to 10 results\n- Handle errors gracefully (permission denied, etc.)\n\n### Frontend: Autocomplete input\nUpdate AddProjectForm in src/app/page.tsx:\n- Debounce input (300ms)\n- Query fs.listDirs on change\n- Show dropdown with suggestions\n- Arrow keys to navigate, Enter to select\n- Tab to autocomplete to common prefix\n- Show 'No matches' or 'Invalid path' states\n\n### Validation\n- On submit, verify path exists and contains tickets.json\n- Show error if not a ralph project\n\nRun pnpm check after.",
       "status": "draft"
     },
     {
@@ -572,6 +573,19 @@
       "description": "Add copy-to-clipboard buttons for ticket info.\n\n## UI\nIn DetailPanel header, add two buttons:\n- Copy icon button: copies formatted ticket\n- Copy + sparkle icon: copies ticket + refinement prompt\n\n## Copy format\n```\nTicket #42: Fix login bug\nStatus: pending\nPriority: 1\n\nDescription:\n[description text]\n```\n\n## Refinement prompt suffix\n```\n\nHelp me refine this ticket:\n- Is the scope clear?\n- Are there edge cases?\n- What acceptance criteria should we add?\n```\n\n## Implementation\n- Rename formatTicketContext → formatTicketForClipboard in ticket-ui.ts\n- Add REFINE_PROMPT constant\n- Add buttons to DetailPanel with clipboard API + toast feedback\n\nRun pnpm check after.",
       "status": "completed",
       "priority": 2
+    },
+    {
+      "id": 85,
+      "title": "Show git branch in ticket UI",
+      "description": "Display current git branch and link tickets to branches.\n\n## Phase 1: Show current branch\nDisplay current git branch in header/status area.\n- tRPC endpoint: git.currentBranch() - runs `git branch --show-current`\n- Show in project header: 'main' or 'feature/foo'\n- Poll or refresh on file change\n\n## Phase 2: Track ticket branches (optional)\nWhen ticket moves to in_progress, record the branch name.\n- Add optional `branch` field to ticket schema\n- Auto-populate when status changes to in_progress\n- Show branch badge on ticket card\n- Clicking branch could run `git checkout <branch>`\n\n## Phase 3: Branch suggestions (stretch)\n- When starting a ticket, suggest creating branch: `ticket-42-fix-login`\n- Button to create branch from ticket title\n\n## Files\n- src/server/routers/git.ts - new router for git operations\n- src/lib/schemas.ts - add optional branch field\n- Project header component - show branch\n- TicketList/DetailPanel - show branch if set\n\nStart with Phase 1, evaluate before continuing.\n\nRun pnpm check after.",
+      "status": "draft"
+    },
+    {
+      "id": 86,
+      "title": "Fix status badge background colors not showing",
+      "description": "Status badges should have colored backgrounds but CSS not generated.\n\n## Root cause (confirmed)\nTailwind content paths in tailwind.config.ts don't include `src/lib/`:\n```typescript\ncontent: [\n  './src/pages/**/*.{js,ts,jsx,tsx,mdx}',\n  './src/components/**/*.{js,ts,jsx,tsx,mdx}',\n  './src/app/**/*.{js,ts,jsx,tsx,mdx}',\n  // src/lib/ is MISSING!\n]\n```\n\n`src/lib/ticket-ui.ts` has the class names like `bg-[hsl(var(--status-draft-bg))]` but Tailwind JIT never scans that file, so CSS is never generated.\n\n## Fix\nAdd `src/lib/` to Tailwind content paths in tailwind.config.ts:\n```typescript\ncontent: [\n  './src/pages/**/*.{js,ts,jsx,tsx,mdx}',\n  './src/components/**/*.{js,ts,jsx,tsx,mdx}',\n  './src/app/**/*.{js,ts,jsx,tsx,mdx}',\n  './src/lib/**/*.{js,ts}',  // ADD THIS\n  './node_modules/streamdown/dist/**/*.js',\n],\n```\n\n## Verification\n1. Make the change\n2. Restart dev server (Tailwind needs to rescan)\n3. Check badge in browser - should now have colored background\n\nRun pnpm check after.",
+      "status": "completed",
+      "priority": 1
     }
   ]
 }

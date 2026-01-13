@@ -1221,3 +1221,11 @@
 - Imported useToast hook for toast notifications
 - Files modified: src/lib/ticket-ui.ts, src/app/project/[path]/page.tsx
 - Verified: `pnpm check` passes (228 tests)
+
+## Ticket #86: Fix status badge background colors not showing
+- Bug: Status badges had no colored backgrounds because Tailwind JIT wasn't scanning src/lib/
+- Root cause: tailwind.config.ts content paths didn't include src/lib/**/*.{js,ts}
+- src/lib/ticket-ui.ts has badge class names like bg-[hsl(var(--status-draft-bg))]
+- Fix: Added './src/lib/**/*.{js,ts}' to content array in tailwind.config.ts
+- Files modified: tailwind.config.ts
+- Verified: `pnpm check` passes (228 tests)
