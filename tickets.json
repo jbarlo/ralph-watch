@@ -563,7 +563,7 @@
       "id": 83,
       "title": "Remove terminal session scaffolding",
       "description": "Remove unused session management code built for abandoned feature.\n\n## Delete\n- src/components/SessionTabs.tsx\n- src/components/SessionTabs.test.tsx\n\n## Modify\n\n### src/components/RightTerminalPane.tsx\n- Remove SessionTabs import/render\n- Remove session state (sessions, activeSessionId, pendingRiffSession)\n- Remove session handlers (handleSessionsUpdated, handleSessionCreated, handleReattached, handleSelectSession, handleCloseSession, handleNewSession)\n- Remove riff-on-ticket event listener\n- Remove STORAGE_KEY_SESSION and related functions\n- Remove terminalHandleRef\n- Simplify Terminal props\n\n### src/components/MobileLayout.tsx\n- Same session cleanup pattern\n\n### src/hooks/use-terminal.ts\n- Remove SessionInfo export\n- Remove sessionId/Label/Context from options\n- Remove currentSessionId, sessions state\n- Remove listSessions, closeSession methods\n- Remove onSessionCreated, onReattached callbacks\n\n### src/components/Terminal.tsx\n- Remove session props\n- Remove handleRef\n\n### src/lib/ticket-ui.ts\n- Remove RiffTicketContext, RiffOnTicketEventDetail\n- Remove dispatchRiffOnTicket\n- Keep formatTicketContext (rename to formatTicketForClipboard in #84)\n\nRun pnpm check after.",
-      "status": "in_progress",
+      "status": "completed",
       "priority": 1
     },
     {

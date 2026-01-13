@@ -1197,3 +1197,15 @@
 - Files modified: src/components/MobileLayout.tsx
 - Files created earlier: src/lib/ticket-ui.ts (dispatchRiffOnTicket, formatTicketContext)
 - Verified: pnpm check passes (all 248 tests pass)
+
+## Ticket #83: Remove terminal session scaffolding
+- Deleted SessionTabs.tsx and SessionTabs.test.tsx
+- Removed session management from RightTerminalPane.tsx (sessions state, pendingRiffSession, event listeners, handlers)
+- Removed session management from MobileLayout.tsx (same pattern)
+- Simplified use-terminal.ts by removing SessionInfo export, session-related options and state
+- Removed session props and handleRef from Terminal.tsx
+- Removed Riff functions from ticket-ui.ts (dispatchRiffOnTicket, RiffTicketContext, RiffOnTicketEventDetail)
+- Removed Riff button from project page DetailPanel
+- Files deleted: src/components/SessionTabs.tsx, src/components/SessionTabs.test.tsx
+- Files modified: src/components/RightTerminalPane.tsx, src/components/MobileLayout.tsx, src/hooks/use-terminal.ts, src/components/Terminal.tsx, src/lib/ticket-ui.ts, src/app/project/[path]/page.tsx
+- Verified: `pnpm check` passes (228 tests)
